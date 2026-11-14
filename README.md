@@ -220,7 +220,7 @@ biosphere-quest-website/
 
 If you wish to use **Biosphere Quest** as a reference, collaborate, or inquire about this personal project, feel free to reach out:
 
-* **BloxyCroissant (Denise)** — Sole Creator, UI/UX Designer, Game Designer & Full-Stack Developer
+* **BloxyCroissant (Denise)** — Project Owner,Solo Creator, UI/UX Devloper, UI/UX Designer, Game Developer, Game Designer & Full-Stack Developer
 
 ---
 
