@@ -90,7 +90,7 @@ const SWIMMING_CREATURES = [
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function SplashStarScreen({ onEnterApp }) {
+export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
   const [activeRole, setActiveRole] = useState("kids");
   const [activeWorld, setActiveWorld] = useState(0);
   const [email, setEmail] = useState("");
@@ -198,6 +198,13 @@ export default function SplashStarScreen({ onEnterApp }) {
       audioRef.current.pause();
     }
     onEnterApp?.();
+  };
+
+  const handleStartWizardWithMusicStop = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    onStartWizard?.();
   };
 
   return (
@@ -865,7 +872,7 @@ export default function SplashStarScreen({ onEnterApp }) {
           </div>
         </motion.div>
 
-        {/* Bottom CTA: Early Access Waitlist + Preview Launch Button */}
+        {/* Bottom CTA: Early Access Waitlist + Preview Launch Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -950,27 +957,50 @@ export default function SplashStarScreen({ onEnterApp }) {
             </motion.p>
           )}
 
-          {onEnterApp && (
-            <div style={{ marginTop: 16 }}>
+          {/* Dual Action Buttons: Start Welcome Wizard & Developer Beta Preview */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
+            {onStartWizard && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.94 }}
+                onClick={handleStartWizardWithMusicStop}
+                style={{
+                  background: "linear-gradient(90deg, #22d3ee, #818cf8)",
+                  border: "none",
+                  color: "#060818",
+                  padding: "11px 20px",
+                  borderRadius: 12,
+                  fontSize: 13,
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  boxShadow: "0 0 20px rgba(34, 211, 238, 0.45)",
+                }}
+              >
+                🚀 Start Welcome Wizard →
+              </motion.button>
+            )}
+
+            {onEnterApp && (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.94 }}
                 onClick={handleEnterAppWithMusicStop}
                 style={{
                   background: "linear-gradient(90deg, rgba(6, 182, 212, 0.18), rgba(139, 92, 246, 0.18))",
-                  border: "1px dashed rgba(99, 225, 232, 0.65)",
+                  border: "1.5px dashed rgba(99, 225, 232, 0.65)",
                   color: "#63e1e8",
-                  padding: "8px 16px",
+                  padding: "10px 18px",
                   borderRadius: 12,
-                  fontSize: 12,
-                  fontWeight: 800,
+                  fontSize: 13,
+                  fontWeight: 900,
                   cursor: "pointer",
+                  boxShadow: "0 0 16px rgba(99, 225, 232, 0.35)",
                 }}
               >
                 🔓 Enter Developer / Beta Preview →
               </motion.button>
-            </div>
-          )}
+            )}
+          </div>
         </motion.div>
       </div>
     </div>
