@@ -1,29 +1,42 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import logoImg from "../assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
 import rocketGif from "../assets/BiosphereQuestAssets/Rocket.gif";
 import blueCatGif from "../assets/BiosphereQuestAssets/Blue Cat.gif";
-import scienceGif from "../assets/BiosphereQuestAssets/Science gif.gif";
+import astroImg from "../assets/BiosphereQuestAssets/Astro (Biosphere Quest Mascot).png";
 
-export default function SignUp({ onNavigate, onSignUpSuccess }) {
-  const [fullName, setFullName] = useState("");
+export default function Login({ onNavigate, onLoginSuccess }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
 
+  // Twinkling Starfield for the right cosmic panel
+  const stars = useMemo(
+    () =>
+      Array.from({ length: 35 }, (_, i) => ({
+        id: i,
+        left: `${(i * 31 + 7) % 100}%`,
+        top: `${(i * 43 + 11) % 90}%`,
+        size: (i % 3) + 2,
+        duration: 1.6 + (i % 4) * 0.5,
+        delay: (i % 6) * 0.3,
+      })),
+    []
+  );
+
   const handleScreenClick = (e) => {
     const id = Date.now() + Math.random();
-    const icons = ["✨", "🫧", "⭐", "💫"];
+    const icons = ["✨", "🫧", "⭐", "💫", "🔐"];
     const burst = {
       id,
       x: e.clientX,
       y: e.clientY,
-      particles: Array.from({ length: 5 }, (_, idx) => ({
-        icon: icons[(idx + Math.floor(Math.random() * 4)) % icons.length],
-        angle: idx * 72 * (Math.PI / 180),
+      particles: Array.from({ length: 6 }, (_, idx) => ({
+        icon: icons[(idx + Math.floor(Math.random() * 5)) % icons.length],
+        angle: idx * 60 * (Math.PI / 180),
         dist: 30 + Math.random() * 25,
       })),
     };
@@ -33,24 +46,21 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
     }, 800);
   };
 
-  const handleSignUp = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
 
-    const { error } = await supabase.auth.signUp({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      options: {
-        data: { full_name: fullName },
-      },
     });
 
     setLoading(false);
     if (error) {
       setErrorMsg(error.message);
     } else {
-      onSignUpSuccess?.();
+      onLoginSuccess?.();
     }
   };
 
@@ -60,10 +70,11 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
       style={{
         minHeight: "100vh",
         display: "flex",
-        background: "linear-gradient(135deg, #070918 0%, #131138 50%, #042f2e 100%)",
+        background: "linear-gradient(135deg, #060818 0%, #191247 50%, #06637a 100%)",
         fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif",
         overflow: "hidden",
         position: "relative",
+        cursor: "crosshair",
       }}
     >
       {/* Click Stardust */}
@@ -85,26 +96,29 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         ))}
       </AnimatePresence>
 
-      {/* LEFT PANEL: Soft Pastel Form */}
+      {/* LEFT PANEL: Glassmorphism Form Sidebar */}
       <motion.div
-        initial={{ x: -60, opacity: 0 }}
+        initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         style={{
           width: "440px",
           minWidth: "440px",
-          background: "#eefbf2",
-          color: "#0f172a",
-          padding: "32px 44px",
+          background: "linear-gradient(155deg, rgba(15, 23, 42, 0.92), rgba(23, 37, 84, 0.88))",
+          backdropFilter: "blur(18px)",
+          borderRight: "1.5px solid rgba(99, 225, 232, 0.35)",
+          color: "#ffffff",
+          padding: "36px 44px",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          boxShadow: "15px 0 40px rgba(0,0,0,0.4)",
+          boxShadow: "15px 0 40px rgba(0,0,0,0.5)",
           zIndex: 10,
         }}
       >
         <div>
-          <button
+          <motion.button
+            whileHover={{ x: -3 }}
             onClick={() => onNavigate("splash")}
             style={{
               background: "none",
@@ -112,72 +126,59 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               fontSize: 18,
               cursor: "pointer",
               fontWeight: 900,
-              color: "#166534",
-              marginBottom: 14,
+              color: "#63e1e8",
+              marginBottom: 16,
             }}
           >
             ←
-          </button>
+          </motion.button>
 
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
             <motion.img
-              animate={{ y: [-4, 4, -4] }}
+              animate={{ y: [-4, 4, -4], rotate: [0, 5, -5, 0] }}
               transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
               src={logoImg}
               alt="Logo"
-              style={{ width: 46, height: 46, objectFit: "contain", marginBottom: 6 }}
+              style={{ width: 52, height: 52, objectFit: "contain", marginBottom: 8, filter: "drop-shadow(0 0 15px rgba(99,225,232,0.8))" }}
             />
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#14532d", margin: 0 }}>
-              Sign Up
+            <h1
+              style={{
+                fontSize: 28,
+                fontWeight: 900,
+                background: "linear-gradient(90deg, #63e1e8 0%, #c084fc 50%, #ffdf4e 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                margin: 0,
+              }}
+            >
+              Log in
             </h1>
-            <p style={{ fontSize: 12, color: "#4b5563", marginTop: 3, fontWeight: 600 }}>
-              Welcome to Biosphere Quest - Let's create account
+            <p style={{ fontSize: 13, color: "#cbd5e1", marginTop: 4, fontWeight: 600 }}>
+              Welcome back to Biosphere Quest
             </p>
           </div>
 
           {errorMsg && (
             <div
               style={{
-                background: "#fee2e2",
-                border: "1px solid #f87171",
-                color: "#991b1b",
+                background: "rgba(239, 68, 68, 0.2)",
+                border: "1px solid rgba(239, 68, 68, 0.5)",
+                color: "#fca5a5",
                 padding: "10px 14px",
                 borderRadius: 12,
                 fontSize: 12.5,
                 fontWeight: 700,
-                marginBottom: 12,
+                marginBottom: 14,
               }}
             >
               {errorMsg}
             </div>
           )}
 
-          <form onSubmit={handleSignUp} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 4 }}>
-                Full name
-              </label>
-              <input
-                type="text"
-                required
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Full Name"
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: 14,
-                  border: "1.5px solid #bbf7d0",
-                  background: "#ffffff",
-                  color: "#0f172a",
-                  fontSize: 13,
-                  outline: "none",
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 4 }}>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 800, color: "#63e1e8", marginBottom: 5 }}>
                 Email address
               </label>
               <input
@@ -188,19 +189,20 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
                 placeholder="you@gmail.com"
                 style={{
                   width: "100%",
-                  padding: "10px 14px",
+                  padding: "11px 16px",
                   borderRadius: 14,
-                  border: "1.5px solid #bbf7d0",
-                  background: "#ffffff",
-                  color: "#0f172a",
+                  border: "1.5px solid rgba(56, 189, 248, 0.45)",
+                  background: "rgba(8, 13, 24, 0.85)",
+                  color: "#fff",
                   fontSize: 13,
                   outline: "none",
+                  boxSizing: "border-box",
                 }}
               />
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#166534", marginBottom: 4 }}>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 800, color: "#63e1e8", marginBottom: 5 }}>
                 Password
               </label>
               <input
@@ -211,15 +213,24 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
                 placeholder="••••••••••"
                 style={{
                   width: "100%",
-                  padding: "10px 14px",
+                  padding: "11px 16px",
                   borderRadius: 14,
-                  border: "1.5px solid #bbf7d0",
-                  background: "#ffffff",
-                  color: "#0f172a",
+                  border: "1.5px solid rgba(56, 189, 248, 0.45)",
+                  background: "rgba(8, 13, 24, 0.85)",
+                  color: "#fff",
                   fontSize: 13,
                   outline: "none",
+                  boxSizing: "border-box",
                 }}
               />
+              <div style={{ textAlign: "right", marginTop: 5 }}>
+                <span
+                  onClick={() => onNavigate("forgot")}
+                  style={{ fontSize: 11.5, fontWeight: 800, color: "#c084fc", cursor: "pointer" }}
+                >
+                  Forgot Password?
+                </span>
+              </div>
             </div>
 
             <motion.button
@@ -229,33 +240,33 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               disabled={loading}
               style={{
                 width: "100%",
-                padding: "11px",
+                padding: "12px",
                 borderRadius: 14,
                 border: "none",
-                background: "#15803d",
-                color: "#ffffff",
+                background: "linear-gradient(90deg, #22d3ee, #818cf8)",
+                color: "#080d18",
                 fontWeight: 900,
                 fontSize: 14,
                 cursor: "pointer",
-                boxShadow: "0 6px 20px rgba(21, 128, 61, 0.35)",
-                marginTop: 2,
+                boxShadow: "0 0 20px rgba(34, 211, 238, 0.45)",
+                marginTop: 4,
               }}
             >
-              {loading ? "Creating Account..." : "Sign Up"}
+              {loading ? "Logging in..." : "Login"}
             </motion.button>
           </form>
 
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => onNavigate("login")}
+            onClick={() => onNavigate("signup")}
             style={{
               width: "100%",
-              padding: "10px",
+              padding: "11px",
               borderRadius: 14,
-              border: "1.5px solid #d1fae5",
-              background: "#ffffff",
-              color: "#15803d",
+              border: "1.5px solid rgba(99, 225, 232, 0.35)",
+              background: "rgba(30, 41, 59, 0.6)",
+              color: "#63e1e8",
               fontWeight: 900,
               fontSize: 13,
               cursor: "pointer",
@@ -263,101 +274,113 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               textAlign: "center",
             }}
           >
-            Already have an account
+            I don't have an account
           </motion.button>
         </div>
 
-        <div style={{ textAlign: "center", fontSize: 11, color: "#6b7280", fontWeight: 700 }}>
+        <div style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", fontWeight: 700 }}>
           Biosphere Quest © 2026 • Group 8
         </div>
       </motion.div>
 
-      {/* RIGHT PANEL: Floating Stats Card with Animated Science GIF */}
+      {/* RIGHT PANEL (LOGIN EXCLUSIVE TEASER): Secure Galactic Vault & Quick Auth Sync */}
       <div
         style={{
           flex: 1,
           position: "relative",
-          background: "linear-gradient(135deg, #064e3b 0%, #022c22 50%, #042f2e 100%)",
+          background: "linear-gradient(135deg, #094566 0%, #06637a 50%, #191247 100%)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
         }}
       >
-        {/* Floating Icons */}
+        {/* Twinkling Stars */}
+        {stars.map((star) => (
+          <motion.span
+            key={`star-${star.id}`}
+            animate={{ opacity: [0.2, 1, 0.2], scale: [0.7, 1.4, 0.7] }}
+            transition={{ duration: star.duration, repeat: Infinity, delay: star.delay }}
+            style={{
+              position: "absolute",
+              left: star.left,
+              top: star.top,
+              width: star.size,
+              height: star.size,
+              borderRadius: "50%",
+              backgroundColor: star.id % 2 === 0 ? "#63e1e8" : "#ffdf4e",
+              boxShadow: "0 0 10px rgba(99, 225, 232, 0.8)",
+              pointerEvents: "none",
+            }}
+          />
+        ))}
+
+        {/* Orbiting Rocket & Cat around Center Vault */}
         <motion.div
-          animate={{ y: [-10, 14, -10], rotate: [0, 6, 0] }}
-          transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", top: "18%", left: "22%", fontSize: 36 }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 14, repeat: Infinity, ease: "linear" }}
+          style={{
+            position: "absolute",
+            width: 320,
+            height: 320,
+            borderRadius: "50%",
+            border: "1.5px dashed rgba(99, 225, 232, 0.4)",
+            pointerEvents: "none",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
-          🍓
-        </motion.div>
-        <motion.div
-          animate={{ y: [14, -10, 14] }}
-          transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
-          style={{ position: "absolute", top: "25%", right: "18%", fontSize: 36 }}
-        >
-          🥑
+          <img
+            src={rocketGif}
+            alt="Rocket"
+            style={{ position: "absolute", top: -20, width: 38, height: 38, objectFit: "contain" }}
+          />
+          <img
+            src={blueCatGif}
+            alt="Blue Cat"
+            style={{ position: "absolute", bottom: -20, width: 38, height: 38, objectFit: "contain" }}
+          />
         </motion.div>
 
-        {/* Floating Glass Tracker Card */}
+        {/* Center Login Teaser Card: Secure Vault Sync */}
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           style={{
-            background: "rgba(255, 255, 255, 0.94)",
-            backdropFilter: "blur(16px)",
-            padding: "32px 38px",
-            borderRadius: 26,
-            width: 360,
-            boxShadow: "0 25px 60px rgba(0,0,0,0.4)",
-            border: "2px solid rgba(52, 211, 153, 0.4)",
+            background: "rgba(15, 23, 42, 0.88)",
+            backdropFilter: "blur(20px)",
+            padding: "36px 42px",
+            borderRadius: 30,
+            width: 380,
+            boxShadow: "0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(34, 211, 238, 0.35)",
+            border: "2px solid rgba(99, 225, 232, 0.5)",
+            position: "relative",
+            zIndex: 5,
+            textAlign: "center",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ fontSize: 10.5, fontWeight: 900, color: "#166534" }}>
-              ⚡ REAL-TIME TRACKING
-            </span>
-            <img src={scienceGif} alt="Science Teaser" style={{ width: 28, height: 28, objectFit: "contain" }} />
-          </div>
-          <h2 style={{ fontSize: 22, fontWeight: 900, color: "#064e3b", margin: 0 }}>
-            Fuel Your Day
+          <motion.img
+            src={astroImg}
+            alt="Astro"
+            animate={{ y: [-8, 8, -8], rotate: [-5, 5, -5] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            style={{ width: 70, height: 70, objectFit: "contain", margin: "0 auto 12px", filter: "drop-shadow(0 0 15px rgba(56,189,248,0.8))" }}
+          />
+          <span style={{ fontSize: 11, fontWeight: 900, color: "#22d3ee", letterSpacing: 1 }}>
+            🔐 SECURE GALACTIC VAULT
+          </span>
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: "#ffffff", margin: "6px 0 8px" }}>
+            Instant Session Sync
           </h2>
-          <p style={{ fontSize: 12, color: "#4b5563", marginTop: 4, fontWeight: 600 }}>
-            Balanced nutrition and arcade learning built for your lifestyle.
+          <p style={{ fontSize: 13, color: "#cbd5e1", fontWeight: 600, lineHeight: 1.5 }}>
+            Your XP, badges, and ocean reef progress are securely restored the moment you log in.
           </p>
 
-          <div style={{ marginTop: 20, display: "flex", flexDirection: "column", gap: 12 }}>
-            <div>
-              <div style={{ display: "flex", fontSize: 11.5, fontWeight: 800, color: "#166534", marginBottom: 4 }}>
-                <span>Daily XP Progress</span>
-                <span style={{ marginLeft: "auto" }}>1,842 / 2,200 XP</span>
-              </div>
-              <div style={{ height: 8, background: "#d1fae5", borderRadius: 999, overflow: "hidden" }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "83%" }}
-                  transition={{ duration: 1, delay: 0.4 }}
-                  style={{ height: "100%", background: "#15803d", borderRadius: 999 }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <div style={{ display: "flex", fontSize: 11.5, fontWeight: 800, color: "#166534", marginBottom: 4 }}>
-                <span>Ocean & Space Quests</span>
-                <span style={{ marginLeft: "auto" }}>98 / 150 pts</span>
-              </div>
-              <div style={{ height: 8, background: "#d1fae5", borderRadius: 999, overflow: "hidden" }}>
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: "65%" }}
-                  transition={{ duration: 1, delay: 0.6 }}
-                  style={{ height: "100%", background: "#38bdf8", borderRadius: 999 }}
-                />
-              </div>
-            </div>
+          <div style={{ marginTop: 20, background: "rgba(30, 41, 59, 0.7)", padding: "12px", borderRadius: 16, border: "1px solid rgba(99, 225, 232, 0.3)" }}>
+            <div style={{ fontSize: 12, fontWeight: 900, color: "#4ade80" }}>✓ Cloud Database Connected</div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>Supabase Auth & Profiles Active</div>
           </div>
         </motion.div>
       </div>
