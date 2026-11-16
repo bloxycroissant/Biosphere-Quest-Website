@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Official Biosphere Quest Assets
@@ -16,6 +16,9 @@ import gradCapIcon from "../assets/BiosphereQuestAssets/Graduation cap.png";
 import schoolIcon from "../assets/BiosphereQuestAssets/School icon.png";
 import coursesIcon from "../assets/BiosphereQuestAssets/Courses Icon.png";
 import parentsIcon from "../assets/BiosphereQuestAssets/Parents Icon.png";
+
+// Official Welcome Sound Track
+import welcomeMusic from "../assets/BiosphereQuestSoundEffectsandMusic/Welcome Screen (Official).mp3";
 
 const ROLE_HIGHLIGHTS = {
   kids: {
@@ -93,6 +96,36 @@ export default function SplashStarScreen({ onEnterApp }) {
   const [email, setEmail] = useState("");
   const [joined, setJoined] = useState(false);
   const [clickBursts, setClickBursts] = useState([]);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+
+  const audioRef = useRef(null);
+
+  // Initialize Audio Ref
+  useEffect(() => {
+    audioRef.current = new Audio(welcomeMusic);
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.4;
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const toggleMusic = () => {
+    if (!audioRef.current) return;
+    if (isPlayingMusic) {
+      audioRef.current.pause();
+      setIsPlayingMusic(false);
+    } else {
+      audioRef.current.play().catch(() => {
+        // Handle browser autoplay policy gracefully
+      });
+      setIsPlayingMusic(true);
+    }
+  };
 
   // 55 Twinkling Stars
   const stars = useMemo(
@@ -160,6 +193,13 @@ export default function SplashStarScreen({ onEnterApp }) {
     setEmail("");
   };
 
+  const handleEnterAppWithMusicStop = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    onEnterApp?.();
+  };
+
   return (
     <div
       onClick={handleScreenClick}
@@ -167,7 +207,6 @@ export default function SplashStarScreen({ onEnterApp }) {
         minHeight: "100vh",
         position: "relative",
         overflow: "hidden",
-        // Rich Deep Space Indigo -> Cosmic Violet -> Bioluminescent Ocean Teal Gradient
         background:
           "linear-gradient(180deg, #060818 0%, #191247 26%, #13255c 52%, #094566 78%, #06637a 100%)",
         color: "#ffffff",
@@ -176,6 +215,44 @@ export default function SplashStarScreen({ onEnterApp }) {
         cursor: "crosshair",
       }}
     >
+      {/* 🎵 Floating Cosmic Music Toggle Button */}
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          toggleMusic();
+        }}
+        style={{
+          position: "fixed",
+          top: 24,
+          right: 24,
+          zIndex: 60,
+          background: isPlayingMusic
+            ? "linear-gradient(135deg, #22d3ee, #7c3aed)"
+            : "rgba(15, 23, 42, 0.85)",
+          border: "2px solid #63e1e8",
+          borderRadius: 999,
+          padding: "10px 18px",
+          color: "#fff",
+          fontWeight: 900,
+          fontSize: 13,
+          cursor: "pointer",
+          boxShadow: isPlayingMusic ? "0 0 22px rgba(34, 211, 238, 0.7)" : "0 4px 14px rgba(0,0,0,0.3)",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <motion.span
+          animate={isPlayingMusic ? { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] } : {}}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        >
+          {isPlayingMusic ? "🎶" : "🔇"}
+        </motion.span>
+        {isPlayingMusic ? "Music: ON" : "Play Theme Music 🎵"}
+      </motion.button>
+
       {/* 🌈 Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
       <motion.div
         animate={{
@@ -579,6 +656,7 @@ export default function SplashStarScreen({ onEnterApp }) {
               marginTop: 8,
               background: "linear-gradient(90deg, #63e1e8 0%, #c084fc 50%, #ffdf4e 100%)",
               WebkitBackgroundClip: "text",
+              backgroundClip: "text",
               WebkitTextFillColor: "transparent",
               lineHeight: 1.15,
             }}
@@ -877,7 +955,7 @@ export default function SplashStarScreen({ onEnterApp }) {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.94 }}
-                onClick={onEnterApp}
+                onClick={handleEnterAppWithMusicStop}
                 style={{
                   background: "linear-gradient(90deg, rgba(6, 182, 212, 0.18), rgba(139, 92, 246, 0.18))",
                   border: "1px dashed rgba(99, 225, 232, 0.65)",
