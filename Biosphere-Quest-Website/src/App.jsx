@@ -138,10 +138,11 @@ export default function App() {
         setScreen("newpassword");
       } else if (event === "SIGNED_IN" && newSession?.user) {
         fetchOrCreateProfile(newSession.user);
-        setScreen("home");
+        // Do not force home if user is in the wizard onboarding flow
+        setScreen((prev) => (prev === "wizard" ? "wizard" : "home"));
       } else if (event === "SIGNED_OUT") {
         setExplorer(DEFAULT_EXPLORER);
-        setScreen("login");
+        setScreen("splash");
       }
     });
 
@@ -171,7 +172,7 @@ export default function App() {
     }
   };
 
-  // Handle completing the WelcomeWizard
+  // Handle completing the WelcomeWizard -> navigates straight to Dashboard (home)
   const handleWizardComplete = async (wizardData) => {
     playSfx("levelup");
     const updated = {
@@ -221,6 +222,7 @@ export default function App() {
       <WelcomeWizard
         onBackToSplash={() => setScreen("splash")}
         onComplete={handleWizardComplete}
+        onNavigate={setScreen}
       />
     );
   }
