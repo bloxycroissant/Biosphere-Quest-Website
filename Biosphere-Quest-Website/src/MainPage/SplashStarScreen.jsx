@@ -152,17 +152,61 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
       })),
     []
   );
-
-  // 4 Shooting Comets
+  
+// 50 Right-Diagonal Shooting Comets
   const shootingStars = useMemo(
-    () => [
-      { id: 1, top: "8%", left: "15%", delay: 1, duration: 2.2 },
-      { id: 2, top: "18%", left: "55%", delay: 4.5, duration: 1.9 },
-      { id: 3, top: "5%", left: "75%", delay: 8, duration: 2.4 },
-      { id: 4, top: "26%", left: "30%", delay: 11.5, duration: 2.0 },
-    ],
+    () =>
+      Array.from({ length: 50 }, (_, i) => ({
+        id: i + 1,
+        top: `${(i * 7 + 3) % 45}%`,
+        left: `${(i * 13 + 5) % 85}%`,
+        delay: (i * 0.35) % 12,
+        duration: 1.6 + (i % 5) * 0.35,
+        angle: 35 + ((i * 7) % 20),
+      })),
     []
   );
+
+      {shootingStars.map((comet) => (
+        <motion.div
+          key={`comet-${comet.id}`}
+          initial={{ x: -60, y: -60, opacity: 0 }}
+          animate={{ x: 350, y: 350, opacity: [0, 1, 1, 0] }}
+          transition={{
+            duration: comet.duration,
+            repeat: Infinity,
+            repeatDelay: 4,
+            delay: comet.delay,
+            ease: "easeOut",
+          }}
+          style={{
+            position: "absolute",
+            top: comet.top,
+            left: comet.left,
+            width: 110,
+            height: 3,
+            background: "linear-gradient(90deg, #ffffff, #63e1e8, transparent)",
+            borderRadius: 999,
+            transform: `rotate(${comet.angle}deg)`,
+            boxShadow: "0 0 14px #63e1e8",
+            pointerEvents: "none",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <span
+            style={{
+              position: "absolute",
+              left: -4,
+              top: -6,
+              fontSize: 14,
+              filter: "drop-shadow(0 0 8px #fff)",
+            }}
+          >
+            🌠
+          </span>
+        </motion.div>
+      ))}
 
   const handleScreenClick = (e) => {
     const id = Date.now() + Math.random();
