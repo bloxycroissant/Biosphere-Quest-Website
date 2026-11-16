@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "./lib/supabase";
 
-// Main Pages (src/MainPage/)
 import SplashStarScreen from "./MainPage/SplashStarScreen";
 import WelcomeWizard from "./MainPage/WelcomeWizard";
 import Login from "./MainPage/Login";
@@ -14,7 +13,6 @@ import ExploreCourses from "./MainPage/ExploreCourses";
 import GamesArcade from "./MainPage/GamesArcade";
 import ProfilePage from "./MainPage/ProfilePage";
 
-// Official Assets
 import logoImg from "./assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
 import homeIcon from "./assets/BiosphereQuestAssets/Home Icon.png";
 import coursesIcon from "./assets/BiosphereQuestAssets/Courses Icon.png";
@@ -162,7 +160,7 @@ export default function App() {
       level: newLevel,
     }));
 
-    setXpToast(`+${amount} XP Earned! 🌟`);
+    setXpToast(`+${amount} XP Earned! ✨`);
     setTimeout(() => setXpToast(null), 2400);
 
     if (session?.user?.id) {
@@ -209,7 +207,13 @@ export default function App() {
 
   // Full-screen screens (no top navigation bar)
   if (screen === "splash") {
-    return <SplashStarScreen onEnterApp={() => setScreen("wizard")} />;
+    return (
+      <SplashStarScreen
+        onEnterApp={() => setScreen("wizard")}
+        onStartWizard={() => setScreen("wizard")}
+        onNavigate={setScreen}
+      />
+    );
   }
 
   if (screen === "wizard") {

@@ -90,7 +90,7 @@ const SWIMMING_CREATURES = [
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
+export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate }) {
   const [activeRole, setActiveRole] = useState("kids");
   const [activeWorld, setActiveWorld] = useState(0);
   const [email, setEmail] = useState("");
@@ -120,9 +120,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
       audioRef.current.pause();
       setIsPlayingMusic(false);
     } else {
-      audioRef.current.play().catch(() => {
-        // Handle browser autoplay policy gracefully
-      });
+      audioRef.current.play().catch(() => {});
       setIsPlayingMusic(true);
     }
   };
@@ -166,7 +164,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
     []
   );
 
-  // Interactive click burst anywhere on screen
   const handleScreenClick = (e) => {
     const id = Date.now() + Math.random();
     const icons = ["✨", "🫧", "⭐", "💫", "🐚"];
@@ -194,17 +191,18 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
   };
 
   const handleEnterAppWithMusicStop = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    if (audioRef.current) audioRef.current.pause();
     onEnterApp?.();
   };
 
   const handleStartWizardWithMusicStop = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
+    if (audioRef.current) audioRef.current.pause();
     onStartWizard?.();
+  };
+
+  const handleNavigateWithMusicStop = (dest) => {
+    if (audioRef.current) audioRef.current.pause();
+    onNavigate?.(dest);
   };
 
   return (
@@ -276,7 +274,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
         }}
       />
 
-      {/* ✨ Interactive Cursor Click Stardust & Bubble Bursts */}
+      {/* ✨ Interactive Click Stardust */}
       <AnimatePresence>
         {clickBursts.map((burst) => (
           <div
@@ -340,7 +338,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
         />
       ))}
 
-      {/* 🌠 Diagonal Shooting Stars */}
+      {/* 🌠 Shooting Comets */}
       {shootingStars.map((comet) => (
         <motion.div
           key={`comet-${comet.id}`}
@@ -368,7 +366,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
         />
       ))}
 
-      {/* 🌌 Pulsing Nebula & Bioluminescent Glows */}
+      {/* 🌌 Pulsing Nebula */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], x: [0, 25, 0], opacity: [0.3, 0.55, 0.3] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
@@ -400,7 +398,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
         }}
       />
 
-      {/* 🐠 Swimming Bioluminescent Ocean Creatures */}
+      {/* 🐠 Swimming Creatures */}
       {SWIMMING_CREATURES.map((creature, idx) => (
         <motion.div
           key={`creature-${idx}`}
@@ -431,7 +429,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
         </motion.div>
       ))}
 
-      {/* 🫧 Rising Ocean Bubbles */}
+      {/* 🫧 Bubbles */}
       {bubbles.map((b) => (
         <motion.span
           key={`bubble-${b.id}`}
@@ -458,40 +456,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
           }}
         />
       ))}
-
-      {/* 🌊 Animated Ocean Wave Horizon */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 100,
-          overflow: "hidden",
-          pointerEvents: "none",
-          opacity: 0.4,
-        }}
-      >
-        <motion.svg
-          viewBox="0 0 1440 120"
-          preserveAspectRatio="none"
-          animate={{ x: ["0%", "-25%", "0%"] }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
-          style={{ width: "140%", height: "100%" }}
-        >
-          <defs>
-            <linearGradient id="oceanWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#06b6d4" />
-              <stop offset="50%" stopColor="#3b82f6" />
-              <stop offset="100%" stopColor="#14b8a6" />
-            </linearGradient>
-          </defs>
-          <path
-            fill="url(#oceanWaveGrad)"
-            d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
-          />
-        </motion.svg>
-      </div>
 
       {/* Main Content Wrapper */}
       <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 2 }}>
@@ -530,7 +494,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
           </motion.span>
         </motion.div>
 
-        {/* Hero Stage: Official Biosphere Quest Logo + Astro & Stella + Orbiting GIFs */}
+        {/* Hero Stage */}
         <div style={{ textAlign: "center", position: "relative", margin: "10px 0 26px" }}>
           <div
             style={{
@@ -543,7 +507,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
               justifyContent: "center",
             }}
           >
-            {/* Outer Counter-Clockwise Orbit with Blue Cat GIF */}
             <motion.div
               animate={{ rotate: -360 }}
               transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
@@ -571,7 +534,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
               />
             </motion.div>
 
-            {/* Inner Clockwise Orbit with Rocket GIF */}
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
@@ -599,7 +561,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
               />
             </motion.div>
 
-            {/* Left Mascot: Astro */}
             <motion.img
               src={astroImg}
               alt="Astro Mascot"
@@ -616,7 +577,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
               }}
             />
 
-            {/* Center Official Biosphere Quest Logo */}
             <motion.img
               src={logoImg}
               alt="Biosphere Quest Logo"
@@ -634,7 +594,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
               }}
             />
 
-            {/* Right Mascot: Stella */}
             <motion.img
               src={stellaImg}
               alt="Stella Mascot"
@@ -652,7 +611,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
             />
           </div>
 
-          {/* Animated Gradient Title */}
           <motion.h1
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -690,7 +648,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
           </motion.p>
         </div>
 
-        {/* Interactive Audience Tabs (Kids | Teachers | Parents) */}
+        {/* Audience Tabs */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -806,7 +764,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
           </AnimatePresence>
         </motion.div>
 
-        {/* Interactive Teaser Section: Sneak Peek of Space & Ocean Worlds */}
+        {/* Teaser Worlds */}
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
@@ -872,7 +830,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
           </div>
         </motion.div>
 
-        {/* Bottom CTA: Early Access Waitlist + Preview Launch Buttons */}
+        {/* Bottom CTA & Navigation Action Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -880,9 +838,9 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
           style={{
             background: "linear-gradient(135deg, rgba(14, 116, 144, 0.45), rgba(109, 40, 217, 0.42))",
             backdropFilter: "blur(12px)",
-            border: "1px solid rgba(103, 232, 249, 0.45)",
+            border: "1.5px solid rgba(103, 232, 249, 0.55)",
             borderRadius: 22,
-            padding: "22px 20px",
+            padding: "24px 20px",
             textAlign: "center",
           }}
         >
@@ -957,28 +915,67 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
             </motion.p>
           )}
 
-          {/* Dual Action Buttons: Start Welcome Wizard & Developer Beta Preview */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 18 }}>
-            {onStartWizard && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.94 }}
-                onClick={handleStartWizardWithMusicStop}
-                style={{
-                  background: "linear-gradient(90deg, #22d3ee, #818cf8)",
-                  border: "none",
-                  color: "#060818",
-                  padding: "11px 20px",
-                  borderRadius: 12,
-                  fontSize: 13,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  boxShadow: "0 0 20px rgba(34, 211, 238, 0.45)",
-                }}
-              >
-                🚀 Start Welcome Wizard →
-              </motion.button>
-            )}
+          {/* Action Navigation Buttons: Welcome Wizard, Sign Up, Login, and Beta Preview */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
+            {/* Direct Trigger to Welcome Wizard */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={handleStartWizardWithMusicStop}
+              style={{
+                background: "linear-gradient(90deg, #22d3ee, #818cf8)",
+                border: "none",
+                color: "#060818",
+                padding: "12px 22px",
+                borderRadius: 14,
+                fontSize: 13.5,
+                fontWeight: 900,
+                cursor: "pointer",
+                boxShadow: "0 0 22px rgba(34, 211, 238, 0.55)",
+              }}
+            >
+              🚀 Start Welcome Wizard →
+            </motion.button>
+
+            {/* Sign Up Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => handleNavigateWithMusicStop("signup")}
+              style={{
+                background: "linear-gradient(90deg, #10b981, #3b82f6)",
+                border: "none",
+                color: "#ffffff",
+                padding: "12px 20px",
+                borderRadius: 14,
+                fontSize: 13.5,
+                fontWeight: 900,
+                cursor: "pointer",
+                boxShadow: "0 0 18px rgba(16, 185, 129, 0.45)",
+              }}
+            >
+              ✨ Sign Up →
+            </motion.button>
+
+            {/* Log In Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => handleNavigateWithMusicStop("login")}
+              style={{
+                background: "linear-gradient(90deg, #8b5cf6, #ec4899)",
+                border: "none",
+                color: "#ffffff",
+                padding: "12px 20px",
+                borderRadius: 14,
+                fontSize: 13.5,
+                fontWeight: 900,
+                cursor: "pointer",
+                boxShadow: "0 0 18px rgba(139, 92, 246, 0.45)",
+              }}
+            >
+              🔑 Log In →
+            </motion.button>
 
             {onEnterApp && (
               <motion.button
@@ -989,15 +986,15 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard }) {
                   background: "linear-gradient(90deg, rgba(6, 182, 212, 0.18), rgba(139, 92, 246, 0.18))",
                   border: "1.5px dashed rgba(99, 225, 232, 0.65)",
                   color: "#63e1e8",
-                  padding: "10px 18px",
-                  borderRadius: 12,
+                  padding: "12px 18px",
+                  borderRadius: 14,
                   fontSize: 13,
                   fontWeight: 900,
                   cursor: "pointer",
                   boxShadow: "0 0 16px rgba(99, 225, 232, 0.35)",
                 }}
               >
-                🔓 Enter Developer / Beta Preview →
+                🔓 Beta Preview →
               </motion.button>
             )}
           </div>

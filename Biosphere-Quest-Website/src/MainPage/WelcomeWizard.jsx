@@ -93,7 +93,14 @@ const WORLDS = [
   },
 ];
 
-export default function WelcomeWizard({ onComplete, onBackToSplash }) {
+const SWIMMING_CREATURES = [
+  { icon: "🪼", top: "68%", duration: 18, delay: 0, size: 30, reverse: false },
+  { icon: "🐠", top: "78%", duration: 14, delay: 2, size: 26, reverse: true },
+  { icon: "🐢", top: "85%", duration: 22, delay: 4, size: 32, reverse: false },
+  { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
+];
+
+export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
@@ -106,50 +113,62 @@ export default function WelcomeWizard({ onComplete, onBackToSplash }) {
 
   const selectedCompanion = COMPANIONS.find((c) => c.id === companion) || COMPANIONS[0];
 
-  // Twinkling Stars
+  // 55 Twinkling Stars (Matching SplashScreen)
   const stars = useMemo(
     () =>
-      Array.from({ length: 42 }, (_, i) => ({
+      Array.from({ length: 55 }, (_, i) => ({
         id: i,
-        left: `${(i * 29 + 5) % 100}%`,
-        top: `${(i * 41 + 9) % 70}%`,
+        left: `${(i * 31 + 7) % 100}%`,
+        top: `${(i * 43 + 11) % 68}%`,
         size: (i % 3) + 2,
-        duration: 1.8 + (i % 4) * 0.5,
-        delay: (i % 5) * 0.3,
+        duration: 1.6 + (i % 4) * 0.5,
+        delay: (i % 6) * 0.3,
       })),
     []
   );
 
-  // Rising Ocean Bubbles
+  // 22 Rising Bioluminescent Ocean Bubbles (Matching SplashScreen)
   const bubbles = useMemo(
     () =>
-      Array.from({ length: 16 }, (_, i) => ({
+      Array.from({ length: 22 }, (_, i) => ({
         id: i,
-        left: `${(i * 21 + 6) % 95}%`,
-        size: 7 + (i % 4) * 5,
-        duration: 6 + (i % 4) * 1.5,
-        delay: (i % 6) * 0.6,
+        left: `${(i * 17 + 4) % 96}%`,
+        size: 6 + (i % 4) * 6,
+        duration: 5.5 + (i % 5) * 1.4,
+        delay: (i % 7) * 0.6,
+        sway: i % 2 === 0 ? 18 : -18,
       })),
+    []
+  );
+
+  // 4 Shooting Comets (Matching SplashScreen)
+  const shootingStars = useMemo(
+    () => [
+      { id: 1, top: "8%", left: "15%", delay: 1, duration: 2.2 },
+      { id: 2, top: "18%", left: "55%", delay: 4.5, duration: 1.9 },
+      { id: 3, top: "5%", left: "75%", delay: 8, duration: 2.4 },
+      { id: 4, top: "26%", left: "30%", delay: 11.5, duration: 2.0 },
+    ],
     []
   );
 
   const handleScreenClick = (e) => {
     const id = Date.now() + Math.random();
-    const icons = ["✨", "🫧", "⭐", "💫"];
+    const icons = ["✨", "🫧", "⭐", "💫", "🐚"];
     const burst = {
       id,
       x: e.clientX,
       y: e.clientY,
-      particles: Array.from({ length: 5 }, (_, idx) => ({
-        icon: icons[(idx + Math.floor(Math.random() * 4)) % icons.length],
-        angle: idx * 72 * (Math.PI / 180),
-        dist: 32 + Math.random() * 24,
+      particles: Array.from({ length: 6 }, (_, idx) => ({
+        icon: icons[(idx + Math.floor(Math.random() * 5)) % icons.length],
+        angle: idx * 60 * (Math.PI / 180),
+        dist: 35 + Math.random() * 30,
       })),
     };
-    setClickBursts((prev) => [...prev.slice(-5), burst]);
+    setClickBursts((prev) => [...prev.slice(-6), burst]);
     setTimeout(() => {
       setClickBursts((prev) => prev.filter((b) => b.id !== id));
-    }, 800);
+    }, 900);
   };
 
   const goNext = () => {
@@ -206,16 +225,112 @@ export default function WelcomeWizard({ onComplete, onBackToSplash }) {
         position: "relative",
         overflow: "hidden",
         background:
-          "linear-gradient(180deg, #060818 0%, #191247 28%, #13255c 55%, #094566 80%, #06637a 100%)",
+          "linear-gradient(180deg, #060818 0%, #191247 26%, #13255c 52%, #094566 78%, #06637a 100%)",
         color: "#ffffff",
         fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "24px 16px",
+        padding: "24px 16px 40px",
+        cursor: "crosshair",
       }}
     >
-      {/* ✨ Interactive Click Stardust */}
+      {/* 🌈 Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
+      <motion.div
+        animate={{
+          opacity: [0.35, 0.65, 0.35],
+          scale: [1, 1.08, 1],
+        }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(circle at 18% 20%, rgba(139, 92, 246, 0.38) 0%, transparent 45%), radial-gradient(circle at 82% 32%, rgba(56, 189, 248, 0.32) 0%, transparent 48%), radial-gradient(circle at 50% 92%, rgba(20, 184, 166, 0.45) 0%, transparent 55%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* 🧭 Top Navigation Header Bar (Matching MacroMate layout style + SplashScreen design) */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "16px 28px",
+          background: "rgba(8, 13, 24, 0.82)",
+          backdropFilter: "blur(16px)",
+          borderBottom: "1px solid rgba(99, 225, 232, 0.25)",
+          zIndex: 40,
+        }}
+      >
+        <div
+          onClick={onBackToSplash}
+          style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
+        >
+          <img src={logoImg} alt="Logo" style={{ width: 38, height: 38, objectFit: "contain" }} />
+          <span
+            style={{
+              fontWeight: 900,
+              fontSize: 16,
+              background: "linear-gradient(90deg, #63e1e8, #c084fc)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
+            Biosphere Quest
+          </span>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {onNavigate && (
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavigate("signup")}
+                style={{
+                  background: "transparent",
+                  border: "1px solid rgba(148, 163, 184, 0.4)",
+                  color: "#ffffff",
+                  padding: "8px 18px",
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  cursor: "pointer",
+                }}
+              >
+                Sign Up
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavigate("login")}
+                style={{
+                  background: "linear-gradient(135deg, #10b981, #059669)",
+                  border: "none",
+                  color: "#ffffff",
+                  padding: "8px 20px",
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: 900,
+                  cursor: "pointer",
+                  boxShadow: "0 0 16px rgba(16, 185, 129, 0.4)",
+                }}
+              >
+                Log In
+              </motion.button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* ✨ Interactive Click Stardust & Bubble Bursts */}
       <AnimatePresence>
         {clickBursts.map((burst) => (
           <div
@@ -234,11 +349,12 @@ export default function WelcomeWizard({ onComplete, onBackToSplash }) {
                 initial={{ x: 0, y: 0, scale: 0.4, opacity: 1 }}
                 animate={{
                   x: Math.cos(p.angle) * p.dist,
-                  y: Math.sin(p.angle) * p.dist - 14,
+                  y: Math.sin(p.angle) * p.dist - 15,
                   scale: 1.2,
                   opacity: 0,
                 }}
-                transition={{ duration: 0.7, ease: "easeOut" }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.75, ease: "easeOut" }}
                 style={{ position: "absolute", fontSize: 16 }}
               >
                 {p.icon}
@@ -248,12 +364,21 @@ export default function WelcomeWizard({ onComplete, onBackToSplash }) {
         ))}
       </AnimatePresence>
 
-      {/* 🌟 Twinkling Stars */}
+      {/* 🌟 Twinkling Starfield */}
       {stars.map((star) => (
         <motion.span
           key={`star-${star.id}`}
-          animate={{ opacity: [0.15, 1, 0.15], scale: [0.8, 1.4, 0.8] }}
-          transition={{ duration: star.duration, repeat: Infinity, delay: star.delay }}
+          animate={{
+            opacity: [0.15, 1, 0.15],
+            scale: [0.7, 1.5, 0.7],
+            rotate: [0, 90, 180],
+          }}
+          transition={{
+            duration: star.duration,
+            repeat: Infinity,
+            delay: star.delay,
+            ease: "easeInOut",
+          }}
           style={{
             position: "absolute",
             left: star.left,
@@ -261,27 +386,128 @@ export default function WelcomeWizard({ onComplete, onBackToSplash }) {
             width: star.size,
             height: star.size,
             borderRadius: "50%",
-            backgroundColor: star.id % 3 === 0 ? "#63e1e8" : "#ffffff",
-            boxShadow: "0 0 8px rgba(99, 225, 232, 0.8)",
+            backgroundColor:
+              star.id % 3 === 0 ? "#63e1e8" : star.id % 5 === 0 ? "#ffdf4e" : "#ffffff",
+            boxShadow: "0 0 10px rgba(99, 225, 232, 0.9)",
             pointerEvents: "none",
           }}
         />
+      ))}
+
+      {/* 🌠 Diagonal Shooting Stars */}
+      {shootingStars.map((comet) => (
+        <motion.div
+          key={`comet-${comet.id}`}
+          initial={{ x: -120, y: -60, opacity: 0 }}
+          animate={{ x: 480, y: 240, opacity: [0, 1, 1, 0] }}
+          transition={{
+            duration: comet.duration,
+            repeat: Infinity,
+            repeatDelay: 7,
+            delay: comet.delay,
+            ease: "easeOut",
+          }}
+          style={{
+            position: "absolute",
+            top: comet.top,
+            left: comet.left,
+            width: 90,
+            height: 2,
+            background: "linear-gradient(90deg, transparent, #63e1e8, #ffffff)",
+            borderRadius: 999,
+            transform: "rotate(26deg)",
+            boxShadow: "0 0 12px #63e1e8",
+            pointerEvents: "none",
+          }}
+        />
+      ))}
+
+      {/* 🌌 Pulsing Nebula & Bioluminescent Glows */}
+      <motion.div
+        animate={{ scale: [1, 1.25, 1], x: [0, 25, 0], opacity: [0.3, 0.55, 0.3] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: -80,
+          right: -60,
+          width: 380,
+          height: 380,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #8b5cf6, transparent 70%)",
+          filter: "blur(45px)",
+          pointerEvents: "none",
+        }}
+      />
+      <motion.div
+        animate={{ scale: [1, 1.3, 1], x: [0, -25, 0], opacity: [0.3, 0.55, 0.3] }}
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          bottom: -80,
+          left: -60,
+          width: 400,
+          height: 400,
+          borderRadius: "50%",
+          background: "radial-gradient(circle, #22d3ee, transparent 70%)",
+          filter: "blur(45px)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* 🐠 Swimming Bioluminescent Ocean Creatures */}
+      {SWIMMING_CREATURES.map((creature, idx) => (
+        <motion.div
+          key={`creature-${idx}`}
+          initial={{ x: creature.reverse ? "105vw" : "-10vw" }}
+          animate={{
+            x: creature.reverse ? "-10vw" : "105vw",
+            y: [-10, 12, -10],
+          }}
+          transition={{
+            x: {
+              duration: creature.duration,
+              repeat: Infinity,
+              delay: creature.delay,
+              ease: "linear",
+            },
+            y: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
+          }}
+          style={{
+            position: "absolute",
+            top: creature.top,
+            fontSize: creature.size,
+            filter: "drop-shadow(0 0 12px rgba(56, 189, 248, 0.7))",
+            pointerEvents: "none",
+            zIndex: 1,
+          }}
+        >
+          {creature.icon}
+        </motion.div>
       ))}
 
       {/* 🫧 Rising Ocean Bubbles */}
       {bubbles.map((b) => (
         <motion.span
           key={`bubble-${b.id}`}
-          initial={{ y: "105vh", opacity: 0 }}
-          animate={{ y: "-10vh", opacity: [0, 0.55, 0] }}
-          transition={{ duration: b.duration, repeat: Infinity, delay: b.delay, ease: "linear" }}
+          initial={{ y: "105vh", x: 0, opacity: 0 }}
+          animate={{
+            y: "-10vh",
+            x: [0, b.sway, -b.sway, 0],
+            opacity: [0, 0.65, 0.65, 0],
+          }}
+          transition={{
+            y: { duration: b.duration, repeat: Infinity, delay: b.delay, ease: "linear" },
+            x: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+            opacity: { duration: b.duration, repeat: Infinity, delay: b.delay },
+          }}
           style={{
             position: "absolute",
             left: b.left,
             width: b.size,
             height: b.size,
             borderRadius: "50%",
-            border: "1.5px solid rgba(103, 232, 249, 0.6)",
+            border: "1.5px solid rgba(103, 232, 249, 0.65)",
+            background: "radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.5), transparent)",
             pointerEvents: "none",
           }}
         />
@@ -295,14 +521,15 @@ export default function WelcomeWizard({ onComplete, onBackToSplash }) {
         style={{
           width: "100%",
           maxWidth: 680,
-          background: "linear-gradient(155deg, rgba(15, 23, 42, 0.86), rgba(23, 37, 84, 0.78))",
-          backdropFilter: "blur(18px)",
-          border: "1.5px solid rgba(99, 225, 232, 0.4)",
+          background: "linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(23, 37, 84, 0.65))",
+          backdropFilter: "blur(16px)",
+          border: "1px solid rgba(99, 225, 232, 0.35)",
           borderRadius: 28,
           padding: "26px 24px",
-          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.55), 0 0 32px rgba(56, 189, 248, 0.18)",
+          boxShadow: "0 18px 45px rgba(0, 0, 0, 0.45)",
           position: "relative",
           zIndex: 2,
+          marginTop: 70,
         }}
       >
         {/* Top Header + Animated Rocket Progress Bar */}
