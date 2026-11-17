@@ -173,30 +173,40 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         }}
       >
         <div>
-          <motion.button
-            whileHover={{ x: -3 }}
-            onClick={() => onNavigate("splash")}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 18,
-              cursor: "pointer",
-              fontWeight: 900,
-              color: "#63e1e8",
-              marginBottom: 16,
-            }}
-          >
-            ←
-          </motion.button>
+          {/* Header Row with Back Button and Logo/Title cleanly arranged */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+            <motion.button
+              whileHover={{ x: -3 }}
+              onClick={() => onNavigate("splash")}
+              style={{
+                background: "rgba(30, 41, 59, 0.7)",
+                border: "1px solid rgba(99, 225, 232, 0.3)",
+                borderRadius: 10,
+                width: 34,
+                height: 34,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 16,
+                cursor: "pointer",
+                fontWeight: 900,
+                color: "#63e1e8",
+                flexShrink: 0,
+              }}
+            >
+              ←
+            </motion.button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <img
+                src={logoImg}
+                alt="Logo"
+                style={{ width: 30, height: 30, objectFit: "contain", filter: "drop-shadow(0 0 10px rgba(99,225,232,0.8))" }}
+              />
+              <span style={{ fontWeight: 900, fontSize: 15, color: "#63e1e8" }}>Biosphere Quest</span>
+            </div>
+          </div>
 
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <motion.img
-              animate={{ y: [-4, 4, -4], rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
-              src={logoImg}
-              alt="Logo"
-              style={{ width: 48, height: 48, objectFit: "contain", marginBottom: 6, filter: "drop-shadow(0 0 15px rgba(99,225,232,0.8))" }}
-            />
+          <div style={{ textAlign: "center", marginBottom: 18 }}>
             <h1
               style={{
                 fontSize: 26,
@@ -395,7 +405,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         </div>
       </motion.div>
 
-      {/* RIGHT PANEL: Rich Space & Ocean Animations + Welcome Teaser Card */}
+      {/* RIGHT PANEL: Space & Ocean Animations + Welcome Teaser Card */}
       <div
         style={{
           flex: 1,
