@@ -49,7 +49,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
     []
   );
 
-  // Right-Diagonal Shooting Comets
+  // Exactly 25 Right-Diagonal Shooting Comets
   const shootingStars = useMemo(
     () =>
       Array.from({ length: 25 }, (_, i) => ({
@@ -395,7 +395,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         </div>
       </motion.div>
 
-      {/* RIGHT PANEL: Space & Ocean Animations + Welcome Teaser Card */}
+      {/* RIGHT PANEL: Rich Space & Ocean Animations + Welcome Teaser Card */}
       <div
         style={{
           flex: 1,
@@ -407,6 +407,22 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           overflow: "hidden",
         }}
       >
+        {/* 🌈 Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
+        <motion.div
+          animate={{
+            opacity: [0.35, 0.65, 0.35],
+            scale: [1, 1.08, 1],
+          }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(circle at 18% 20%, rgba(139, 92, 246, 0.38) 0%, transparent 45%), radial-gradient(circle at 82% 32%, rgba(56, 189, 248, 0.32) 0%, transparent 48%), radial-gradient(circle at 50% 92%, rgba(20, 184, 166, 0.45) 0%, transparent 55%)",
+            pointerEvents: "none",
+          }}
+        />
+
         {/* 🌟 Twinkling Stars */}
         {stars.map((star) => (
           <motion.span
@@ -432,11 +448,11 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           <motion.div
             key={`comet-${comet.id}`}
             initial={{ x: -60, y: -60, opacity: 0 }}
-            animate={{ x: 300, y: 300, opacity: [0, 1, 1, 0] }}
+            animate={{ x: 320, y: 320, opacity: [0, 1, 1, 0] }}
             transition={{
               duration: comet.duration,
               repeat: Infinity,
-              repeatDelay: 5,
+              repeatDelay: 4,
               delay: comet.delay,
               ease: "easeOut",
             }}
@@ -444,30 +460,16 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               position: "absolute",
               top: comet.top,
               left: comet.left,
-              width: 90,
-              height: 2.5,
+              width: 110,
+              height: 3,
               background: "linear-gradient(90deg, #ffffff, #63e1e8, transparent)",
               borderRadius: 999,
               transform: `rotate(${comet.angle}deg)`,
-              boxShadow: "0 0 12px #63e1e8",
+              boxShadow: "0 0 14px #63e1e8",
               pointerEvents: "none",
-              display: "flex",
-              alignItems: "center",
               zIndex: 1,
             }}
-          >
-            <span
-              style={{
-                position: "absolute",
-                left: -4,
-                top: -6,
-                fontSize: 12,
-                filter: "drop-shadow(0 0 6px #fff)",
-              }}
-            >
-              🌠
-            </span>
-          </motion.div>
+          />
         ))}
 
         {/* 🐠 Swimming Bioluminescent Ocean Creatures */}
