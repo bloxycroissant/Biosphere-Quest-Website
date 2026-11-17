@@ -380,7 +380,7 @@ export default function Login({ onNavigate, onLoginSuccess }) {
         </div>
 
         <div style={{ textAlign: "center", fontSize: 11, color: "#94a3b8", fontWeight: 700 }}>
-          Biosphere Quest © 2026 • Group 8
+          Biosphere Quest © 2026 • All Rights Reserved
         </div>
       </motion.div>
 
