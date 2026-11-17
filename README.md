@@ -27,7 +27,7 @@
 * **Project Type:** Personal Solo Passion Project — End-to-End Design, UI/UX & Full-Stack Web Development
 * **Application Genre:** Educational Web Platform — Interactive Quiz & Mini-Game Suite
 * **Target Audience:** Parents/Guardians & Educators (for study tracking) and Primary (Grades 1–3) & Intermediate (Grades 4–6) elementary students
-* **Created By:** **BloxyCroissant (Denise)** — Sole Creator, UI/UX Designer, Game Designer & Full-Stack Developer
+* **Created By:** **BloxyCroissant (Denise)** — Solo Creator,UI/UX Developer, UI/UX Designer,Game Engine & Interactive Systems Developer,Game Designer & Full-Stack Developer
 
 ## 📚 Educational Framework & Philosophy
 
@@ -137,7 +137,7 @@ biosphere-quest-website/
 
 If you wish to use **Biosphere Quest** as a reference or collaborate, feel free to reach out:
 
-* **BloxyCroissant (Denise)** — Project Owner, Solo Creator, UI/UX Developer, UI/UX Designer, Game Developer, Game Designer & Full-Stack Developer
+* **BloxyCroissant (Denise)** — Project Owner, Solo Creator, UI/UX Developer, UI/UX Designer,Game Engine & Interactive Systems Developer, Game Designer & Full-Stack Developer
 
 ---
 
