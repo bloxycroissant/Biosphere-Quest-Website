@@ -166,8 +166,8 @@ export default function Login({ onNavigate, onLoginSuccess }) {
           zIndex: 10,
         }}
       >
-        {/* Top Header Row with Back Button and Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Top Header Row with Back Button */}
+        <div style={{ display: "flex", alignItems: "center" }}>
           <motion.button
             whileHover={{ x: -3 }}
             onClick={() => onNavigate("splash")}
@@ -189,19 +189,18 @@ export default function Login({ onNavigate, onLoginSuccess }) {
           >
             ←
           </motion.button>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <img
-              src={logoImg}
-              alt="Logo"
-              style={{ width: 30, height: 30, objectFit: "contain", filter: "drop-shadow(0 0 10px rgba(99,225,232,0.8))" }}
-            />
-            <span style={{ fontWeight: 900, fontSize: 15, color: "#63e1e8" }}>Biosphere Quest</span>
-          </div>
         </div>
 
-        {/* Middle Centered Form Container */}
+        {/* Middle Centered Form Container with Larger Logo */}
         <div style={{ margin: "auto 0", width: "100%", padding: "10px 0" }}>
           <div style={{ textAlign: "center", marginBottom: 18 }}>
+            <motion.img
+              animate={{ y: [-4, 4, -4], rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+              src={logoImg}
+              alt="Logo"
+              style={{ width: 62, height: 62, objectFit: "contain", margin: "0 auto 10px", filter: "drop-shadow(0 0 16px rgba(99,225,232,0.85))" }}
+            />
             <h1
               style={{
                 fontSize: 28,
