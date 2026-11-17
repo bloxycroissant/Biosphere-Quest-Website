@@ -152,7 +152,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         ))}
       </AnimatePresence>
 
-      {/* LEFT PANEL: Glassmorphism Sign Up Form Sidebar */}
+      {/* LEFT PANEL: Glassmorphism Sign Up Form Sidebar (Centered Content) */}
       <motion.div
         initial={{ x: -50, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
@@ -172,41 +172,41 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           zIndex: 10,
         }}
       >
-        <div>
-          {/* Header Row with Back Button and Logo/Title cleanly arranged */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
-            <motion.button
-              whileHover={{ x: -3 }}
-              onClick={() => onNavigate("splash")}
-              style={{
-                background: "rgba(30, 41, 59, 0.7)",
-                border: "1px solid rgba(99, 225, 232, 0.3)",
-                borderRadius: 10,
-                width: 34,
-                height: 34,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 16,
-                cursor: "pointer",
-                fontWeight: 900,
-                color: "#63e1e8",
-                flexShrink: 0,
-              }}
-            >
-              ←
-            </motion.button>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <img
-                src={logoImg}
-                alt="Logo"
-                style={{ width: 30, height: 30, objectFit: "contain", filter: "drop-shadow(0 0 10px rgba(99,225,232,0.8))" }}
-              />
-              <span style={{ fontWeight: 900, fontSize: 15, color: "#63e1e8" }}>Biosphere Quest</span>
-            </div>
-          </div>
+        {/* Top Header Row with Back Button */}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <motion.button
+            whileHover={{ x: -3 }}
+            onClick={() => onNavigate("splash")}
+            style={{
+              background: "rgba(30, 41, 59, 0.7)",
+              border: "1px solid rgba(99, 225, 232, 0.3)",
+              borderRadius: 10,
+              width: 34,
+              height: 34,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 16,
+              cursor: "pointer",
+              fontWeight: 900,
+              color: "#63e1e8",
+              flexShrink: 0,
+            }}
+          >
+            ←
+          </motion.button>
+        </div>
 
-          <div style={{ textAlign: "center", marginBottom: 18 }}>
+        {/* Middle Centered Form Container with Larger Logo */}
+        <div style={{ margin: "auto 0", width: "100%", padding: "10px 0" }}>
+          <div style={{ textAlign: "center", marginBottom: 16 }}>
+            <motion.img
+              animate={{ y: [-4, 4, -4], rotate: [0, 5, -5, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }}
+              src={logoImg}
+              alt="Logo"
+              style={{ width: 62, height: 62, objectFit: "contain", margin: "0 auto 10px", filter: "drop-shadow(0 0 16px rgba(99,225,232,0.85))" }}
+            />
             <h1
               style={{
                 fontSize: 26,
@@ -242,49 +242,9 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
             </div>
           )}
 
-          {/* Google Sign In Button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            type="button"
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "10px 14px",
-              borderRadius: 14,
-              border: "1.5px solid rgba(99, 225, 232, 0.4)",
-              background: "rgba(30, 41, 59, 0.8)",
-              color: "#ffffff",
-              fontWeight: 800,
-              fontSize: 13,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
-              marginBottom: 14,
-              boxShadow: "0 0 15px rgba(34, 211, 238, 0.15)",
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
-              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.15C3.15 21.32 7.23 24 12 24z"/>
-              <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.18C.43 8.13 0 9.87 0 12s.43 3.87 1.18 5.4l4.09-3.16z"/>
-              <path fill="#EA4335" d="M12 4.75c1.76 0 3.34.61 4.58 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.15 2.68 1.18 6.6l4.09 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
-            </svg>
-            Continue with Google
-          </motion.button>
-
-          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "10px 0", color: "#64748b", fontSize: 11, fontWeight: 700 }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(100, 116, 139, 0.3)" }}></div>
-            OR WITH EMAIL
-            <div style={{ flex: 1, height: 1, background: "rgba(100, 116, 139, 0.3)" }}></div>
-          </div>
-
-          <form onSubmit={handleSignUp} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <form onSubmit={handleSignUp} style={{ display: "flex", flexDirection: "column", gap: 11 }}>
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 4 }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 3 }}>
                 Full Name
               </label>
               <input
@@ -308,7 +268,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 4 }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 3 }}>
                 Email address
               </label>
               <input
@@ -332,7 +292,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
             </div>
 
             <div>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 4 }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 3 }}>
                 Password
               </label>
               <input
@@ -355,6 +315,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               />
             </div>
 
+            {/* Main Sign Up Button */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
@@ -377,6 +338,46 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               {loading ? "Creating Account..." : "Sign Up"}
             </motion.button>
           </form>
+
+          {/* OR Divider */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "12px 0", color: "#64748b", fontSize: 11, fontWeight: 700 }}>
+            <div style={{ flex: 1, height: 1, background: "rgba(100, 116, 139, 0.3)" }}></div>
+            OR CONTINUE WITH
+            <div style={{ flex: 1, height: 1, background: "rgba(100, 116, 139, 0.3)" }}></div>
+          </div>
+
+          {/* Google Sign In Button Positioned Below Sign Up Button */}
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            type="button"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "10px 14px",
+              borderRadius: 14,
+              border: "1.5px solid rgba(99, 225, 232, 0.4)",
+              background: "rgba(30, 41, 59, 0.8)",
+              color: "#ffffff",
+              fontWeight: 800,
+              fontSize: 13,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              boxShadow: "0 0 15px rgba(34, 211, 238, 0.15)",
+            }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.18v3.15C3.15 21.32 7.23 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.49-.38-2.24s.13-1.52.38-2.24V6.6H1.18C.43 8.13 0 9.87 0 12s.43 3.87 1.18 5.4l4.09-3.16z"/>
+              <path fill="#EA4335" d="M12 4.75c1.76 0 3.34.61 4.58 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.15 2.68 1.18 6.6l4.09 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+            </svg>
+            Continue with Google
+          </motion.button>
 
           <motion.button
             whileHover={{ scale: 1.02 }}
@@ -405,7 +406,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         </div>
       </motion.div>
 
-      {/* RIGHT PANEL: Space & Ocean Animations + Welcome Teaser Card */}
+      {/* RIGHT PANEL: Rich Space & Ocean Animations + Welcome Teaser Card */}
       <div
         style={{
           flex: 1,
