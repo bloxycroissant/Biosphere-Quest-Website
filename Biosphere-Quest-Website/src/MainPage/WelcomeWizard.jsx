@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Official Biosphere Quest Assets
@@ -13,6 +13,9 @@ import mathIcon from "../assets/BiosphereQuestAssets/Math Icon.png";
 import badgeIcon from "../assets/BiosphereQuestAssets/Badge Icon.png";
 import gradCapIcon from "../assets/BiosphereQuestAssets/Graduation cap.png";
 import schoolIcon from "../assets/BiosphereQuestAssets/School icon.png";
+
+// Official Welcome Sound Track (fallback if musicController isn't passed)
+import welcomeMusic from "../assets/BiosphereQuestSoundEffectsandMusic/Welcome Screen (Official).mp3";
 
 const QUICK_HIGHLIGHTS = [
   { title: "Math & Logic Quests", sub: "Interactive puzzles", img: mathIcon },
@@ -98,10 +101,65 @@ const SWIMMING_CREATURES = [
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }) {
+export default function WelcomeWizard({
+  onComplete,
+  onBackToSplash,
+  onNavigate,
+  musicController,
+}) {
   const [clickBursts, setClickBursts] = useState([]);
   const [activeNavTarget, setActiveNavTarget] = useState("");
   const [navFlash, setNavFlash] = useState(null);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(
+    musicController ? musicController.isPlaying : false
+  );
+
+  const audioRef = useRef(null);
+
+  // Keep background music playing across Splash -> WelcomeWizard -> Splash
+  useEffect(() => {
+    if (musicController) {
+      setIsPlayingMusic(musicController.isPlaying);
+      if (musicController.isPlaying) {
+        musicController.play?.();
+      }
+      const unsubscribe = musicController.subscribe?.((playing) => {
+        setIsPlayingMusic(playing);
+      });
+      return () => unsubscribe?.();
+    }
+
+    audioRef.current = new Audio(welcomeMusic);
+    audioRef.current.loop = true;
+    audioRef.current.volume = 0.4;
+    audioRef.current
+      .play()
+      .then(() => setIsPlayingMusic(true))
+      .catch(() => {});
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [musicController]);
+
+  const toggleMusic = () => {
+    if (musicController) {
+      musicController.toggle();
+      return;
+    }
+
+    if (!audioRef.current) return;
+    if (isPlayingMusic) {
+      audioRef.current.pause();
+      setIsPlayingMusic(false);
+    } else {
+      audioRef.current.play().catch(() => {});
+      setIsPlayingMusic(true);
+    }
+  };
 
   // 55 Twinkling Stars (Matching SplashScreen)
   const stars = useMemo(
@@ -370,7 +428,34 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
           </motion.a>
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <motion.button
+            whileHover={{ scale: 1.06 }}
+            whileTap={{ scale: 0.92 }}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleMusic();
+            }}
+            style={{
+              background: isPlayingMusic
+                ? "linear-gradient(135deg, #22d3ee, #7c3aed)"
+                : "rgba(15, 23, 42, 0.85)",
+              border: "1.5px solid #63e1e8",
+              color: "#ffffff",
+              padding: "7px 14px",
+              borderRadius: 999,
+              fontSize: 12,
+              fontWeight: 900,
+              cursor: "pointer",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <span>{isPlayingMusic ? "🎶" : "🔇"}</span>
+            <span>{isPlayingMusic ? "Music: ON" : "Music: OFF"}</span>
+          </motion.button>
+
           {onNavigate && (
             <>
               <motion.button

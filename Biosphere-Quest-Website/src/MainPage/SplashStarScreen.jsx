@@ -90,18 +90,33 @@ const SWIMMING_CREATURES = [
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate }) {
+export default function SplashStarScreen({
+  onEnterApp,
+  onStartWizard,
+  onNavigate,
+  musicController,
+}) {
   const [activeRole, setActiveRole] = useState("kids");
   const [activeWorld, setActiveWorld] = useState(0);
   const [email, setEmail] = useState("");
   const [joined, setJoined] = useState(false);
   const [clickBursts, setClickBursts] = useState([]);
-  const [isPlayingMusic, setIsPlayingMusic] = useState(false);
+  const [isPlayingMusic, setIsPlayingMusic] = useState(
+    musicController ? musicController.isPlaying : false
+  );
 
   const audioRef = useRef(null);
 
-  // Initialize Audio Ref
+  // Sync with shared musicController if provided; otherwise fallback to local audio
   useEffect(() => {
+    if (musicController) {
+      setIsPlayingMusic(musicController.isPlaying);
+      const unsubscribe = musicController.subscribe?.((playing) => {
+        setIsPlayingMusic(playing);
+      });
+      return () => unsubscribe?.();
+    }
+
     audioRef.current = new Audio(welcomeMusic);
     audioRef.current.loop = true;
     audioRef.current.volume = 0.4;
@@ -112,9 +127,14 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
         audioRef.current = null;
       }
     };
-  }, []);
+  }, [musicController]);
 
   const toggleMusic = () => {
+    if (musicController) {
+      musicController.toggle();
+      return;
+    }
+
     if (!audioRef.current) return;
     if (isPlayingMusic) {
       audioRef.current.pause();
@@ -193,8 +213,10 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
     setEmail("");
   };
 
-  const handleStartWizardWithMusicStop = () => {
-    if (audioRef.current) audioRef.current.pause();
+  const handleStartWizardKeepMusic = () => {
+    if (!musicController && audioRef.current) {
+      audioRef.current.pause();
+    }
     onStartWizard?.();
   };
 
@@ -927,7 +949,7 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.94 }}
-              onClick={handleStartWizardWithMusicStop}
+              onClick={handleStartWizardKeepMusic}
               style={{
                 background: "linear-gradient(90deg, #22d3ee, #818cf8)",
                 border: "none",
