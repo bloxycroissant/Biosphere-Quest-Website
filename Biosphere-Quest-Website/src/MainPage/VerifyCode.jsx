@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import logoImg from "../assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
@@ -15,9 +15,24 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [otpSentMsg, setOtpSentMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
+
+  useEffect(() => {
+    if (email) {
+      setTargetEmail(email);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const stars = useMemo(
     () =>
@@ -83,6 +98,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
       setErrorMsg("Please enter your registered email address first.");
       return;
     }
+    if (cooldown > 0 || sendingOtp) return;
 
     setSendingOtp(true);
     setErrorMsg("");
@@ -100,6 +116,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
       setErrorMsg(error.message);
     } else {
       setOtpSentMsg(`Numeric OTP sent to ${trimmedEmail}! Check your inbox.`);
+      setCooldown(30);
     }
   };
 
@@ -123,21 +140,39 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
       const resolvedName =
         data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "Explorer";
 
-      const { data: upserted } = await supabase
+      const { data: existingProfile } = await supabase
         .from("profiles")
-        .upsert(
-          {
-            id: data.user.id,
-            full_name: resolvedName,
+        .select("*")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (existingProfile) {
+        const { data: updatedProfile } = await supabase
+          .from("profiles")
+          .update({
             email: data.user.email,
             updated_at: new Date().toISOString(),
-          },
-          { onConflict: "id" }
-        )
-        .select()
-        .single();
-
-      profile = upserted || null;
+          })
+          .eq("id", data.user.id)
+          .select()
+          .single();
+        profile = updatedProfile || existingProfile;
+      } else {
+        const { data: upserted } = await supabase
+          .from("profiles")
+          .upsert(
+            {
+              id: data.user.id,
+              full_name: resolvedName,
+              email: data.user.email,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" }
+          )
+          .select()
+          .single();
+        profile = upserted || null;
+      }
     }
 
     setLoading(false);
@@ -358,7 +393,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
           transition={{
             y: { duration: b.duration, repeat: Infinity, delay: b.delay, ease: "linear" },
             x: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-            opacity: { duration: b.duration, repeat: Infinity, delay: b.delay },
+            opacity: { duration: 3, repeat: Infinity, delay: b.delay },
           }}
           style={{
             position: "absolute",
@@ -427,7 +462,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
             type="button"
-            disabled={sendingOtp}
+            disabled={sendingOtp || cooldown > 0}
             onClick={handleSendOtp}
             style={{
               background: "rgba(30, 41, 59, 0.8)",
@@ -436,11 +471,16 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
               fontWeight: 800,
               padding: "10px 14px",
               borderRadius: 12,
-              cursor: "pointer",
+              cursor: sendingOtp || cooldown > 0 ? "not-allowed" : "pointer",
+              opacity: sendingOtp || cooldown > 0 ? 0.65 : 1,
               fontSize: 12.5,
             }}
           >
-            {sendingOtp ? "Sending OTP..." : "Send Number OTP to Email 🔢"}
+            {sendingOtp
+              ? "Sending OTP..."
+              : cooldown > 0
+                ? `Resend OTP in ${cooldown}s ⏳`
+                : "Send Number OTP to Email 🔢"}
           </motion.button>
           <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="primary-btn">
             {loading ? "Verifying..." : "Verify Code ✨"}
