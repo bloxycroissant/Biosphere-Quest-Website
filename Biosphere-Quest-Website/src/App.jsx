@@ -41,6 +41,7 @@ export default function App() {
   const [explorer, setExplorer] = useState(DEFAULT_EXPLORER);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [xpToast, setXpToast] = useState(null);
+  const [authNotice, setAuthNotice] = useState("");
 
   // Lightweight Web Audio synth for UI & Mini-Game Sound Effects
   const playSfx = useCallback(
@@ -121,8 +122,29 @@ export default function App() {
     }
   }, []);
 
-  // Listen to Supabase Auth Session & Password Recovery events
+  // Listen to Supabase Auth Session, Hash Errors & Password Recovery events
   useEffect(() => {
+    const hash = window.location.hash;
+    let hadExpiredLinkError = false;
+
+    if (hash && hash.includes("error=")) {
+      const params = new URLSearchParams(hash.replace(/^#/, ""));
+      const rawDescription =
+        params.get("error_description") ||
+        params.get("error") ||
+        "Verification link is invalid or has expired.";
+      const message = decodeURIComponent(rawDescription.replace(/\+/g, " "));
+
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname + window.location.search
+      );
+      setAuthNotice(message);
+      setScreen("forgot");
+      hadExpiredLinkError = true;
+    }
+
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
       setSession(currentSession);
       if (currentSession?.user) {
@@ -135,14 +157,18 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession);
       if (event === "PASSWORD_RECOVERY") {
+        setAuthNotice("");
         setScreen("newpassword");
       } else if (event === "SIGNED_IN" && newSession?.user) {
+        setAuthNotice("");
         fetchOrCreateProfile(newSession.user);
         // Do not force home if user is in the wizard onboarding flow
         setScreen((prev) => (prev === "wizard" ? "wizard" : "home"));
       } else if (event === "SIGNED_OUT") {
         setExplorer(DEFAULT_EXPLORER);
-        setScreen("splash");
+        if (!hadExpiredLinkError) {
+          setScreen("splash");
+        }
       }
     });
 
@@ -203,58 +229,122 @@ export default function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setAuthNotice("");
     setScreen("splash");
   };
+
+  const renderAuthNotice = () =>
+    authNotice ? (
+      <div
+        style={{
+          position: "fixed",
+          top: 16,
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 120,
+          maxWidth: 460,
+          width: "calc(100% - 32px)",
+          background: "rgba(15, 23, 42, 0.94)",
+          border: "1.5px solid #f87171",
+          color: "#fca5a5",
+          borderRadius: 16,
+          padding: "12px 16px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          fontSize: 12.5,
+          fontWeight: 800,
+          boxShadow: "0 12px 30px rgba(0, 0, 0, 0.55)",
+        }}
+      >
+        <span>⚠️ {authNotice}</span>
+        <button
+          type="button"
+          onClick={() => setAuthNotice("")}
+          style={{
+            background: "none",
+            border: "none",
+            color: "#fff",
+            fontWeight: 900,
+            cursor: "pointer",
+            fontSize: 14,
+          }}
+        >
+          ✕
+        </button>
+      </div>
+    ) : null;
 
   // Full-screen screens (no top navigation bar)
   if (screen === "splash") {
     return (
-      <SplashStarScreen
-        onEnterApp={() => setScreen("wizard")}
-        onStartWizard={() => setScreen("wizard")}
-        onNavigate={setScreen}
-      />
+      <>
+        {renderAuthNotice()}
+        <SplashStarScreen
+          onEnterApp={() => setScreen("wizard")}
+          onStartWizard={() => setScreen("wizard")}
+          onNavigate={setScreen}
+        />
+      </>
     );
   }
 
   if (screen === "wizard") {
     return (
-      <WelcomeWizard
-        onBackToSplash={() => setScreen("splash")}
-        onComplete={handleWizardComplete}
-        onNavigate={setScreen}
-      />
+      <>
+        {renderAuthNotice()}
+        <WelcomeWizard
+          onBackToSplash={() => setScreen("splash")}
+          onComplete={handleWizardComplete}
+          onNavigate={setScreen}
+        />
+      </>
     );
   }
 
   if (screen === "login") {
     return (
-      <Login
-        onNavigate={setScreen}
-        onLoginSuccess={() => setScreen("home")}
-      />
+      <>
+        {renderAuthNotice()}
+        <Login
+          onNavigate={setScreen}
+          onLoginSuccess={() => setScreen("home")}
+        />
+      </>
     );
   }
 
   if (screen === "signup") {
     return (
-      <SignUp
-        onNavigate={setScreen}
-        onSignUpSuccess={() => setScreen("wizard")}
-      />
+      <>
+        {renderAuthNotice()}
+        <SignUp
+          onNavigate={setScreen}
+          onSignUpSuccess={() => setScreen("wizard")}
+        />
+      </>
     );
   }
 
   if (screen === "forgot") {
-    return <ForgotPassword onNavigate={setScreen} />;
+    return (
+      <>
+        {renderAuthNotice()}
+        <ForgotPassword onNavigate={setScreen} />
+      </>
+    );
   }
 
   if (screen === "newpassword") {
     return (
-      <NewPassword
-        onNavigate={setScreen}
-        onPasswordUpdated={() => setScreen("home")}
-      />
+      <>
+        {renderAuthNotice()}
+        <NewPassword
+          onNavigate={setScreen}
+          onPasswordUpdated={() => setScreen("home")}
+        />
+      </>
     );
   }
 
@@ -269,6 +359,8 @@ export default function App() {
         fontFamily: "'Nunito', 'Segoe UI', system-ui, sans-serif",
       }}
     >
+      {renderAuthNotice()}
+
       {/* Floating XP Gain Toast */}
       <AnimatePresence>
         {xpToast && (
