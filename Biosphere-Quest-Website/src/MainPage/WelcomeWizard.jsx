@@ -100,6 +100,8 @@ const SWIMMING_CREATURES = [
 
 export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }) {
   const [clickBursts, setClickBursts] = useState([]);
+  const [activeNavTarget, setActiveNavTarget] = useState("");
+  const [navFlash, setNavFlash] = useState(null);
 
   // 55 Twinkling Stars (Matching SplashScreen)
   const stars = useMemo(
@@ -140,13 +142,12 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
     []
   );
 
-  const handleScreenClick = (e) => {
+  const spawnBurstAt = (x, y, icons = ["✨", "🫧", "⭐", "💫", "🐚"]) => {
     const id = Date.now() + Math.random();
-    const icons = ["✨", "🫧", "⭐", "💫", "🐚"];
     const burst = {
       id,
-      x: e.clientX,
-      y: e.clientY,
+      x,
+      y,
       particles: Array.from({ length: 6 }, (_, idx) => ({
         icon: icons[(idx + Math.floor(Math.random() * 5)) % icons.length],
         angle: idx * 60 * (Math.PI / 180),
@@ -159,12 +160,50 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
     }, 900);
   };
 
-  const handleGetStarted = () => {
-    if (onNavigate) {
-      onNavigate("signup");
-    } else {
-      onComplete?.({ starterXp: 100 });
+  const handleScreenClick = (e) => {
+    spawnBurstAt(e.clientX, e.clientY);
+  };
+
+  const handleAnimatedSectionJump = (e, sectionId, label) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    spawnBurstAt(rect.left + rect.width / 2, rect.top + rect.height / 2, ["🚀", "✨", "🌊", "⭐"]);
+    setActiveNavTarget(sectionId);
+    setNavFlash({ id: sectionId, label });
+
+    const targetEl = document.getElementById(sectionId);
+    if (targetEl) {
+      targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
     }
+
+    setTimeout(() => {
+      setNavFlash(null);
+    }, 1100);
+  };
+
+  const handleAnimatedRouteNav = (e, routeName) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    spawnBurstAt(rect.left + rect.width / 2, rect.top + rect.height / 2, ["🚀", "✨", "💫", "🌟"]);
+    setTimeout(() => {
+      onNavigate?.(routeName);
+    }, 240);
+  };
+
+  const handleGetStarted = (e) => {
+    e?.stopPropagation?.();
+    if (e?.currentTarget) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      spawnBurstAt(rect.left + rect.width / 2, rect.top + rect.height / 2, ["🚀", "✨", "⭐", "🌊"]);
+    }
+    setTimeout(() => {
+      if (onNavigate) {
+        onNavigate("signup");
+      } else {
+        onComplete?.({ starterXp: 100 });
+      }
+    }, 240);
   };
 
   return (
@@ -218,8 +257,15 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
           boxSizing: "border-box",
         }}
       >
-        <div
-          onClick={onBackToSplash}
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.96 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            const rect = e.currentTarget.getBoundingClientRect();
+            spawnBurstAt(rect.left + rect.width / 2, rect.top + rect.height / 2, ["✨", "🌊", "🚀"]);
+            onBackToSplash?.();
+          }}
           style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}
         >
           <motion.img
@@ -240,27 +286,97 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
           >
             Biosphere Quest
           </span>
-        </div>
+        </motion.div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 20, fontSize: 13, fontWeight: 800 }}>
-          <a href="#modules" style={{ color: "#cbd5e1", textDecoration: "none" }}>
-            Modules
-          </a>
-          <a href="#how-it-works" style={{ color: "#cbd5e1", textDecoration: "none" }}>
-            How It Works
-          </a>
-          <a href="#start-today" style={{ color: "#63e1e8", textDecoration: "none" }}>
-            Get Started
-          </a>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 13, fontWeight: 800 }}>
+          <motion.a
+            href="#modules"
+            onClick={(e) => handleAnimatedSectionJump(e, "modules", "🛸 Warping to Core Modules...")}
+            whileHover={{ y: -2, scale: 1.06, color: "#ffffff" }}
+            whileTap={{ scale: 0.9, rotate: -2 }}
+            style={{
+              color: activeNavTarget === "modules" ? "#63e1e8" : "#cbd5e1",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 10px",
+              borderRadius: 10,
+              background: activeNavTarget === "modules" ? "rgba(99, 225, 232, 0.14)" : "transparent",
+              position: "relative",
+            }}
+          >
+            <motion.img
+              src={mathIcon}
+              alt=""
+              animate={activeNavTarget === "modules" ? { rotate: [0, 360] } : { rotate: [-4, 4, -4] }}
+              transition={{ duration: activeNavTarget === "modules" ? 0.6 : 3, repeat: activeNavTarget === "modules" ? 0 : Infinity }}
+              style={{ width: 16, height: 16, objectFit: "contain" }}
+            />
+            <span>Modules</span>
+          </motion.a>
+
+          <motion.a
+            href="#how-it-works"
+            onClick={(e) => handleAnimatedSectionJump(e, "how-it-works", "🧭 Charting 4-Step Mission Path...")}
+            whileHover={{ y: -2, scale: 1.06, color: "#ffffff" }}
+            whileTap={{ scale: 0.9, rotate: 2 }}
+            style={{
+              color: activeNavTarget === "how-it-works" ? "#63e1e8" : "#cbd5e1",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 10px",
+              borderRadius: 10,
+              background: activeNavTarget === "how-it-works" ? "rgba(99, 225, 232, 0.14)" : "transparent",
+            }}
+          >
+            <motion.img
+              src={scienceGif}
+              alt=""
+              animate={activeNavTarget === "how-it-works" ? { scale: [1, 1.35, 1] } : { y: [-1.5, 1.5, -1.5] }}
+              transition={{ duration: activeNavTarget === "how-it-works" ? 0.5 : 2.6, repeat: activeNavTarget === "how-it-works" ? 0 : Infinity }}
+              style={{ width: 16, height: 16, objectFit: "contain" }}
+            />
+            <span>How It Works</span>
+          </motion.a>
+
+          <motion.a
+            href="#start-today"
+            onClick={(e) => handleAnimatedSectionJump(e, "start-today", "🚀 Launching to Start Today...")}
+            whileHover={{ y: -2, scale: 1.08, textShadow: "0 0 12px rgba(99, 225, 232, 0.8)" }}
+            whileTap={{ scale: 0.88 }}
+            style={{
+              color: "#63e1e8",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "6px 12px",
+              borderRadius: 10,
+              background: activeNavTarget === "start-today" ? "rgba(99, 225, 232, 0.2)" : "rgba(99, 225, 232, 0.08)",
+              border: "1px solid rgba(99, 225, 232, 0.25)",
+            }}
+          >
+            <motion.img
+              src={rocketGif}
+              alt=""
+              animate={{ x: [-1, 2, -1], rotate: [10, 22, 10] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+              style={{ width: 17, height: 17, objectFit: "contain" }}
+            />
+            <span>Get Started</span>
+          </motion.a>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {onNavigate && (
             <>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate("signup")}
+                whileHover={{ scale: 1.07, y: -2, boxShadow: "0 0 18px rgba(99, 225, 232, 0.35)" }}
+                whileTap={{ scale: 0.9, rotate: -2 }}
+                onClick={(e) => handleAnimatedRouteNav(e, "signup")}
                 style={{
                   background: "rgba(15, 23, 42, 0.75)",
                   border: "1px solid rgba(99, 225, 232, 0.35)",
@@ -270,14 +386,24 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
                   fontSize: 13,
                   fontWeight: 800,
                   cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                Sign Up
+                <motion.img
+                  src={badgeIcon}
+                  alt=""
+                  animate={{ rotate: [-6, 6, -6] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                  style={{ width: 15, height: 15, objectFit: "contain" }}
+                />
+                <span>Sign Up</span>
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => onNavigate("login")}
+                whileHover={{ scale: 1.07, y: -2, boxShadow: "0 0 24px rgba(34, 211, 238, 0.65)" }}
+                whileTap={{ scale: 0.88, rotate: 2 }}
+                onClick={(e) => handleAnimatedRouteNav(e, "login")}
                 style={{
                   background: "linear-gradient(90deg, #22d3ee, #818cf8)",
                   border: "none",
@@ -288,13 +414,55 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
                   fontWeight: 900,
                   cursor: "pointer",
                   boxShadow: "0 0 16px rgba(34, 211, 238, 0.4)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
                 }}
               >
-                Log In
+                <motion.img
+                  src={rocketGif}
+                  alt=""
+                  animate={{ scale: [1, 1.18, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity }}
+                  style={{ width: 16, height: 16, objectFit: "contain" }}
+                />
+                <span>Log In</span>
               </motion.button>
             </>
           )}
         </div>
+
+        {/* Animated Warp Toast when jumping to a section */}
+        <AnimatePresence>
+          {navFlash && (
+            <motion.div
+              key={navFlash.id}
+              initial={{ opacity: 0, y: -12, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.92 }}
+              transition={{ duration: 0.25 }}
+              style={{
+                position: "absolute",
+                top: "100%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                marginTop: 10,
+                background: "rgba(15, 23, 42, 0.92)",
+                border: "1px solid #63e1e8",
+                color: "#63e1e8",
+                padding: "6px 16px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 900,
+                boxShadow: "0 0 20px rgba(99, 225, 232, 0.4)",
+                pointerEvents: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {navFlash.label}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* ✨ Interactive Click Stardust & Bubble Bursts */}
@@ -828,7 +996,17 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
         </div>
 
         {/* 3. CORE MODULES SECTION (Reference 3x2 Grid + Animated Cards) */}
-        <div id="modules" style={{ marginBottom: 56 }}>
+        <div
+          id="modules"
+          style={{
+            marginBottom: 56,
+            scrollMarginTop: 84,
+            borderRadius: 24,
+            padding: activeNavTarget === "modules" ? 12 : 0,
+            boxShadow: activeNavTarget === "modules" ? "0 0 28px rgba(99, 225, 232, 0.22)" : "none",
+            transition: "box-shadow 0.35s ease, padding 0.35s ease",
+          }}
+        >
           <div style={{ fontSize: 11, fontWeight: 900, color: "#63e1e8", letterSpacing: 1.2 }}>
             CORE MODULES
           </div>
@@ -890,7 +1068,17 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
         </div>
 
         {/* 4. HOW IT WORKS SECTION (Reference 4-Step Cards + Animated Entrance) */}
-        <div id="how-it-works" style={{ marginBottom: 56 }}>
+        <div
+          id="how-it-works"
+          style={{
+            marginBottom: 56,
+            scrollMarginTop: 84,
+            borderRadius: 24,
+            padding: activeNavTarget === "how-it-works" ? 12 : 0,
+            boxShadow: activeNavTarget === "how-it-works" ? "0 0 28px rgba(99, 225, 232, 0.22)" : "none",
+            transition: "box-shadow 0.35s ease, padding 0.35s ease",
+          }}
+        >
           <div style={{ fontSize: 11, fontWeight: 900, color: "#63e1e8", letterSpacing: 1.2 }}>
             HOW IT WORKS
           </div>
@@ -952,13 +1140,15 @@ export default function WelcomeWizard({ onComplete, onBackToSplash, onNavigate }
           style={{
             background: "linear-gradient(90deg, rgba(6, 182, 212, 0.35), rgba(124, 58, 237, 0.45))",
             backdropFilter: "blur(16px)",
-            border: "1.5px solid rgba(99, 225, 232, 0.4)",
+            border: activeNavTarget === "start-today" ? "1.5px solid #ffdf4e" : "1.5px solid rgba(99, 225, 232, 0.4)",
             borderRadius: 24,
             padding: "36px 24px",
             textAlign: "center",
             marginBottom: 28,
             position: "relative",
             overflow: "hidden",
+            scrollMarginTop: 84,
+            boxShadow: activeNavTarget === "start-today" ? "0 0 32px rgba(255, 223, 78, 0.35)" : "none",
           }}
         >
           <div style={{ fontSize: 11, fontWeight: 900, color: "#ffdf4e", letterSpacing: 1.2 }}>
