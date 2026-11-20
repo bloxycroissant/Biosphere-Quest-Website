@@ -116,9 +116,10 @@ export default function WelcomeWizard({
 
   const audioRef = useRef(null);
 
-  // Keep background music playing across Splash -> WelcomeWizard -> Splash
+  // Keep background music looping across Splash -> WelcomeWizard -> Splash
   useEffect(() => {
     if (musicController) {
+      musicController.setLoop?.(true);
       setIsPlayingMusic(musicController.isPlaying);
       if (musicController.isPlaying) {
         musicController.play?.();
@@ -129,29 +130,37 @@ export default function WelcomeWizard({
       return () => unsubscribe?.();
     }
 
-    audioRef.current = new Audio(welcomeMusic);
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.4;
-    audioRef.current
+    const audio = new Audio(welcomeMusic);
+    audio.loop = true;
+    audio.volume = 0.4;
+    const handleEnded = () => {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    };
+    audio.addEventListener("ended", handleEnded);
+    audioRef.current = audio;
+
+    audio
       .play()
       .then(() => setIsPlayingMusic(true))
       .catch(() => {});
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      audio.removeEventListener("ended", handleEnded);
+      audio.pause();
+      audioRef.current = null;
     };
   }, [musicController]);
 
   const toggleMusic = () => {
     if (musicController) {
+      musicController.setLoop?.(true);
       musicController.toggle();
       return;
     }
 
     if (!audioRef.current) return;
+    audioRef.current.loop = true;
     if (isPlayingMusic) {
       audioRef.current.pause();
       setIsPlayingMusic(false);
@@ -453,7 +462,7 @@ export default function WelcomeWizard({
             }}
           >
             <span>{isPlayingMusic ? "🎶" : "🔇"}</span>
-            <span>{isPlayingMusic ? "Music: ON" : "Music: OFF"}</span>
+            <span>{isPlayingMusic ? "Music: ON (Loop)" : "Music: OFF"}</span>
           </motion.button>
 
           {onNavigate && (
