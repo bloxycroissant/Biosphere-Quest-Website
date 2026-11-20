@@ -152,8 +152,8 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
       })),
     []
   );
-  
-// 50 Right-Diagonal Shooting Comets
+
+  // 50 Right-Diagonal Shooting Comets
   const shootingStars = useMemo(
     () =>
       Array.from({ length: 50 }, (_, i) => ({
@@ -166,47 +166,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
       })),
     []
   );
-
-      {shootingStars.map((comet) => (
-        <motion.div
-          key={`comet-${comet.id}`}
-          initial={{ x: -60, y: -60, opacity: 0 }}
-          animate={{ x: 350, y: 350, opacity: [0, 1, 1, 0] }}
-          transition={{
-            duration: comet.duration,
-            repeat: Infinity,
-            repeatDelay: 4,
-            delay: comet.delay,
-            ease: "easeOut",
-          }}
-          style={{
-            position: "absolute",
-            top: comet.top,
-            left: comet.left,
-            width: 110,
-            height: 3,
-            background: "linear-gradient(90deg, #ffffff, #63e1e8, transparent)",
-            borderRadius: 999,
-            transform: `rotate(${comet.angle}deg)`,
-            boxShadow: "0 0 14px #63e1e8",
-            pointerEvents: "none",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          <span
-            style={{
-              position: "absolute",
-              left: -4,
-              top: -6,
-              fontSize: 14,
-              filter: "drop-shadow(0 0 8px #fff)",
-            }}
-          >
-            🌠
-          </span>
-        </motion.div>
-      ))}
 
   const handleScreenClick = (e) => {
     const id = Date.now() + Math.random();
@@ -234,19 +193,9 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
     setEmail("");
   };
 
-  const handleEnterAppWithMusicStop = () => {
-    if (audioRef.current) audioRef.current.pause();
-    onEnterApp?.();
-  };
-
   const handleStartWizardWithMusicStop = () => {
     if (audioRef.current) audioRef.current.pause();
     onStartWizard?.();
-  };
-
-  const handleNavigateWithMusicStop = (dest) => {
-    if (audioRef.current) audioRef.current.pause();
-    onNavigate?.(dest);
   };
 
   return (
@@ -386,12 +335,12 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
       {shootingStars.map((comet) => (
         <motion.div
           key={`comet-${comet.id}`}
-          initial={{ x: -120, y: -60, opacity: 0 }}
-          animate={{ x: 480, y: 240, opacity: [0, 1, 1, 0] }}
+          initial={{ x: -60, y: -60, opacity: 0 }}
+          animate={{ x: 350, y: 350, opacity: [0, 1, 1, 0] }}
           transition={{
             duration: comet.duration,
             repeat: Infinity,
-            repeatDelay: 7,
+            repeatDelay: 4,
             delay: comet.delay,
             ease: "easeOut",
           }}
@@ -399,15 +348,29 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
             position: "absolute",
             top: comet.top,
             left: comet.left,
-            width: 90,
-            height: 2,
-            background: "linear-gradient(90deg, transparent, #63e1e8, #ffffff)",
+            width: 110,
+            height: 3,
+            background: "linear-gradient(90deg, #ffffff, #63e1e8, transparent)",
             borderRadius: 999,
-            transform: "rotate(26deg)",
-            boxShadow: "0 0 12px #63e1e8",
+            transform: `rotate(${comet.angle}deg)`,
+            boxShadow: "0 0 14px #63e1e8",
             pointerEvents: "none",
+            display: "flex",
+            alignItems: "center",
           }}
-        />
+        >
+          <span
+            style={{
+              position: "absolute",
+              left: -4,
+              top: -6,
+              fontSize: 14,
+              filter: "drop-shadow(0 0 8px #fff)",
+            }}
+          >
+            🌠
+          </span>
+        </motion.div>
       ))}
 
       {/* 🌌 Pulsing Nebula */}
@@ -959,9 +922,8 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
             </motion.p>
           )}
 
-          {/* Action Navigation Buttons: Welcome Wizard, Sign Up, Login, and Beta Preview */}
+          {/* Action Navigation Button: Welcome Wizard */}
           <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 20 }}>
-            {/* Direct Trigger to Welcome Wizard */}
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.94 }}
@@ -980,67 +942,6 @@ export default function SplashStarScreen({ onEnterApp, onStartWizard, onNavigate
             >
               🚀 Start Welcome Wizard →
             </motion.button>
-
-            {/* Sign Up Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => handleNavigateWithMusicStop("signup")}
-              style={{
-                background: "linear-gradient(90deg, #10b981, #3b82f6)",
-                border: "none",
-                color: "#ffffff",
-                padding: "12px 20px",
-                borderRadius: 14,
-                fontSize: 13.5,
-                fontWeight: 900,
-                cursor: "pointer",
-                boxShadow: "0 0 18px rgba(16, 185, 129, 0.45)",
-              }}
-            >
-              ✨ Sign Up →
-            </motion.button>
-
-            {/* Log In Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.94 }}
-              onClick={() => handleNavigateWithMusicStop("login")}
-              style={{
-                background: "linear-gradient(90deg, #8b5cf6, #ec4899)",
-                border: "none",
-                color: "#ffffff",
-                padding: "12px 20px",
-                borderRadius: 14,
-                fontSize: 13.5,
-                fontWeight: 900,
-                cursor: "pointer",
-                boxShadow: "0 0 18px rgba(139, 92, 246, 0.45)",
-              }}
-            >
-              🔑 Log In →
-            </motion.button>
-
-            {onEnterApp && (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.94 }}
-                onClick={handleEnterAppWithMusicStop}
-                style={{
-                  background: "linear-gradient(90deg, rgba(6, 182, 212, 0.18), rgba(139, 92, 246, 0.18))",
-                  border: "1.5px dashed rgba(99, 225, 232, 0.65)",
-                  color: "#63e1e8",
-                  padding: "12px 18px",
-                  borderRadius: 14,
-                  fontSize: 13,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                  boxShadow: "0 0 16px rgba(99, 225, 232, 0.35)",
-                }}
-              >
-                🔓 Beta Preview →
-              </motion.button>
-            )}
           </div>
         </motion.div>
       </div>
