@@ -10,9 +10,10 @@ const FORGOT_SWIMMING_CREATURES = [
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function ForgotPassword({ onNavigate }) {
+export default function ForgotPassword({ onNavigate, onSelectEmail }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
 
@@ -76,19 +77,36 @@ export default function ForgotPassword({ onNavigate }) {
 
   const handleReset = async (e) => {
     e.preventDefault();
+    setLoading(true);
     setErrorMsg("");
 
     const trimmedEmail = email.trim();
+    onSelectEmail?.(trimmedEmail);
 
     const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
       redirectTo: window.location.origin,
     });
 
+    setLoading(false);
     if (error) {
-      setErrorMsg(error.message);
+      if (error.message.toLowerCase().includes("recovery email")) {
+        setErrorMsg(
+          "Could not send recovery email. Check your Supabase Custom SMTP password/port, or sign in with Google if you registered with Google."
+        );
+      } else {
+        setErrorMsg(error.message);
+      }
     } else {
       setSent(true);
     }
+  };
+
+  const handleGoToVerifyCode = () => {
+    const trimmedEmail = email.trim();
+    if (trimmedEmail) {
+      onSelectEmail?.(trimmedEmail);
+    }
+    onNavigate?.("verify-code");
   };
 
   return (
@@ -343,7 +361,7 @@ export default function ForgotPassword({ onNavigate }) {
           </div>
         ) : (
           <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>}
+            {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700, lineHeight: 1.45 }}>{errorMsg}</div>}
             <input
               type="email"
               required
@@ -352,8 +370,26 @@ export default function ForgotPassword({ onNavigate }) {
               placeholder="you@gmail.com"
               className="cosmic-input"
             />
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" className="primary-btn">
-              Send Recovery Link 🚀
+            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="primary-btn">
+              {loading ? "Sending..." : "Send Recovery Link 🚀"}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              type="button"
+              onClick={handleGoToVerifyCode}
+              style={{
+                background: "rgba(30, 41, 59, 0.8)",
+                border: "1px solid rgba(99, 225, 232, 0.45)",
+                color: "#63e1e8",
+                fontWeight: 800,
+                padding: "10px 14px",
+                borderRadius: 12,
+                cursor: "pointer",
+                fontSize: 12.5,
+              }}
+            >
+              Use Number OTP Code Instead 🔢
             </motion.button>
           </form>
         )}
