@@ -87,16 +87,49 @@ export default function Login({ onNavigate, onLoginSuccess }) {
     setLoading(true);
     setErrorMsg("");
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
+
+    let profile = null;
+    if (!error && data?.user) {
+      const resolvedName =
+        data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "Explorer";
+
+      const { data: upserted } = await supabase
+        .from("profiles")
+        .upsert(
+          {
+            id: data.user.id,
+            full_name: resolvedName,
+            email: data.user.email,
+          },
+          { onConflict: "id" }
+        )
+        .select()
+        .single();
+
+      profile = upserted || {
+        id: data.user.id,
+        full_name: resolvedName,
+        email: data.user.email,
+        xp: 100,
+        level: 1,
+        streak: 1,
+        grade: 1,
+      };
+    }
 
     setLoading(false);
     if (error) {
       setErrorMsg(error.message);
     } else {
-      onLoginSuccess?.();
+      onLoginSuccess?.({
+        user: data?.user,
+        profile,
+      });
+      onNavigate?.("dashboard");
     }
   };
 
