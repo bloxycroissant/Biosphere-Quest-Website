@@ -6,7 +6,7 @@ import rocketGif from "../assets/BiosphereQuestAssets/Rocket.gif";
 import blueCatGif from "../assets/BiosphereQuestAssets/Blue Cat.gif";
 import astroImg from "../assets/BiosphereQuestAssets/Astro (Biosphere Quest Mascot).png";
 
-const SWIMMING_CREATURES = [
+const SIGNUP_SWIMMING_CREATURES = [
   { icon: "🪼", top: "72%", duration: 18, delay: 0, size: 28, reverse: false },
   { icon: "🐠", top: "82%", duration: 14, delay: 2, size: 24, reverse: true },
   { icon: "🐢", top: "88%", duration: 22, delay: 4, size: 30, reverse: false },
@@ -17,6 +17,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
@@ -295,24 +296,57 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
               <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#63e1e8", marginBottom: 3 }}>
                 Password
               </label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••"
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: 12,
-                  border: "1.5px solid rgba(56, 189, 248, 0.45)",
-                  background: "rgba(8, 13, 24, 0.85)",
-                  color: "#fff",
-                  fontSize: 13,
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
-              />
+              <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••"
+                  style={{
+                    width: "100%",
+                    padding: "10px 42px 10px 14px",
+                    borderRadius: 12,
+                    border: "1.5px solid rgba(56, 189, 248, 0.45)",
+                    background: "rgba(8, 13, 24, 0.85)",
+                    color: "#fff",
+                    fontSize: 13,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((prev) => !prev)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  title={showPassword ? "Hide password" : "Show password"}
+                  style={{
+                    position: "absolute",
+                    right: 12,
+                    background: "transparent",
+                    border: "none",
+                    color: "#63e1e8",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: 4,
+                  }}
+                >
+                  {showPassword ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                      <line x1="1" y1="1" x2="23" y2="23" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Main Sign Up Button */}
@@ -418,7 +452,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           overflow: "hidden",
         }}
       >
-        {/* 🌈 Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
+        {/* Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
         <motion.div
           animate={{
             opacity: [0.35, 0.65, 0.35],
@@ -434,7 +468,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           }}
         />
 
-        {/* 🌟 Twinkling Stars */}
+        {/* Twinkling Stars */}
         {stars.map((star) => (
           <motion.span
             key={`star-${star.id}`}
@@ -454,7 +488,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           />
         ))}
 
-        {/* 🌠 25 Right-Diagonal Shooting Comets */}
+        {/* 25 Right-Diagonal Shooting Comets */}
         {shootingStars.map((comet) => (
           <motion.div
             key={`comet-${comet.id}`}
@@ -483,8 +517,8 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           />
         ))}
 
-        {/* 🐠 Swimming Bioluminescent Ocean Creatures */}
-        {SWIMMING_CREATURES.map((creature, idx) => (
+        {/* Swimming Bioluminescent Ocean Creatures */}
+        {SIGNUP_SWIMMING_CREATURES.map((creature, idx) => (
           <motion.div
             key={`creature-${idx}`}
             initial={{ x: creature.reverse ? "55vw" : "-10vw" }}
@@ -509,7 +543,7 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
           </motion.div>
         ))}
 
-        {/* 🫧 Rising Ocean Bubbles */}
+        {/* Rising Ocean Bubbles */}
         {bubbles.map((b) => (
           <motion.span
             key={`bubble-${b.id}`}
@@ -609,5 +643,5 @@ export default function SignUp({ onNavigate, onSignUpSuccess }) {
         </motion.div>
       </div>
     </div>
-  );ddssdsdsds
+  );
 }
