@@ -67,20 +67,49 @@ const TEAM_MEMBERS = [
     roles: [
       "Project Owner & Creator",
       "UI/UX Designer & Lead Developer",
-      "UI & Authentication Engineer",
-      "Game Mechanics & Quest Designer",
-      "Gamification & Progression Engineer",
-      "Game Art & Animation Designer",
-      "Game Audio & Sound Effects Designer",
-      "Game Testing & QA Lead",
-      "Game Deployment & Release Manager",
-      "Community & Support Manager",
-      "Full Stack Web Developer",
+      "Curriculum & Content Designer",
+      "Game Mechanics Designer",
+      "Front-End Developer",
+      "Back-End Developer",
+      "Database & API Developer",
+      "QA & Testing Lead",
+      "Community & Support Lead",
+      "Game Design & Art Lead",
+      "Game Art & Animation Lead",
+      'Game Sound & Music Lead',
+      'Game Level Design Lead',
+      "Full-Stack Web Developer",
     ],
     img: stellaImg,
     accent: "#ffdf4e",
     ring: "linear-gradient(135deg, #ffdf4e, #c084fc)",
     align: "left",
+  },
+];
+
+const SUPPORT_CHANNELS = [
+  {
+    id: "email",
+    label: "Support Email",
+    value: "denisebiospherequest@gmail.com",
+    href: "mailto:denisebiospherequest@gmail.com",
+    icon: "📧",
+    accent: "#63e1e8",
+  },
+  {
+    id: "discord-server",
+    label: "Official Discord Server",
+    value: "https://discord.gg/MBRkkyFsPG",
+    href: "https://discord.gg/MBRkkyFsPG",
+    icon: "🌐",
+    accent: "#c084fc",
+  },
+  {
+    id: "discord-user",
+    label: "My Discord Account",
+    value: "bloxycroissant",
+    icon: "💬",
+    accent: "#ffdf4e",
   },
 ];
 
@@ -92,6 +121,8 @@ export default function AboutUs({
 }) {
   const [selectedValue, setSelectedValue] = useState("discovery");
   const [statusNote, setStatusNote] = useState("");
+  const [showSupportAccounts, setShowSupportAccounts] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
   const [activeModal, setActiveModal] = useState(null); // "privacy" | "terms" | null
   const [clickBursts, setClickBursts] = useState([]);
 
@@ -170,15 +201,25 @@ export default function AboutUs({
     } catch {
       // Ignore session check errors when displaying support info
     }
-    setStatusNote(
-      "Support inbox: denisebiospherequest@gmail.com — message us anytime for account or quest help!"
-    );
+    setShowSupportAccounts((prev) => !prev);
   };
 
-  const handleRateApp = () => {
+  const handleCopySupport = async (id, text) => {
     playSfx?.("correct");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 1800);
+    } catch {
+      // Fallback if clipboard permissions are restricted
+    }
+  };
+
+  const handleRateWebsite = () => {
+    playSfx?.("correct");
+    setShowSupportAccounts(false);
     setStatusNote(
-      "Thanks for exploring Biosphere Quest! Web preview is active now, with App Store & Google Play releases coming soon."
+      "Thanks for exploring the Biosphere Quest website! Enjoy playing our web quests and mini-games right in your browser."
     );
   };
 
@@ -484,7 +525,7 @@ export default function AboutUs({
             }}
           >
             <span>✦</span>
-            <span>Galactic Math & Science Quest</span>
+            <span>Interactive Math & Science Web Quest</span>
           </motion.div>
         </motion.div>
 
@@ -621,9 +662,9 @@ export default function AboutUs({
                 color: "#f8fafc",
               }}
             >
-              Biosphere Quest turns complex math and science education into an engaging galactic
+              Biosphere Quest turns complex math and science education into an interactive web
               adventure, empowering students to explore ecosystems and master concepts through
-              playful quests from deep oceans to outer space.
+              playful quests from deep oceans to outer space right in their browser.
             </p>
           </motion.div>
         </div>
@@ -1008,6 +1049,115 @@ export default function AboutUs({
             <span>Contact Support</span>
           </motion.button>
 
+          {/* Expandable Support & Community Accounts Card */}
+          <AnimatePresence>
+            {showSupportAccounts && (
+              <motion.div
+                initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  maxWidth: 640,
+                  width: "100%",
+                  background: "rgba(8, 13, 24, 0.9)",
+                  backdropFilter: "blur(16px)",
+                  border: "1.5px solid rgba(99, 225, 232, 0.55)",
+                  borderRadius: 20,
+                  padding: "18px 20px",
+                  boxShadow: "0 16px 36px rgba(0, 0, 0, 0.45)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 900,
+                    letterSpacing: 0.8,
+                    textTransform: "uppercase",
+                    color: "#63e1e8",
+                    marginBottom: 2,
+                  }}
+                >
+                  🛰️ Official Support & Community Accounts
+                </div>
+
+                {SUPPORT_CHANNELS.map((item) => (
+                  <div
+                    key={item.id}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: 10,
+                      padding: "10px 14px",
+                      borderRadius: 14,
+                      background: "rgba(15, 23, 42, 0.85)",
+                      border: `1px solid ${item.accent}44`,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+                      <span style={{ fontSize: 18 }}>{item.icon}</span>
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 800, color: "#94a3b8" }}>
+                          {item.label}
+                        </div>
+                        {item.href ? (
+                          <a
+                            href={item.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                              fontSize: 13.5,
+                              fontWeight: 900,
+                              color: item.accent,
+                              textDecoration: "underline",
+                              wordBreak: "break-all",
+                            }}
+                          >
+                            {item.value}
+                          </a>
+                        ) : (
+                          <div
+                            style={{
+                              fontSize: 13.5,
+                              fontWeight: 900,
+                              color: item.accent,
+                            }}
+                          >
+                            {item.value}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.94 }}
+                      onClick={() => handleCopySupport(item.id, item.value)}
+                      style={{
+                        background: "rgba(30, 41, 59, 0.9)",
+                        border: `1px solid ${item.accent}66`,
+                        color: "#ffffff",
+                        fontWeight: 800,
+                        fontSize: 11.5,
+                        padding: "6px 12px",
+                        borderRadius: 10,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {copiedId === item.id ? "Copied ✓" : "Copy"}
+                    </motion.button>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <motion.button
             type="button"
             whileHover={{
@@ -1018,7 +1168,7 @@ export default function AboutUs({
             whileTap={{ scale: 0.97 }}
             onClick={(e) => {
               e.stopPropagation();
-              handleRateApp();
+              handleRateWebsite();
             }}
             style={{
               width: "100%",
@@ -1041,7 +1191,7 @@ export default function AboutUs({
             }}
           >
             <img src={streakIcon} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} />
-            <span>Rate Us on App Store/Google Play</span>
+            <span>Rate This Website</span>
           </motion.button>
 
           <AnimatePresence>
@@ -1185,8 +1335,8 @@ export default function AboutUs({
                 }}
               >
                 {activeModal === "privacy"
-                  ? "Biosphere Quest stores your explorer profile, XP, and progress through Supabase authentication. We only use your account details to power your learning quests and never sell your personal data."
-                  : "By using Biosphere Quest, you agree to explore and learn respectfully across our educational quests, mini-games, and community features."}
+                  ? "Biosphere Quest stores your explorer profile, XP, and progress through Supabase authentication. We only use your account details to power your learning quests on this website and never sell your personal data."
+                  : "By using the Biosphere Quest website, you agree to explore and learn respectfully across our educational quests, mini-games, and web features."}
               </p>
               <motion.button
                 type="button"
