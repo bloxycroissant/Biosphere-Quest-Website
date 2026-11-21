@@ -1,21 +1,41 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import logoImg from "../assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
 
-const VERIFY_EMAIL_CREATURES = [
+const VERIFY_CODE_CREATURES = [
   { icon: "🪼", top: "68%", duration: 18, delay: 0, size: 30, reverse: false },
   { icon: "🐠", top: "78%", duration: 14, delay: 2, size: 26, reverse: true },
   { icon: "🐢", top: "85%", duration: 22, delay: 4, size: 32, reverse: false },
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function VerifyEmail({ email = "", onNavigate, onVerified }) {
+export default function VerifyCode({ email = "", onNavigate, onVerified }) {
   const [targetEmail, setTargetEmail] = useState(email);
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
+  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [cooldown, setCooldown] = useState(email ? 30 : 0);
+  const [otpSentMsg, setOtpSentMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
+
+  const digitRefs = useRef([]);
+
+  useEffect(() => {
+    if (email) {
+      setTargetEmail(email);
+      setCooldown(30);
+    }
+  }, [email]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const stars = useMemo(
     () =>
@@ -75,62 +95,137 @@ export default function VerifyEmail({ email = "", onNavigate, onVerified }) {
     }, 900);
   };
 
-  const handleResendEmail = async (e) => {
-    e.preventDefault();
-    const trimmed = targetEmail.trim();
-    if (!trimmed) return;
-
-    setResending(true);
-    setErrorMsg("");
-    setResent(false);
-
-    const { error } = await supabase.auth.resend({
-      type: "signup",
-      email: trimmed,
-      options: {
-        emailRedirectTo: window.location.origin,
-      },
-    });
-
-    setResending(false);
-    if (error) {
-      setErrorMsg(error.message);
-    } else {
-      setResent(true);
-    }
-  };
-
-  const handleCheckConfirmed = async () => {
-    setErrorMsg("");
-    const {
-      data: { user },
-      error,
-    } = await supabase.auth.getUser();
-
-    if (error || !user) {
-      setErrorMsg("Email not confirmed yet. Click the link in your inbox or enter a code.");
+  const handleDigitChange = (index, rawValue) => {
+    const clean = rawValue.replace(/\D/g, "");
+    if (!clean) {
+      const updated = [...digits];
+      updated[index] = "";
+      setDigits(updated);
       return;
     }
 
-    const resolvedName =
-      user.user_metadata?.full_name || user.email?.split("@")[0] || "Explorer";
+    if (clean.length > 1) {
+      const pasted = clean.slice(0, 6).split("");
+      const updated = ["", "", "", "", "", ""];
+      pasted.forEach((char, idx) => {
+        updated[idx] = char;
+      });
+      setDigits(updated);
+      digitRefs.current[Math.min(pasted.length, 5)]?.focus();
+      return;
+    }
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .upsert(
-        {
-          id: user.id,
-          full_name: resolvedName,
-          email: user.email,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
-      )
-      .select()
-      .single();
+    const updated = [...digits];
+    updated[index] = clean;
+    setDigits(updated);
+    if (index < 5) {
+      digitRefs.current[index + 1]?.focus();
+    }
+  };
 
-    onVerified?.({ user, profile });
-    onNavigate?.("dashboard");
+  const handleDigitKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !digits[index] && index > 0) {
+      digitRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleSendOtp = async () => {
+    const trimmedEmail = targetEmail.trim();
+    if (!trimmedEmail) {
+      setErrorMsg("Please enter your registered email address first.");
+      return;
+    }
+    if (cooldown > 0 || sendingOtp) return;
+
+    setSendingOtp(true);
+    setErrorMsg("");
+    setOtpSentMsg("");
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmedEmail,
+      options: {
+        shouldCreateUser: false,
+      },
+    });
+
+    setSendingOtp(false);
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      setOtpSentMsg(`Numeric OTP sent to ${trimmedEmail}! Check your inbox.`);
+      setCooldown(30);
+      setTimeout(() => digitRefs.current[0]?.focus(), 50);
+    }
+  };
+
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+    setOtpSentMsg("");
+
+    const trimmedEmail = targetEmail.trim();
+    const trimmedCode = digits.join("").trim();
+
+    if (trimmedCode.length < 6) {
+      setLoading(false);
+      setErrorMsg("Please enter the full 6-digit verification code.");
+      return;
+    }
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: trimmedEmail,
+      token: trimmedCode,
+      type: "email",
+    });
+
+    let profile = null;
+    if (!error && data?.user) {
+      const resolvedName =
+        data.user.user_metadata?.full_name || data.user.email?.split("@")[0] || "Explorer";
+
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      if (existingProfile) {
+        const { data: updatedProfile } = await supabase
+          .from("profiles")
+          .update({
+            email: data.user.email,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", data.user.id)
+          .select()
+          .single();
+        profile = updatedProfile || existingProfile;
+      } else {
+        const { data: upserted } = await supabase
+          .from("profiles")
+          .upsert(
+            {
+              id: data.user.id,
+              full_name: resolvedName,
+              email: data.user.email,
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "id" }
+          )
+          .select()
+          .single();
+        profile = upserted || null;
+      }
+    }
+
+    setLoading(false);
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      onVerified?.({ user: data?.user, profile });
+      onNavigate?.("dashboard");
+    }
   };
 
   return (
@@ -300,7 +395,7 @@ export default function VerifyEmail({ email = "", onNavigate, onVerified }) {
         }}
       />
 
-      {VERIFY_EMAIL_CREATURES.map((creature, idx) => (
+      {VERIFY_CODE_CREATURES.map((creature, idx) => (
         <motion.div
           key={`creature-${idx}`}
           initial={{ x: creature.reverse ? "105vw" : "-10vw" }}
@@ -375,53 +470,122 @@ export default function VerifyEmail({ email = "", onNavigate, onVerified }) {
           boxShadow: "0 18px 45px rgba(0, 0, 0, 0.45)",
         }}
       >
-        <img src={logoImg} alt="" style={{ width: 52, height: 52, objectFit: "contain", margin: "0 auto 12px" }} />
-        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Verify Your Email</h1>
-        <p style={{ fontSize: 13, color: "#cbd5e1", marginTop: 6, marginBottom: 20 }}>
-          We sent a verification link to your inbox. Confirm it or resend below.
+        <img src={logoImg} alt="" style={{ width: 68, height: 68, objectFit: "contain", margin: "0 auto 8px" }} />
+        <div
+          style={{
+            fontSize: 28,
+            fontWeight: 900,
+            background: "linear-gradient(90deg, #3b82f6 0%, #c084fc 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: 12,
+          }}
+        >
+          Biosphere Quest
+        </div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Enter Verification Code</h1>
+        <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 6, marginBottom: 18 }}>
+          We sent a 6-digit code to your email.
         </p>
 
-        {resent && (
-          <div style={{ background: "rgba(74,222,128,0.15)", border: "1px solid #4ade80", color: "#4ade80", padding: 12, borderRadius: 14, fontWeight: 800, fontSize: 13, marginBottom: 14 }}>
-            📬 Verification email resent! Check your inbox and spam folder.
+        {otpSentMsg && (
+          <div style={{ background: "rgba(74,222,128,0.15)", border: "1px solid #4ade80", color: "#4ade80", padding: 12, borderRadius: 14, fontWeight: 800, fontSize: 12.5, marginBottom: 14 }}>
+            📬 {otpSentMsg}
           </div>
         )}
 
-        <form onSubmit={handleResendEmail} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>}
-          <input
-            type="email"
-            required
-            value={targetEmail}
-            onChange={(e) => setTargetEmail(e.target.value)}
-            placeholder="you@gmail.com"
-            className="cosmic-input"
-          />
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" disabled={resending} className="primary-btn">
-            {resending ? "Resending..." : "Resend Verification Email ✉️"}
-          </motion.button>
-        </form>
+          {!email && (
+            <input
+              type="email"
+              required
+              value={targetEmail}
+              onChange={(e) => setTargetEmail(e.target.value)}
+              placeholder="you@gmail.com"
+              className="cosmic-input"
+            />
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
+            {digits.map((digit, idx) => (
+              <input
+                key={idx}
+                ref={(el) => {
+                  digitRefs.current[idx] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={digit}
+                onChange={(e) => handleDigitChange(idx, e.target.value)}
+                onKeyDown={(e) => handleDigitKeyDown(idx, e)}
+                aria-label={`Verification digit ${idx + 1}`}
+                style={{
+                  height: 54,
+                  textAlign: "center",
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: "#ffffff",
+                  background: "rgba(30, 58, 138, 0.45)",
+                  border: digit
+                    ? "1.5px solid #818cf8"
+                    : "1.5px solid rgba(129, 140, 248, 0.35)",
+                  borderRadius: 14,
+                  outline: "none",
+                }}
+              />
+            ))}
+          </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>
+            Didn&apos;t receive code?{" "}
+            <button
+              type="button"
+              disabled={sendingOtp || cooldown > 0}
+              onClick={handleSendOtp}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                color: cooldown > 0 ? "#cbd5e1" : "#63e1e8",
+                fontWeight: 800,
+                fontSize: 13,
+                cursor: sendingOtp || cooldown > 0 ? "not-allowed" : "pointer",
+              }}
+            >
+              {sendingOtp
+                ? "Sending..."
+                : cooldown > 0
+                  ? `Resend (${cooldown}s)`
+                  : "Resend"}
+            </button>
+          </div>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            type="button"
-            onClick={handleCheckConfirmed}
+            type="submit"
+            disabled={loading}
             style={{
-              background: "rgba(30, 41, 59, 0.75)",
-              border: "1px solid rgba(99, 225, 232, 0.4)",
-              color: "#63e1e8",
-              fontWeight: 800,
-              padding: "10px 14px",
-              borderRadius: 12,
-              cursor: "pointer",
-              fontSize: 12.5,
+              width: "100%",
+              padding: "14px 18px",
+              borderRadius: 14,
+              border: "none",
+              background: "linear-gradient(90deg, #6366f1 0%, #818cf8 100%)",
+              color: "#ffffff",
+              fontSize: 16,
+              fontWeight: 900,
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
             }}
           >
-            I Have Confirmed My Email →
+            {loading ? "Verifying..." : "Verify Code"}
           </motion.button>
+        </form>
 
+        <div style={{ marginTop: 20 }}>
           <button onClick={() => onNavigate?.("login")} className="back-btn" style={{ background: "none", border: "none" }}>
             ← Back to Login
           </button>
