@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import logoImg from "../assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
@@ -12,17 +12,20 @@ const VERIFY_CODE_CREATURES = [
 
 export default function VerifyCode({ email = "", onNavigate, onVerified }) {
   const [targetEmail, setTargetEmail] = useState(email);
-  const [code, setCode] = useState("");
+  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [sendingOtp, setSendingOtp] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(email ? 30 : 0);
   const [otpSentMsg, setOtpSentMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
 
+  const digitRefs = useRef([]);
+
   useEffect(() => {
     if (email) {
       setTargetEmail(email);
+      setCooldown(30);
     }
   }, [email]);
 
@@ -92,6 +95,40 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
     }, 900);
   };
 
+  const handleDigitChange = (index, rawValue) => {
+    const clean = rawValue.replace(/\D/g, "");
+    if (!clean) {
+      const updated = [...digits];
+      updated[index] = "";
+      setDigits(updated);
+      return;
+    }
+
+    if (clean.length > 1) {
+      const pasted = clean.slice(0, 6).split("");
+      const updated = ["", "", "", "", "", ""];
+      pasted.forEach((char, idx) => {
+        updated[idx] = char;
+      });
+      setDigits(updated);
+      digitRefs.current[Math.min(pasted.length, 5)]?.focus();
+      return;
+    }
+
+    const updated = [...digits];
+    updated[index] = clean;
+    setDigits(updated);
+    if (index < 5) {
+      digitRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleDigitKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !digits[index] && index > 0) {
+      digitRefs.current[index - 1]?.focus();
+    }
+  };
+
   const handleSendOtp = async () => {
     const trimmedEmail = targetEmail.trim();
     if (!trimmedEmail) {
@@ -117,6 +154,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
     } else {
       setOtpSentMsg(`Numeric OTP sent to ${trimmedEmail}! Check your inbox.`);
       setCooldown(30);
+      setTimeout(() => digitRefs.current[0]?.focus(), 50);
     }
   };
 
@@ -127,7 +165,13 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
     setOtpSentMsg("");
 
     const trimmedEmail = targetEmail.trim();
-    const trimmedCode = code.trim();
+    const trimmedCode = digits.join("").trim();
+
+    if (trimmedCode.length < 6) {
+      setLoading(false);
+      setErrorMsg("Please enter the full 6-digit verification code.");
+      return;
+    }
 
     const { data, error } = await supabase.auth.verifyOtp({
       email: trimmedEmail,
@@ -393,7 +437,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
           transition={{
             y: { duration: b.duration, repeat: Infinity, delay: b.delay, ease: "linear" },
             x: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-            opacity: { duration: 3, repeat: Infinity, delay: b.delay },
+            opacity: { duration: b.duration, repeat: Infinity, delay: b.delay },
           }}
           style={{
             position: "absolute",
@@ -426,10 +470,23 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
           boxShadow: "0 18px 45px rgba(0, 0, 0, 0.45)",
         }}
       >
-        <img src={logoImg} alt="" style={{ width: 52, height: 52, objectFit: "contain", margin: "0 auto 12px" }} />
-        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Enter Verification Code</h1>
-        <p style={{ fontSize: 13, color: "#cbd5e1", marginTop: 6, marginBottom: 20 }}>
-          Send or enter the numeric OTP sent to your registered email to verify your explorer account.
+        <img src={logoImg} alt="" style={{ width: 68, height: 68, objectFit: "contain", margin: "0 auto 8px" }} />
+        <div
+          style={{
+            fontSize: 28,
+            fontWeight: 900,
+            background: "linear-gradient(90deg, #3b82f6 0%, #c084fc 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: 12,
+          }}
+        >
+          Biosphere Quest
+        </div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Enter Verification Code</h1>
+        <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 6, marginBottom: 18 }}>
+          We sent a 6-digit code to your email.
         </p>
 
         {otpSentMsg && (
@@ -440,50 +497,91 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
 
         <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>}
-          <input
-            type="email"
-            required
-            value={targetEmail}
-            onChange={(e) => setTargetEmail(e.target.value)}
-            placeholder="you@gmail.com"
-            className="cosmic-input"
-          />
-          <input
-            type="text"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            required
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            placeholder="6-digit number OTP..."
-            className="cosmic-input"
-          />
+          {!email && (
+            <input
+              type="email"
+              required
+              value={targetEmail}
+              onChange={(e) => setTargetEmail(e.target.value)}
+              placeholder="you@gmail.com"
+              className="cosmic-input"
+            />
+          )}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
+            {digits.map((digit, idx) => (
+              <input
+                key={idx}
+                ref={(el) => {
+                  digitRefs.current[idx] = el;
+                }}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                value={digit}
+                onChange={(e) => handleDigitChange(idx, e.target.value)}
+                onKeyDown={(e) => handleDigitKeyDown(idx, e)}
+                aria-label={`Verification digit ${idx + 1}`}
+                style={{
+                  height: 54,
+                  textAlign: "center",
+                  fontSize: 22,
+                  fontWeight: 900,
+                  color: "#ffffff",
+                  background: "rgba(30, 58, 138, 0.45)",
+                  border: digit
+                    ? "1.5px solid #818cf8"
+                    : "1.5px solid rgba(129, 140, 248, 0.35)",
+                  borderRadius: 14,
+                  outline: "none",
+                }}
+              />
+            ))}
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>
+            Didn&apos;t receive code?{" "}
+            <button
+              type="button"
+              disabled={sendingOtp || cooldown > 0}
+              onClick={handleSendOtp}
+              style={{
+                background: "none",
+                border: "none",
+                padding: 0,
+                color: cooldown > 0 ? "#cbd5e1" : "#63e1e8",
+                fontWeight: 800,
+                fontSize: 13,
+                cursor: sendingOtp || cooldown > 0 ? "not-allowed" : "pointer",
+              }}
+            >
+              {sendingOtp
+                ? "Sending..."
+                : cooldown > 0
+                  ? `Resend (${cooldown}s)`
+                  : "Resend"}
+            </button>
+          </div>
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.97 }}
-            type="button"
-            disabled={sendingOtp || cooldown > 0}
-            onClick={handleSendOtp}
+            type="submit"
+            disabled={loading}
             style={{
-              background: "rgba(30, 41, 59, 0.8)",
-              border: "1px solid rgba(99, 225, 232, 0.45)",
-              color: "#63e1e8",
-              fontWeight: 800,
-              padding: "10px 14px",
-              borderRadius: 12,
-              cursor: sendingOtp || cooldown > 0 ? "not-allowed" : "pointer",
-              opacity: sendingOtp || cooldown > 0 ? 0.65 : 1,
-              fontSize: 12.5,
+              width: "100%",
+              padding: "14px 18px",
+              borderRadius: 14,
+              border: "none",
+              background: "linear-gradient(90deg, #6366f1 0%, #818cf8 100%)",
+              color: "#ffffff",
+              fontSize: 16,
+              fontWeight: 900,
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
             }}
           >
-            {sendingOtp
-              ? "Sending OTP..."
-              : cooldown > 0
-                ? `Resend OTP in ${cooldown}s ⏳`
-                : "Send Number OTP to Email 🔢"}
-          </motion.button>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="primary-btn">
-            {loading ? "Verifying..." : "Verify Code ✨"}
+            {loading ? "Verifying..." : "Verify Code"}
           </motion.button>
         </form>
 
