@@ -1,21 +1,40 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import logoImg from "../assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
 
-const FORGOT_SWIMMING_CREATURES = [
+const FORGOT_PASSWORD_CREATURES = [
   { icon: "🪼", top: "68%", duration: 18, delay: 0, size: 30, reverse: false },
   { icon: "🐠", top: "78%", duration: 14, delay: 2, size: 26, reverse: true },
   { icon: "🐢", top: "85%", duration: 22, delay: 4, size: 32, reverse: false },
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function ForgotPassword({ onNavigate, onSelectEmail }) {
+export default function ForgotPassword({ onNavigate }) {
+  const [step, setStep] = useState("request"); // "request" | "verify" | "reset"
   const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
+  const [useNumberOtp, setUseNumberOtp] = useState(false);
+  const [digits, setDigits] = useState(["", "", "", "", "", ""]);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
+  const [sent, setSent] = useState(false);
+  const [infoMsg, setInfoMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
+
+  const digitRefs = useRef([]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const stars = useMemo(
     () =>
@@ -79,34 +98,163 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
+    setInfoMsg("");
 
     const trimmedEmail = email.trim();
-    onSelectEmail?.(trimmedEmail);
-
     const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-      redirectTo: window.location.origin,
+      redirectTo: `${window.location.origin}/reset-password`,
     });
 
     setLoading(false);
     if (error) {
-      if (error.message.toLowerCase().includes("recovery email")) {
-        setErrorMsg(
-          "Could not send recovery email. Check your Supabase Custom SMTP password/port, or sign in with Google if you registered with Google."
-        );
-      } else {
-        setErrorMsg(error.message);
-      }
+      setErrorMsg(error.message);
     } else {
       setSent(true);
+      setInfoMsg(
+        `Recovery link sent to ${trimmedEmail}. If the recovery link isn't working, you can switch to the 6-digit Number OTP below.`
+      );
     }
   };
 
-  const handleGoToVerifyCode = () => {
+  const handleSendNumberOtpFallback = async () => {
     const trimmedEmail = email.trim();
-    if (trimmedEmail) {
-      onSelectEmail?.(trimmedEmail);
+    if (!trimmedEmail) {
+      setErrorMsg("Please enter your email address first so we can send the number OTP.");
+      return;
     }
-    onNavigate?.("verify-code");
+    if (loading || cooldown > 0) return;
+
+    setLoading(true);
+    setErrorMsg("");
+    setInfoMsg("");
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email: trimmedEmail,
+      options: {
+        shouldCreateUser: false,
+      },
+    });
+
+    setLoading(false);
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      setUseNumberOtp(true);
+      setStep("verify");
+      setCooldown(30);
+      setInfoMsg(`We sent a 6-digit number OTP to ${trimmedEmail}.`);
+      setTimeout(() => {
+        digitRefs.current[0]?.focus();
+      }, 60);
+    }
+  };
+
+  const handleDigitChange = (index, rawValue) => {
+    const clean = rawValue.replace(/\D/g, "");
+    if (!clean) {
+      const updated = [...digits];
+      updated[index] = "";
+      setDigits(updated);
+      return;
+    }
+
+    if (clean.length > 1) {
+      const pasted = clean.slice(0, 6).split("");
+      const updated = ["", "", "", "", "", ""];
+      pasted.forEach((ch, idx) => {
+        updated[idx] = ch;
+      });
+      setDigits(updated);
+      digitRefs.current[Math.min(pasted.length, 5)]?.focus();
+      return;
+    }
+
+    const updated = [...digits];
+    updated[index] = clean;
+    setDigits(updated);
+    if (index < 5) {
+      digitRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleDigitKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !digits[index] && index > 0) {
+      digitRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerifyCode = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setInfoMsg("");
+
+    const token = digits.join("").trim();
+    if (token.length < 6) {
+      setErrorMsg("Please enter all 6 digits of your verification code.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.verifyOtp({
+      email: email.trim(),
+      token,
+      type: "recovery",
+    });
+
+    // Fallback to email OTP verification if project sends numeric email OTP
+    let finalError = error;
+    if (error) {
+      const { error: emailOtpError } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token,
+        type: "email",
+      });
+      finalError = emailOtpError;
+    }
+
+    setLoading(false);
+    if (finalError) {
+      setErrorMsg(finalError.message);
+    } else {
+      setStep("reset");
+      setInfoMsg("Code verified! Create your new password below.");
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setInfoMsg("");
+
+    const hasMinLength = newPassword.length >= 8;
+    const hasNumberOrSpecial = /[0-9!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\;/']/.test(
+      newPassword
+    );
+
+    if (!hasMinLength || !hasNumberOrSpecial) {
+      setErrorMsg(
+        "Password must be at least 8 characters and include at least 1 number or special character."
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMsg("New password and confirm password do not match.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setLoading(false);
+
+    if (error) {
+      setErrorMsg(error.message);
+    } else {
+      setInfoMsg("Password updated successfully! Redirecting to login...");
+      setTimeout(() => {
+        onNavigate?.("login");
+      }, 1200);
+    }
   };
 
   return (
@@ -127,6 +275,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         cursor: "crosshair",
       }}
     >
+      {/* Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
       <motion.div
         animate={{
           opacity: [0.35, 0.65, 0.35],
@@ -142,6 +291,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         }}
       />
 
+      {/* Interactive Click Stardust */}
       <AnimatePresence>
         {clickBursts.map((burst) => (
           <div
@@ -175,6 +325,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         ))}
       </AnimatePresence>
 
+      {/* Twinkling Starfield */}
       {stars.map((star) => (
         <motion.span
           key={`star-${star.id}`}
@@ -204,6 +355,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         />
       ))}
 
+      {/* Shooting Comets */}
       {shootingStars.map((comet) => (
         <motion.div
           key={`comet-${comet.id}`}
@@ -245,6 +397,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         </motion.div>
       ))}
 
+      {/* Pulsing Nebulae */}
       <motion.div
         animate={{ scale: [1, 1.25, 1], x: [0, 25, 0], opacity: [0.3, 0.55, 0.3] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
@@ -276,7 +429,8 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         }}
       />
 
-      {FORGOT_SWIMMING_CREATURES.map((creature, idx) => (
+      {/* Swimming Creatures */}
+      {FORGOT_PASSWORD_CREATURES.map((creature, idx) => (
         <motion.div
           key={`creature-${idx}`}
           initial={{ x: creature.reverse ? "105vw" : "-10vw" }}
@@ -306,6 +460,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
         </motion.div>
       ))}
 
+      {/* Rising Bubbles */}
       {bubbles.map((b) => (
         <motion.span
           key={`bubble-${b.id}`}
@@ -318,7 +473,7 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
           transition={{
             y: { duration: b.duration, repeat: Infinity, delay: b.delay, ease: "linear" },
             x: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-            opacity: { duration: b.duration, repeat: Infinity, delay: b.delay },
+            opacity: { duration: 3, repeat: Infinity, delay: b.delay },
           }}
           style={{
             position: "absolute",
@@ -351,51 +506,377 @@ export default function ForgotPassword({ onNavigate, onSelectEmail }) {
           boxShadow: "0 18px 45px rgba(0, 0, 0, 0.45)",
         }}
       >
-        <img src={logoImg} alt="" style={{ width: 52, height: 52, objectFit: "contain", margin: "0 auto 12px" }} />
-        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Reset Password</h1>
-        <p style={{ fontSize: 13, color: "#cbd5e1", marginTop: 6, marginBottom: 20 }}>Enter your explorer email to receive a recovery link.</p>
+        <img
+          src={logoImg}
+          alt=""
+          style={{ width: 64, height: 64, objectFit: "contain", margin: "0 auto 8px" }}
+        />
+        <div
+          style={{
+            fontSize: 28,
+            fontWeight: 900,
+            background: "linear-gradient(90deg, #3b82f6 0%, #c084fc 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: 12,
+          }}
+        >
+          Biosphere Quest
+        </div>
 
-        {sent ? (
-          <div style={{ background: "rgba(74,222,128,0.15)", border: "1px solid #4ade80", color: "#4ade80", padding: 14, borderRadius: 14, fontWeight: 800, fontSize: 13.5 }}>
-            📬 Password recovery email sent! Check your inbox.
-          </div>
-        ) : (
-          <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700, lineHeight: 1.45 }}>{errorMsg}</div>}
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@gmail.com"
-              className="cosmic-input"
-            />
-            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="primary-btn">
-              {loading ? "Sending..." : "Send Recovery Link 🚀"}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              type="button"
-              onClick={handleGoToVerifyCode}
-              style={{
-                background: "rgba(30, 41, 59, 0.8)",
-                border: "1px solid rgba(99, 225, 232, 0.45)",
-                color: "#63e1e8",
-                fontWeight: 800,
-                padding: "10px 14px",
-                borderRadius: 12,
-                cursor: "pointer",
-                fontSize: 12.5,
-              }}
+        {step === "request" && (
+          <>
+            <h1 style={{ fontSize: 26, fontWeight: 900, margin: 0 }}>Forgot Password</h1>
+            <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 6, marginBottom: 20 }}>
+              Enter your email to receive a recovery code or link
+            </p>
+
+            {(sent || infoMsg) && (
+              <div
+                style={{
+                  background: "rgba(74,222,128,0.15)",
+                  border: "1px solid #4ade80",
+                  color: "#4ade80",
+                  padding: 12,
+                  borderRadius: 14,
+                  fontWeight: 800,
+                  fontSize: 12.5,
+                  marginBottom: 14,
+                }}
+              >
+                📩 {infoMsg || "Recovery instructions sent! Check your inbox."}
+              </div>
+            )}
+
+            <form onSubmit={handleReset} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {errorMsg && (
+                <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>
+              )}
+
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="✉️ Enter your email address"
+                className="cosmic-input"
+              />
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "14px 18px",
+                  borderRadius: 14,
+                  border: "none",
+                  background: "linear-gradient(90deg, #6366f1 0%, #818cf8 100%)",
+                  color: "#ffffff",
+                  fontSize: 16,
+                  fontWeight: 900,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
+                }}
+              >
+                {loading ? "Sending..." : "Send Recovery Code"}
+              </motion.button>
+
+              <button
+                type="button"
+                disabled={loading || cooldown > 0}
+                onClick={handleSendNumberOtpFallback}
+                style={{
+                  background: "rgba(30, 41, 59, 0.72)",
+                  border: "1px solid rgba(99, 225, 232, 0.4)",
+                  color: "#63e1e8",
+                  fontWeight: 800,
+                  fontSize: 12.5,
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  cursor: loading || cooldown > 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                {cooldown > 0
+                  ? `Recovery link not working? Number OTP sent (${cooldown}s)`
+                  : "Recovery link not working? Use 6-Digit Number OTP instead 🔢"}
+              </button>
+            </form>
+          </>
+        )}
+
+        {step === "verify" && (
+          <>
+            <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Enter Verification Code</h1>
+            <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 6, marginBottom: 18 }}>
+              We sent a 6-digit code to your email.
+            </p>
+
+            {infoMsg && (
+              <div
+                style={{
+                  background: "rgba(74,222,128,0.15)",
+                  border: "1px solid #4ade80",
+                  color: "#4ade80",
+                  padding: 12,
+                  borderRadius: 14,
+                  fontWeight: 800,
+                  fontSize: 12.5,
+                  marginBottom: 14,
+                }}
+              >
+                📬 {infoMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleVerifyCode} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {errorMsg && (
+                <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>
+              )}
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(6, 1fr)",
+                  gap: 8,
+                }}
+              >
+                {digits.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    ref={(el) => {
+                      digitRefs.current[idx] = el;
+                    }}
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    maxLength={6}
+                    value={digit}
+                    onChange={(e) => handleDigitChange(idx, e.target.value)}
+                    onKeyDown={(e) => handleDigitKeyDown(idx, e)}
+                    aria-label={`Recovery code digit ${idx + 1}`}
+                    style={{
+                      height: 54,
+                      textAlign: "center",
+                      fontSize: 22,
+                      fontWeight: 900,
+                      color: "#ffffff",
+                      background: "rgba(30, 58, 138, 0.45)",
+                      border: digit
+                        ? "1.5px solid #818cf8"
+                        : "1.5px solid rgba(129, 140, 248, 0.35)",
+                      borderRadius: 14,
+                      outline: "none",
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                }}
+              >
+                <span>Didn&apos;t receive code?</span>
+                <button
+                  type="button"
+                  disabled={loading || cooldown > 0}
+                  onClick={handleSendNumberOtpFallback}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    color: cooldown > 0 ? "#cbd5e1" : "#63e1e8",
+                    fontWeight: 800,
+                    fontSize: 13,
+                    cursor: loading || cooldown > 0 ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {cooldown > 0 ? `Resend (${cooldown}s)` : "Resend"}
+                </button>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "14px 18px",
+                  borderRadius: 14,
+                  border: "none",
+                  background: "linear-gradient(90deg, #6366f1 0%, #818cf8 100%)",
+                  color: "#ffffff",
+                  fontSize: 16,
+                  fontWeight: 900,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
+                }}
+              >
+                {loading ? "Verifying..." : "Verify Code"}
+              </motion.button>
+            </form>
+          </>
+        )}
+
+        {step === "reset" && (
+          <>
+            <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Set New Password</h1>
+            <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 6, marginBottom: 18 }}>
+              Please create a new password for your account
+            </p>
+
+            {infoMsg && (
+              <div
+                style={{
+                  background: "rgba(74,222,128,0.15)",
+                  border: "1px solid #4ade80",
+                  color: "#4ade80",
+                  padding: 12,
+                  borderRadius: 14,
+                  fontWeight: 800,
+                  fontSize: 12.5,
+                  marginBottom: 14,
+                }}
+              >
+                ✨ {infoMsg}
+              </div>
+            )}
+
+            <form
+              onSubmit={handleUpdatePassword}
+              style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left" }}
             >
-              Use Number OTP Code Instead 🔢
-            </motion.button>
-          </form>
+              {errorMsg && (
+                <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700, textAlign: "center" }}>
+                  {errorMsg}
+                </div>
+              )}
+
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6 }}>
+                  Enter New Password
+                </div>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showNewPassword ? "text" : "password"}
+                    required
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="🔒 •••••••••"
+                    className="cosmic-input"
+                    style={{ width: "100%", paddingRight: 42, boxSizing: "border-box" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword((prev) => !prev)}
+                    aria-label="Toggle new password visibility"
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      color: "#cbd5e1",
+                      cursor: "pointer",
+                      fontSize: 14,
+                    }}
+                  >
+                    {showNewPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6 }}>
+                  Confirm New Password
+                </div>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="🔒 •••••••••"
+                    className="cosmic-input"
+                    style={{ width: "100%", paddingRight: 42, boxSizing: "border-box" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    aria-label="Toggle confirm password visibility"
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      color: "#cbd5e1",
+                      cursor: "pointer",
+                      fontSize: 14,
+                    }}
+                  >
+                    {showConfirmPassword ? "🙈" : "👁️"}
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ fontSize: 12, color: "#cbd5e1", lineHeight: 1.5 }}>
+                <div style={{ fontWeight: 800, color: "#ffffff", marginBottom: 2 }}>
+                  Password must contain:
+                </div>
+                <div>• At least 8 characters</div>
+                <div>• At least 1 number or special character</div>
+              </div>
+
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.97 }}
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "14px 18px",
+                  borderRadius: 14,
+                  border: "none",
+                  background: "linear-gradient(90deg, #6366f1 0%, #818cf8 100%)",
+                  color: "#ffffff",
+                  fontSize: 16,
+                  fontWeight: 900,
+                  cursor: loading ? "not-allowed" : "pointer",
+                  boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
+                }}
+              >
+                {loading ? "Resetting..." : "Reset Password"}
+              </motion.button>
+            </form>
+          </>
         )}
 
         <div style={{ marginTop: 20 }}>
-          <button onClick={() => onNavigate("login")} className="back-btn" style={{ background: "none", border: "none" }}>
+          <button
+            type="button"
+            onClick={() => {
+              if (step !== "request" && !useNumberOtp) {
+                setStep("request");
+              } else {
+                onNavigate?.("login");
+              }
+            }}
+            className="back-btn"
+            style={{ background: "none", border: "none" }}
+          >
             ← Back to Login
           </button>
         </div>
