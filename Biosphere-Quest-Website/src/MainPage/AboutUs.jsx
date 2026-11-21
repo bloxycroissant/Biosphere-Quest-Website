@@ -587,15 +587,17 @@ export default function AboutUs({
             animate={{ opacity: 1, y: 0 }}
             transition={{ type: "spring", stiffness: 220, damping: 18 }}
             style={{
+              display: "inline-block",
               fontSize: "clamp(30px, 5vw, 46px)",
+              lineHeight: 1.25,
               fontWeight: 900,
               margin: "0 0 18px",
-              letterSpacing: -0.5,
+              padding: "4px 6px 8px",
+              letterSpacing: -0.4,
               background: "linear-gradient(90deg, #63e1e8 0%, #c084fc 52%, #ffdf4e 100%)",
               WebkitBackgroundClip: "text",
               backgroundClip: "text",
               WebkitTextFillColor: "transparent",
-              filter: "drop-shadow(0 6px 20px rgba(99, 225, 232, 0.25))",
             }}
           >
             About Us
