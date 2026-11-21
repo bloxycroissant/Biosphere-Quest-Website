@@ -925,12 +925,12 @@ export default function WelcomeWizard({
               </div>
               <div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: "#c084fc" }}>3 Worlds</div>
-                <div style={{ fontSize: 11.5, color: "#94a3b8", fontWeight: 700 }}>Ocean, Math & Arcade</div>
+                <div style={{ fontSize: 11.5, color: "#94a3b8", fontWeight: 700 }}>Ocean, Math & Science</div>
               </div>
             </div>
           </motion.div>
 
-          {/* Right Hero Preview Card (Animated Companion Showcase) */}
+          {/* Right Hero Preview Card (Animated Companion Showcase) */} 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
