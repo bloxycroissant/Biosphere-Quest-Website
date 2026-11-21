@@ -89,27 +89,33 @@ const TEAM_MEMBERS = [
   },
 ];
 
+const OWNER_SUPPORT = {
+  email: "denisebiospherequest@gmail.com",
+  discordServer: "https://discord.gg/MBRkkyFsPG",
+  discordAccount: "bloxycroissant",
+};
+
 const SUPPORT_CHANNELS = [
   {
     id: "email",
     label: "Support Email",
-    value: "denisebiospherequest@gmail.com",
-    href: "mailto:denisebiospherequest@gmail.com",
+    value: OWNER_SUPPORT.email,
+    href: `mailto:${OWNER_SUPPORT.email}`,
     icon: "📧",
     accent: "#63e1e8",
   },
   {
     id: "discord-server",
     label: "Official Discord Server",
-    value: "https://discord.gg/MBRkkyFsPG",
-    href: "https://discord.gg/MBRkkyFsPG",
+    value: OWNER_SUPPORT.discordServer,
+    href: OWNER_SUPPORT.discordServer,
     icon: "🌐",
     accent: "#c084fc",
   },
   {
     id: "discord-user",
     label: "My Discord Account",
-    value: "bloxycroissant",
+    value: OWNER_SUPPORT.discordAccount,
     icon: "💬",
     accent: "#ffdf4e",
   },
@@ -124,6 +130,10 @@ export default function AboutUs({
   const [selectedValue, setSelectedValue] = useState("discovery");
   const [statusNote, setStatusNote] = useState("");
   const [showSupportAccounts, setShowSupportAccounts] = useState(false);
+  const [showRateBox, setShowRateBox] = useState(false);
+  const [rating, setRating] = useState(10);
+  const [hoveredStar, setHoveredStar] = useState(0);
+  const [suggestion, setSuggestion] = useState("");
   const [copiedId, setCopiedId] = useState(null);
   const [activeModal, setActiveModal] = useState(null); // "privacy" | "terms" | null
   const [clickBursts, setClickBursts] = useState([]);
@@ -218,11 +228,49 @@ export default function AboutUs({
   };
 
   const handleRateWebsite = () => {
+    playSfx?.("click");
+    setStatusNote("");
+    setShowRateBox((prev) => !prev);
+  };
+
+  const handleSendSuggestion = (e) => {
+    e.preventDefault();
     playSfx?.("correct");
-    setShowSupportAccounts(false);
-    setStatusNote(
-      "Thanks for exploring the Biosphere Quest website! Enjoy playing our web quests and mini-games right in your browser."
+
+    const trimmedSuggestion = suggestion.trim();
+    const subject = encodeURIComponent(
+      `Biosphere Quest Website Rating: ${rating}/10 Stars`
     );
+    const body = encodeURIComponent(
+      `Hi Christianne Denise S. Sabando,\n\n` +
+        `Website Rating: ${rating} / 10 Stars\n` +
+        `Suggestion / Feedback:\n${trimmedSuggestion || "(No additional suggestion written)"}\n\n` +
+        `Sent from Biosphere Quest Website (Discord: ${OWNER_SUPPORT.discordAccount} | ${OWNER_SUPPORT.discordServer})`
+    );
+
+    window.location.href = `mailto:${OWNER_SUPPORT.email}?subject=${subject}&body=${body}`;
+
+    setStatusNote(
+      `Thank you for rating Biosphere Quest ${rating}/10 stars! Your email draft to ${OWNER_SUPPORT.email} is ready to send.`
+    );
+    setSuggestion("");
+  };
+
+  const handleCopyFeedbackForDiscord = async () => {
+    playSfx?.("correct");
+    const formatted = `🌟 Biosphere Quest Rating: ${rating}/10 Stars\n💡 Suggestion: ${
+      suggestion.trim() || "Loving the website!"
+    }`;
+    try {
+      await navigator.clipboard.writeText(formatted);
+      setCopiedId("discord-feedback");
+      setTimeout(() => setCopiedId(null), 2000);
+      setStatusNote(
+        `Copied your ${rating}/10 rating & suggestion! You can paste it in Discord (${OWNER_SUPPORT.discordAccount}) or the Official Server.`
+      );
+    } catch {
+      // Ignore clipboard restrictions
+    }
   };
 
   const handleLegalClick = (docType) => {
@@ -235,6 +283,7 @@ export default function AboutUs({
   };
 
   const activeValueObj = CORE_VALUES.find((v) => v.id === selectedValue);
+  const displayStars = hoveredStar || rating;
 
   return (
     <div
@@ -1198,6 +1247,202 @@ export default function AboutUs({
             <img src={streakIcon} alt="" style={{ width: 24, height: 24, objectFit: "contain" }} />
             <span>Rate This Website</span>
           </motion.button>
+
+          {/* Expandable 10-Star Rating & Suggestion Box */}
+          <AnimatePresence>
+            {showRateBox && (
+              <motion.form
+                onSubmit={handleSendSuggestion}
+                initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                onClick={(e) => e.stopPropagation()}
+                style={{
+                  maxWidth: 640,
+                  width: "100%",
+                  background: "rgba(8, 13, 24, 0.92)",
+                  backdropFilter: "blur(16px)",
+                  border: "1.5px solid rgba(255, 223, 78, 0.55)",
+                  borderRadius: 20,
+                  padding: "20px",
+                  boxShadow: "0 16px 36px rgba(0, 0, 0, 0.45)",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                  textAlign: "left",
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 900,
+                      letterSpacing: 0.8,
+                      textTransform: "uppercase",
+                      color: "#ffdf4e",
+                    }}
+                  >
+                    ⭐ Rate Biosphere Quest (Up to 10 Stars)
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 900,
+                      color: "#63e1e8",
+                      background: "rgba(15, 23, 42, 0.9)",
+                      padding: "4px 10px",
+                      borderRadius: 999,
+                      border: "1px solid rgba(99, 225, 232, 0.35)",
+                    }}
+                  >
+                    {displayStars} / 10 Stars
+                  </span>
+                </div>
+
+                {/* 10-Star Interactive Row */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexWrap: "wrap",
+                    gap: 6,
+                    padding: "10px 8px",
+                    borderRadius: 14,
+                    background: "rgba(15, 23, 42, 0.82)",
+                    border: "1px solid rgba(255, 223, 78, 0.25)",
+                  }}
+                >
+                  {Array.from({ length: 10 }, (_, idx) => {
+                    const starValue = idx + 1;
+                    const active = starValue <= displayStars;
+                    return (
+                      <motion.button
+                        key={starValue}
+                        type="button"
+                        whileHover={{ scale: 1.2, y: -2 }}
+                        whileTap={{ scale: 0.9 }}
+                        onMouseEnter={() => setHoveredStar(starValue)}
+                        onMouseLeave={() => setHoveredStar(0)}
+                        onClick={() => {
+                          setRating(starValue);
+                          playSfx?.("click");
+                        }}
+                        aria-label={`Rate ${starValue} out of 10 stars`}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          padding: "4px 3px",
+                          fontSize: 24,
+                          lineHeight: 1,
+                          filter: active
+                            ? "drop-shadow(0 0 8px rgba(255, 223, 78, 0.85))"
+                            : "grayscale(100%) opacity(0.4)",
+                        }}
+                      >
+                        ⭐
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Suggestion Box */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label
+                    htmlFor="owner-suggestion-box"
+                    style={{
+                      fontSize: 12.5,
+                      fontWeight: 800,
+                      color: "#e2e8f0",
+                    }}
+                  >
+                    💡 Suggestion Box (Sends directly to Denise • {OWNER_SUPPORT.email})
+                  </label>
+                  <textarea
+                    id="owner-suggestion-box"
+                    rows={3}
+                    value={suggestion}
+                    onChange={(e) => setSuggestion(e.target.value)}
+                    placeholder="Share ideas for new quests, mini-games, or features you'd love to see..."
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      background: "rgba(15, 23, 42, 0.9)",
+                      color: "#ffffff",
+                      border: "1.5px solid rgba(99, 225, 232, 0.4)",
+                      borderRadius: 14,
+                      padding: "11px 14px",
+                      fontSize: 13.5,
+                      fontFamily: "inherit",
+                      fontWeight: 700,
+                      resize: "vertical",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+
+                {/* Send Actions */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 10,
+                  }}
+                >
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.96 }}
+                    style={{
+                      flex: "1 1 220px",
+                      background: "linear-gradient(90deg, #ffdf4e, #38bdf8)",
+                      border: "none",
+                      color: "#060818",
+                      fontWeight: 900,
+                      fontSize: 14,
+                      padding: "11px 18px",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Send Rating & Suggestion to Owner 🚀
+                  </motion.button>
+
+                  <motion.button
+                    type="button"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={handleCopyFeedbackForDiscord}
+                    style={{
+                      background: "rgba(30, 41, 59, 0.9)",
+                      border: "1px solid rgba(192, 132, 252, 0.55)",
+                      color: "#e9d5ff",
+                      fontWeight: 800,
+                      fontSize: 12.5,
+                      padding: "11px 14px",
+                      borderRadius: 12,
+                      cursor: "pointer",
+                    }}
+                  >
+                    {copiedId === "discord-feedback"
+                      ? "Copied for Discord ✓"
+                      : `Copy for Discord (${OWNER_SUPPORT.discordAccount})`}
+                  </motion.button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
 
           <AnimatePresence>
             {statusNote && (
