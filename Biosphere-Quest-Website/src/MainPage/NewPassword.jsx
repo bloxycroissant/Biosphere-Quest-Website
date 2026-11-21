@@ -12,7 +12,9 @@ const NEWPW_SWIMMING_CREATURES = [
 
 export default function NewPassword({ onNavigate, onPasswordUpdated }) {
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [clickBursts, setClickBursts] = useState([]);
@@ -77,9 +79,24 @@ export default function NewPassword({ onNavigate, onPasswordUpdated }) {
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg("");
 
+    const hasMinLength = password.length >= 8;
+    const hasNumberOrSpecial = /[0-9!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\;/']/.test(password);
+
+    if (!hasMinLength || !hasNumberOrSpecial) {
+      setErrorMsg(
+        "Password must be at least 8 characters and contain at least 1 number or special character."
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setErrorMsg("New password and confirm password do not match.");
+      return;
+    }
+
+    setLoading(true);
     const { data, error } = await supabase.auth.updateUser({ password });
 
     let profile = null;
@@ -358,55 +375,145 @@ export default function NewPassword({ onNavigate, onPasswordUpdated }) {
           boxShadow: "0 18px 45px rgba(0, 0, 0, 0.45)",
         }}
       >
-        <img src={logoImg} alt="" style={{ width: 52, height: 52, objectFit: "contain", margin: "0 auto 12px" }} />
-        <h1 style={{ fontSize: 24, fontWeight: 900 }}>Set New Password</h1>
-        <p style={{ fontSize: 13, color: "#cbd5e1", marginTop: 6, marginBottom: 20 }}>Enter your new secure password below.</p>
+        <img src={logoImg} alt="" style={{ width: 68, height: 68, objectFit: "contain", margin: "0 auto 8px" }} />
+        <div
+          style={{
+            fontSize: 28,
+            fontWeight: 900,
+            background: "linear-gradient(90deg, #3b82f6 0%, #c084fc 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            marginBottom: 12,
+          }}
+        >
+          Biosphere Quest
+        </div>
+        <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Set New Password</h1>
+        <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 6, marginBottom: 20 }}>
+          Please create a new password for your account
+        </p>
 
-        <form onSubmit={handleUpdate} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>}
-          <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
-            <input
-              type={showPassword ? "text" : "password"}
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="New secure password..."
-              className="cosmic-input"
-              style={{ width: "100%", paddingRight: 44 }}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              style={{
-                position: "absolute",
-                right: 12,
-                background: "none",
-                border: "none",
-                color: "#63e1e8",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: 4,
-              }}
-            >
-              {showPassword ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              )}
-            </button>
+        <form onSubmit={handleUpdate} style={{ display: "flex", flexDirection: "column", gap: 14, textAlign: "left" }}>
+          {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700, textAlign: "center" }}>{errorMsg}</div>}
+
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6 }}>Enter New Password</div>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="🔒 •••••••••"
+                className="cosmic-input"
+                style={{ width: "100%", paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  background: "none",
+                  border: "none",
+                  color: "#63e1e8",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 4,
+                }}
+              >
+                {showPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
-          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} type="submit" disabled={loading} className="primary-btn">
-            {loading ? "Updating..." : "Update Password"}
+
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 800, marginBottom: 6 }}>Confirm New Password</div>
+            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="🔒 •••••••••"
+                className="cosmic-input"
+                style={{ width: "100%", paddingRight: 44 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  background: "none",
+                  border: "none",
+                  color: "#63e1e8",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 4,
+                }}
+              >
+                {showConfirmPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ fontSize: 12.5, color: "#cbd5e1", lineHeight: 1.5 }}>
+            <div style={{ fontWeight: 800, color: "#ffffff", marginBottom: 2 }}>
+              Password must contain:
+            </div>
+            <div>• At least 8 characters</div>
+            <div>• At least 1 number or special character</div>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            type="submit"
+            disabled={loading}
+            style={{
+              width: "100%",
+              padding: "14px 18px",
+              borderRadius: 14,
+              border: "none",
+              background: "linear-gradient(90deg, #6366f1 0%, #818cf8 100%)",
+              color: "#ffffff",
+              fontSize: 16,
+              fontWeight: 900,
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 10px 25px rgba(99, 102, 241, 0.35)",
+            }}
+          >
+            {loading ? "Resetting..." : "Reset Password"}
           </motion.button>
         </form>
       </motion.div>
