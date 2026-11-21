@@ -152,7 +152,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      setOtpSentMsg(`Numeric OTP sent to ${trimmedEmail}! Check your inbox.`);
+      setOtpSentMsg(`We sent a 6-digit number OTP to ${trimmedEmail}.`);
       setCooldown(30);
       setTimeout(() => digitRefs.current[0]?.focus(), 50);
     }
@@ -459,6 +459,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
         style={{
           maxWidth: 420,
           width: "100%",
+          minWidth: 0,
           boxSizing: "border-box",
           textAlign: "center",
           padding: "32px 24px",
@@ -496,7 +497,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
           </div>
         )}
 
-        <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%" }}>
+        <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%", minWidth: 0 }}>
           {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>}
           {!email && (
             <input
@@ -511,10 +512,12 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
           )}
           <div
             style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
               gap: 6,
               width: "100%",
+              minWidth: 0,
               boxSizing: "border-box",
             }}
           >
@@ -533,8 +536,10 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
                 onKeyDown={(e) => handleDigitKeyDown(idx, e)}
                 aria-label={`Verification digit ${idx + 1}`}
                 style={{
-                  width: "100%",
+                  flex: "1 1 0",
+                  width: 0,
                   minWidth: 0,
+                  maxWidth: 52,
                   boxSizing: "border-box",
                   padding: 0,
                   height: 52,
