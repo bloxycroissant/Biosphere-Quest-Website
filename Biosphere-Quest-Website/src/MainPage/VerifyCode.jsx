@@ -459,8 +459,9 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
         style={{
           maxWidth: 420,
           width: "100%",
+          boxSizing: "border-box",
           textAlign: "center",
-          padding: 36,
+          padding: "32px 24px",
           position: "relative",
           zIndex: 2,
           background: "linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(23, 37, 84, 0.72))",
@@ -490,12 +491,12 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
         </p>
 
         {otpSentMsg && (
-          <div style={{ background: "rgba(74,222,128,0.15)", border: "1px solid #4ade80", color: "#4ade80", padding: 12, borderRadius: 14, fontWeight: 800, fontSize: 12.5, marginBottom: 14 }}>
+          <div style={{ background: "rgba(74,222,128,0.15)", border: "1px solid #4ade80", color: "#4ade80", padding: 12, borderRadius: 14, fontWeight: 800, fontSize: 12.5, marginBottom: 14, wordBreak: "break-word" }}>
             📬 {otpSentMsg}
           </div>
         )}
 
-        <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <form onSubmit={handleVerify} style={{ display: "flex", flexDirection: "column", gap: 14, width: "100%" }}>
           {errorMsg && <div style={{ color: "#f87171", fontSize: 12, fontWeight: 700 }}>{errorMsg}</div>}
           {!email && (
             <input
@@ -505,9 +506,18 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
               onChange={(e) => setTargetEmail(e.target.value)}
               placeholder="you@gmail.com"
               className="cosmic-input"
+              style={{ width: "100%", boxSizing: "border-box" }}
             />
           )}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
+              gap: 6,
+              width: "100%",
+              boxSizing: "border-box",
+            }}
+          >
             {digits.map((digit, idx) => (
               <input
                 key={idx}
@@ -523,16 +533,20 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
                 onKeyDown={(e) => handleDigitKeyDown(idx, e)}
                 aria-label={`Verification digit ${idx + 1}`}
                 style={{
-                  height: 54,
+                  width: "100%",
+                  minWidth: 0,
+                  boxSizing: "border-box",
+                  padding: 0,
+                  height: 52,
                   textAlign: "center",
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: 900,
                   color: "#ffffff",
                   background: "rgba(30, 58, 138, 0.45)",
                   border: digit
                     ? "1.5px solid #818cf8"
                     : "1.5px solid rgba(129, 140, 248, 0.35)",
-                  borderRadius: 14,
+                  borderRadius: 12,
                   outline: "none",
                 }}
               />
@@ -570,6 +584,7 @@ export default function VerifyCode({ email = "", onNavigate, onVerified }) {
             disabled={loading}
             style={{
               width: "100%",
+              boxSizing: "border-box",
               padding: "14px 18px",
               borderRadius: 14,
               border: "none",
