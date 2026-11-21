@@ -64,6 +64,8 @@ const TEAM_MEMBERS = [
   {
     name: "Christianne Denise S. Sabando",
     tag: "CREATOR & LEAD DEVELOPER",
+    description:
+      "Denise is the owner and creator of the Biosphere Quest website and app, bringing together math, science, art, code, and interactive gameplay into one adventure.",
     roles: [
       "Project Owner & Creator",
       "UI/UX Designer & Lead Developer",
@@ -76,8 +78,8 @@ const TEAM_MEMBERS = [
       "Community & Support Lead",
       "Game Design & Art Lead",
       "Game Art & Animation Lead",
-      'Game Sound & Music Lead',
-      'Game Level Design Lead',
+      "Game Sound & Music Lead",
+      "Game Level Design Lead",
       "Full-Stack Web Developer",
     ],
     img: stellaImg,
@@ -972,27 +974,30 @@ export default function AboutUs({
                       {member.name}
                     </div>
 
+                    {member.description && (
+                      <p
+                        style={{
+                          margin: "8px 0 0",
+                          fontSize: 13.5,
+                          fontWeight: 700,
+                          color: "#cbd5e1",
+                          lineHeight: 1.55,
+                        }}
+                      >
+                        {member.description}
+                      </p>
+                    )}
+
                     <div
                       style={{
-                        marginTop: 7,
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
+                        marginTop: 10,
+                        fontSize: 14,
+                        fontWeight: 800,
+                        color: "#e2e8f0",
+                        lineHeight: 1.5,
                       }}
                     >
-                      {member.roles.map((roleText) => (
-                        <div
-                          key={roleText}
-                          style={{
-                            fontSize: 15,
-                            fontWeight: 800,
-                            color: "#e2e8f0",
-                            lineHeight: 1.35,
-                          }}
-                        >
-                          {roleText}
-                        </div>
-                      ))}
+                      {member.roles.join(" • ")}
                     </div>
                   </div>
                 </motion.div>
