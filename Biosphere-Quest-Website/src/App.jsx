@@ -12,6 +12,7 @@ import HomeDashboard from "./MainPage/HomeDashboard";
 import ExploreCourses from "./MainPage/ExploreCourses";
 import GamesArcade from "./MainPage/GamesArcade";
 import ProfilePage from "./MainPage/ProfilePage";
+import AboutUs from "./MainPage/AboutUs";
 
 import logoImg from "./assets/BiosphereQuestAssets/Biosphere Quest Logo.png";
 import homeIcon from "./assets/BiosphereQuestAssets/Home Icon.png";
@@ -35,7 +36,7 @@ const DEFAULT_EXPLORER = {
 };
 
 export default function App() {
-  // Screen flow: "splash" | "wizard" | "login" | "signup" | "forgot" | "newpassword" | "home" | "courses" | "games" | "profile"
+  // Screen flow: "splash" | "wizard" | "login" | "signup" | "forgot" | "newpassword" | "home" | "courses" | "games" | "profile" | "about"
   const [screen, setScreen] = useState("splash");
   const [session, setSession] = useState(null);
   const [explorer, setExplorer] = useState(DEFAULT_EXPLORER);
@@ -348,6 +349,19 @@ export default function App() {
     );
   }
 
+  if (screen === "about") {
+    return (
+      <>
+        {renderAuthNotice()}
+        <AboutUs
+          onNavigate={setScreen}
+          onBack={() => setScreen(session ? "home" : "splash")}
+          playSfx={playSfx}
+        />
+      </>
+    );
+  }
+
   // Main Authenticated / Preview App Shell
   return (
     <div
@@ -484,6 +498,37 @@ export default function App() {
                 </motion.button>
               );
             })}
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => {
+                playSfx("click");
+                setScreen("about");
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "8px 14px",
+                borderRadius: 12,
+                border:
+                  screen === "about"
+                    ? "1.5px solid #c084fc"
+                    : "1px solid rgba(192, 132, 252, 0.35)",
+                background:
+                  screen === "about"
+                    ? "linear-gradient(135deg, rgba(124, 58, 237, 0.5), rgba(2, 132, 199, 0.45))"
+                    : "rgba(30, 41, 59, 0.68)",
+                color: "#e9d5ff",
+                fontWeight: 800,
+                fontSize: 12.5,
+                cursor: "pointer",
+              }}
+            >
+              <span>✨</span>
+              <span>About Us</span>
+            </motion.button>
           </nav>
 
           {/* Right Status: Streak, Sound Toggle & Auth Action */}
@@ -505,6 +550,27 @@ export default function App() {
               <img src={streakIcon} alt="Streak" style={{ width: 16, height: 16 }} />
               {explorer.streak}d
             </span>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
+              onClick={() => {
+                playSfx("click");
+                setScreen("about");
+              }}
+              style={{
+                background: "rgba(30, 41, 59, 0.72)",
+                border: "1px solid rgba(99, 225, 232, 0.35)",
+                color: "#63e1e8",
+                borderRadius: 10,
+                padding: "6px 11px",
+                fontSize: 12,
+                fontWeight: 800,
+                cursor: "pointer",
+              }}
+            >
+              About Us
+            </motion.button>
 
             <button
               onClick={() => setSoundEnabled((s) => !s)}
