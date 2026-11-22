@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "./lib/supabase";
 
@@ -43,6 +43,22 @@ export default function App() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [xpToast, setXpToast] = useState(null);
   const [authNotice, setAuthNotice] = useState("");
+
+  // Track latest explorer state and in-flight profile save promises so logout awaits completion
+  const explorerRef = useRef(DEFAULT_EXPLORER);
+  const pendingSaveRef = useRef(Promise.resolve());
+
+  useEffect(() => {
+    explorerRef.current = explorer;
+  }, [explorer]);
+
+  const queueProfileSave = useCallback((saveOperation) => {
+    const nextSave = pendingSaveRef.current
+      .catch(() => {})
+      .then(() => saveOperation());
+    pendingSaveRef.current = nextSave;
+    return nextSave;
+  }, []);
 
   // Lightweight Web Audio synth for UI & Mini-Game Sound Effects
   const playSfx = useCallback(
@@ -96,29 +112,40 @@ export default function App() {
       .from("profiles")
       .select("*")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
+
+    if (error) {
+      console.error("Failed to fetch profile:", error.message);
+    }
 
     if (data && !error) {
+      const resolvedXp = data.xp ?? 100;
+      const resolvedLevel = data.level ?? Math.floor(resolvedXp / 250) + 1;
       setExplorer((prev) => ({
         ...prev,
         id: user.id,
-        name: data.username || data.full_name || user.email?.split("@")[0] || prev.name,
-        role: data.role || prev.role,
-        grade: data.grade || prev.grade,
-        xp: data.xp ?? prev.xp,
-        level: data.level ?? Math.floor((data.xp ?? 100) / 250) + 1,
+        name: data.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || prev.name,
+        grade: data.grade ?? prev.grade,
+        xp: resolvedXp,
+        level: resolvedLevel,
         streak: data.streak ?? prev.streak,
       }));
     } else {
       // Seed initial profile row if not yet created
       const starterName = user.user_metadata?.full_name || user.email?.split("@")[0] || "Space Explorer";
-      await supabase.from("profiles").upsert({
+      const { error: upsertError } = await supabase.from("profiles").upsert({
         id: user.id,
-        username: starterName,
+        full_name: starterName,
+        email: user.email,
+        grade: 3,
         xp: 100,
         level: 1,
         streak: 1,
+        updated_at: new Date().toISOString(),
       });
+      if (upsertError) {
+        console.error("Failed to create initial profile:", upsertError.message);
+      }
       setExplorer((prev) => ({ ...prev, id: user.id, name: starterName }));
     }
   }, []);
@@ -179,7 +206,8 @@ export default function App() {
   // Add XP and sync to Supabase
   const addXp = async (amount = 50) => {
     playSfx("correct");
-    const newXp = (explorer.xp || 0) + amount;
+    const current = explorerRef.current;
+    const newXp = (current.xp || 0) + amount;
     const newLevel = Math.floor(newXp / 250) + 1;
 
     setExplorer((prev) => ({
@@ -191,45 +219,127 @@ export default function App() {
     setXpToast(`+${amount} XP Earned! ✨`);
     setTimeout(() => setXpToast(null), 2400);
 
-    if (session?.user?.id) {
-      await supabase
-        .from("profiles")
-        .update({ xp: newXp, level: newLevel })
-        .eq("id", session.user.id);
+    const activeUserId = session?.user?.id || current.id;
+    if (activeUserId) {
+      await queueProfileSave(async () => {
+        const { error } = await supabase
+          .from("profiles")
+          .upsert({
+            id: activeUserId,
+            full_name: current.name,
+            email: session?.user?.email,
+            grade: current.grade,
+            xp: newXp,
+            level: newLevel,
+            streak: current.streak,
+            updated_at: new Date().toISOString(),
+          });
+        if (error) {
+          console.error("Failed to save XP:", error.message);
+        }
+      });
+    }
+  };
+
+  // Sync profile updates (like grade or streak changes) to Supabase
+  const handleUpdateExplorer = async (updater) => {
+    const prev = explorerRef.current;
+    const next = typeof updater === "function" ? updater(prev) : updater;
+    const resolvedLevel = next.level ?? Math.floor((next.xp ?? 100) / 250) + 1;
+    const normalized = { ...next, level: resolvedLevel };
+
+    setExplorer(normalized);
+
+    const activeUserId = session?.user?.id || normalized.id || prev.id;
+    if (activeUserId) {
+      await queueProfileSave(async () => {
+        const { error } = await supabase
+          .from("profiles")
+          .upsert({
+            id: activeUserId,
+            full_name: normalized.name,
+            email: session?.user?.email,
+            grade: normalized.grade,
+            xp: normalized.xp,
+            level: normalized.level,
+            streak: normalized.streak,
+            updated_at: new Date().toISOString(),
+          });
+        if (error) {
+          console.error("Failed to sync profile:", error.message);
+        }
+      });
     }
   };
 
   // Handle completing the WelcomeWizard -> navigates straight to Dashboard (home)
   const handleWizardComplete = async (wizardData) => {
     playSfx("levelup");
+    const current = explorerRef.current;
+    const nextXp = (current.xp || 0) + (wizardData.starterXp || 100);
+    const nextLevel = Math.floor(nextXp / 250) + 1;
     const updated = {
-      ...explorer,
-      name: wizardData.name || explorer.name,
-      role: wizardData.role || explorer.role,
-      companion: wizardData.companion || explorer.companion,
-      grade: wizardData.grade || explorer.grade,
-      favoriteWorld: wizardData.favoriteWorld || explorer.favoriteWorld,
-      xp: (explorer.xp || 0) + (wizardData.starterXp || 100),
+      ...current,
+      name: wizardData.name || current.name,
+      role: wizardData.role || current.role,
+      companion: wizardData.companion || current.companion,
+      grade: wizardData.grade || current.grade,
+      favoriteWorld: wizardData.favoriteWorld || current.favoriteWorld,
+      xp: nextXp,
+      level: nextLevel,
     };
     setExplorer(updated);
 
-    if (session?.user?.id) {
-      await supabase
-        .from("profiles")
-        .update({
-          username: updated.name,
-          role: updated.role,
-          grade: updated.grade,
-          xp: updated.xp,
-        })
-        .eq("id", session.user.id);
+    const activeUserId = session?.user?.id || updated.id;
+    if (activeUserId) {
+      await queueProfileSave(async () => {
+        const { error } = await supabase
+          .from("profiles")
+          .upsert({
+            id: activeUserId,
+            full_name: updated.name,
+            email: session?.user?.email,
+            grade: updated.grade,
+            xp: updated.xp,
+            level: updated.level,
+            streak: updated.streak,
+            updated_at: new Date().toISOString(),
+          });
+        if (error) {
+          console.error("Failed to save wizard profile:", error.message);
+        }
+      });
     }
 
     setScreen("home");
   };
 
   const handleLogout = async () => {
+    // Wait for any in-flight save and flush the latest explorer state before signing out
+    await pendingSaveRef.current.catch(() => {});
+
+    const latest = explorerRef.current;
+    const activeUserId = session?.user?.id || latest.id;
+    if (activeUserId) {
+      const { error } = await supabase
+        .from("profiles")
+        .upsert({
+          id: activeUserId,
+          full_name: latest.name,
+          email: session?.user?.email,
+          grade: latest.grade,
+          xp: latest.xp,
+          level: latest.level ?? Math.floor((latest.xp ?? 100) / 250) + 1,
+          streak: latest.streak,
+          updated_at: new Date().toISOString(),
+        });
+      if (error) {
+        console.error("Failed to flush profile before logout:", error.message);
+      }
+    }
+
     await supabase.auth.signOut();
+    setExplorer(DEFAULT_EXPLORER);
     setAuthNotice("");
     setScreen("splash");
   };
@@ -662,7 +772,7 @@ export default function App() {
             explorer={explorer}
             user={explorer}
             session={session}
-            onUpdateExplorer={setExplorer}
+            onUpdateExplorer={handleUpdateExplorer}
             onNavigate={setScreen}
             onLogout={handleLogout}
           />
