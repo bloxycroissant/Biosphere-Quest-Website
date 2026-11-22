@@ -18,7 +18,7 @@ import coursesIcon from "../assets/BiosphereQuestAssets/Courses Icon.png";
 import parentsIcon from "../assets/BiosphereQuestAssets/Parents Icon.png";
 
 // Official Welcome Sound Track
-import welcomeMusic from "../assets/BiosphereQuestSoundEffectsandMusic/Welcome Screen (Official).mp3";
+import welcomeMusic from "../assets/BiosphereQuestSoundEffectsandMusic/Splash Screen (Official).mp3";
 
 const ROLE_HIGHLIGHTS = {
   kids: {

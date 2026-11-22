@@ -435,6 +435,31 @@ export default function WelcomeWizard({
             />
             <span>Get Started</span>
           </motion.a>
+
+          {onNavigate && (
+            <motion.button
+              type="button"
+              whileHover={{ y: -2, scale: 1.06, boxShadow: "0 0 16px rgba(192, 132, 252, 0.35)" }}
+              whileTap={{ scale: 0.9, rotate: -2 }}
+              onClick={(e) => handleAnimatedRouteNav(e, "about")}
+              style={{
+                background: "rgba(30, 41, 59, 0.78)",
+                border: "1px solid rgba(192, 132, 252, 0.45)",
+                color: "#e9d5ff",
+                padding: "6px 12px",
+                borderRadius: 10,
+                fontSize: 13,
+                fontWeight: 800,
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>✨</span>
+              <span>About Us</span>
+            </motion.button>
+          )}
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>

@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../lib/supabase";
@@ -202,6 +203,15 @@ export default function AboutUs({
       onBack();
     } else if (onNavigate) {
       onNavigate("splash");
+    }
+  };
+
+  const handleGoWelcomeScreen = () => {
+    playSfx?.("click");
+    if (onNavigate) {
+      onNavigate("wizard");
+    } else if (onBack) {
+      onBack();
     }
   };
 
@@ -515,7 +525,7 @@ export default function AboutUs({
 
       {/* Foreground Content Container */}
       <div style={{ maxWidth: 880, margin: "0 auto", position: "relative", zIndex: 2 }}>
-        {/* Top Bar with Cancel & Mission Pill */}
+        {/* Top Bar with Cancel, Welcome Screen & Mission Pill */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -529,33 +539,63 @@ export default function AboutUs({
             marginBottom: 18,
           }}
         >
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05, x: -2, boxShadow: "0 0 20px rgba(99, 225, 232, 0.35)" }}
-            whileTap={{ scale: 0.94 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              handleBack();
-            }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.8))",
-              backdropFilter: "blur(14px)",
-              border: "1.5px solid rgba(99, 225, 232, 0.5)",
-              color: "#ffffff",
-              fontWeight: 900,
-              fontSize: 14,
-              padding: "9px 18px",
-              borderRadius: 999,
-              cursor: "pointer",
-              boxShadow: "0 8px 20px rgba(0, 0, 0, 0.35)",
-            }}
-          >
-            <span>←</span>
-            <span>Cancel</span>
-          </motion.button>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05, x: -2, boxShadow: "0 0 20px rgba(99, 225, 232, 0.35)" }}
+              whileTap={{ scale: 0.94 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleBack();
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.8))",
+                backdropFilter: "blur(14px)",
+                border: "1.5px solid rgba(99, 225, 232, 0.5)",
+                color: "#ffffff",
+                fontWeight: 900,
+                fontSize: 14,
+                padding: "9px 18px",
+                borderRadius: 999,
+                cursor: "pointer",
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.35)",
+              }}
+            >
+              <span>←</span>
+              <span>Cancel</span>
+            </motion.button>
+
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.05, y: -1, boxShadow: "0 0 20px rgba(192, 132, 252, 0.4)" }}
+              whileTap={{ scale: 0.94 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleGoWelcomeScreen();
+              }}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                background: "linear-gradient(135deg, rgba(37, 54, 128, 0.85), rgba(15, 23, 42, 0.88))",
+                backdropFilter: "blur(14px)",
+                border: "1.5px solid rgba(192, 132, 252, 0.55)",
+                color: "#e9d5ff",
+                fontWeight: 900,
+                fontSize: 13.5,
+                padding: "9px 18px",
+                borderRadius: 999,
+                cursor: "pointer",
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.35)",
+              }}
+            >
+              <span>🚀</span>
+              <span>Welcome Screen</span>
+            </motion.button>
+          </div>
 
           <motion.div
             animate={{ boxShadow: ["0 0 12px rgba(99,225,232,0.2)", "0 0 24px rgba(192,132,252,0.38)", "0 0 12px rgba(99,225,232,0.2)"] }}
