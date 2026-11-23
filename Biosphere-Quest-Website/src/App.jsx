@@ -36,7 +36,6 @@ const DEFAULT_EXPLORER = {
 };
 
 export default function App() {
-  // Screen flow: "splash" | "wizard" | "login" | "signup" | "forgot" | "newpassword" | "home" | "courses" | "games" | "profile" | "about"
   const [screen, setScreen] = useState("splash");
   const [session, setSession] = useState(null);
   const [explorer, setExplorer] = useState(DEFAULT_EXPLORER);
