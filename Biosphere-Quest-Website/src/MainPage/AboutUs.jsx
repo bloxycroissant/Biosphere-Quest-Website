@@ -107,7 +107,7 @@ const SUPPORT_CHANNELS = [
   },
   {
     id: "discord-server",
-    label: "Official Discord Server",
+    label: "Official Discord Server 13+",
     value: OWNER_SUPPORT.discordServer,
     href: OWNER_SUPPORT.discordServer,
     icon: "🌐",
