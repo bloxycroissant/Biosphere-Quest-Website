@@ -194,9 +194,7 @@ body,
   box-shadow: 0 0 18px rgba(99, 225, 232, 0.25);
 }
 
-/* =========================================================
-   INPUTS & FORM CONTROLS (LOGIN, SIGNUP & MINI-GAMES)
-   ========================================================= */
+/* INPUTS & FORM CONTROLS (LOGIN, SIGNUP & MINI-GAMES) */
 
 .cosmic-input {
   width: 100%;
@@ -216,9 +214,7 @@ body,
   box-shadow: 0 0 16px rgba(99, 225, 232, 0.35);
 }
 
-/* =========================================================
-   TUTORIAL & VICTORY MODALS
-   ========================================================= */
+/* TUTORIAL & VICTORY MODALS */
 
 .modal-backdrop {
   position: fixed;
@@ -243,9 +239,7 @@ body,
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65), 0 0 32px rgba(99, 225, 232, 0.28);
 }
 
-/* =========================================================
-   KEYFRAME ANIMATIONS & BADGES
-   ========================================================= */
+/* KEYFRAME ANIMATIONS & BADGES */
 
 @keyframes floatBob {
   0%,
