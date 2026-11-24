@@ -1,6 +1,4 @@
-/* =========================================================
-   BIOSPHERE QUEST — GLOBAL SPACE & OCEAN GLASSMORPHISM THEME
-   ========================================================= */
+/* BIOSPHERE QUEST — GLOBAL SPACE & OCEAN GLASSMORPHISM THEME */
 
 :root {
   --space-void: #060818;
@@ -52,9 +50,7 @@ body,
   border-radius: 999px;
 }
 
-/* =========================================================
-   REUSABLE GLASSMORPHISM PANELS & LAYOUT GRIDS
-   ========================================================= */
+/* REUSABLE GLASSMORPHISM PANELS & LAYOUT GRIDS */
 
 .card-panel {
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(23, 37, 84, 0.65));
