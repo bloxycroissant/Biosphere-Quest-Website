@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import scienceGif from "../assets/BiosphereQuestAssets/Science gif.gif";
 import mathIcon from "../assets/BiosphereQuestAssets/Math Icon.png";
@@ -15,65 +15,90 @@ const COURSES = [
     icon: mathIcon,
     accent: "#ffdf4e",
     desc: "Count, read, write, and compare whole numbers up to 100 using tens and ones blocks.",
-    modules: ["Numerals 1–100 & Number Line", "Tens & Ones Grouping", "Comparing & Ordering Numbers"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Counting to 100 with Tens & Ones",
-        body: "In MATATAG Grade 1 Math, numbers up to 100 can be grouped into bundles of 10 and leftover ones—like 34 = 3 tens and 4 ones.",
-        checkQuestion: "How many tens are in the number 52?",
-        options: ["2 tens", "5 tens", "52 tens"],
+        id: "l1",
+        heading: "Lesson 1: Counting & Numerals to 100",
+        body: "In MATATAG Grade 1 Math, learners count, read, and write whole numbers from 0 up to 100 in order and recognize number patterns on a number line.",
+        checkQuestion: "Which number comes right after 69 on a number line?",
+        options: ["68", "70", "80"],
         answerIndex: 1,
       },
       {
-        heading: "2. Comparing Quantities",
-        body: "Compare the tens digit first when two-digit numbers are different; if the tens are equal, compare the ones digit.",
-        checkQuestion: "Which number is greater: 48 or 61?",
-        options: ["48", "61", "They are equal"],
+        id: "l2",
+        heading: "Lesson 2: Place Value (Tens & Ones)",
+        body: "Two-digit numbers up to 100 are made of groups of tens and remaining ones—for example, 46 has 4 tens and 6 ones.",
+        checkQuestion: "How many tens are in 83?",
+        options: ["3 tens", "8 tens", "83 tens"],
         answerIndex: 1,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Comparing & Ordering Numbers",
+        body: "Compare the tens digit first when two-digit numbers differ; if the tens digits match, compare the ones digits to order from least to greatest.",
+        checkQuestion: "Which number is greater: 54 or 45?",
+        options: ["54", "45", "They are equal"],
+        answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Number & Algebra",
+        tag: "MATATAG Number & Algebra • G1",
         title: "Place Value (Tens & Ones)",
-        summary: "A 2-digit number shows groups of 10 (tens) and single units (ones), such as 27 = 20 + 7.",
+        summary: "A 2-digit number groups quantities into tens (10s) and ones (1s), such as 52 = 5 tens + 2 ones.",
       },
       {
         tag: "Quick Tip",
-        title: "Number Line Order",
-        summary: "Moving right on a number line increases value; moving left decreases value.",
+        title: "Comparing Whole Numbers",
+        summary: "More tens means a larger value; when tens are equal, look at the ones digit.",
       },
     ],
   },
   {
-    id: "math-g1-2",
-    title: "2D Shapes, Time & Simple Pictographs",
-    category: "Math • Grade 1",
-    subject: "Math",
+    id: "science-g1-1",
+    title: "Senses, Living Things & Earth Surroundings",
+    category: "Science • Grade 1",
+    subject: "Science",
     grade: 1,
-    icon: mathIcon,
-    accent: "#facc15",
-    desc: "Identify squares, rectangles, and triangles, tell time by the hour, and read simple pictographs.",
-    modules: ["2D Shapes, Sides & Corners", "Reading Clock Hours", "Sorting & Simple Pictographs"],
-    lessonSteps: [
+    icon: scienceGif,
+    accent: "#38bdf8",
+    desc: "Use your senses safely to observe living and non-living things, plants, animals, and daily surroundings.",
+    lessons: [
       {
-        heading: "1. Sides & Corners of 2D Shapes",
-        body: "Triangles have 3 straight sides and 3 corners, while squares and rectangles each have 4 straight sides and 4 corners.",
-        checkQuestion: "How many sides does a triangle have?",
-        options: ["2 sides", "3 sides", "4 sides"],
+        id: "l1",
+        heading: "Lesson 1: Observing with Our Senses",
+        body: "Sight, hearing, smell, taste, and touch help us observe color, shape, sound, and texture safely around us.",
+        checkQuestion: "Which sense helps you tell if a chime is loud or soft?",
+        options: ["Hearing", "Sight", "Taste"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Living vs. Non-Living Things",
+        body: "Living things grow, need food, water, and air, and respond to changes, while non-living things do not grow on their own.",
+        checkQuestion: "Which one is a living thing?",
+        options: ["Toy car", "Potted plant", "Stone"],
+        answerIndex: 1,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Caring for Our Environment",
+        body: "Keeping schoolyards, homes, and waterways clean protects plants, animals, and people every day.",
+        checkQuestion: "What is a helpful habit for keeping surroundings clean?",
+        options: ["Throwing wrappers on the ground", "Sorting and disposing of trash properly", "Wasting clean water"],
         answerIndex: 1,
       },
     ],
     notes: [
       {
-        tag: "Measurement & Geometry",
-        title: "Basic 2D Figures",
-        summary: "Recognize squares, rectangles, triangles, and circles regardless of size or tilt.",
+        tag: "MATATAG Science • G1",
+        title: "Living Things Characteristics",
+        summary: "Living things grow, breathe/need air, need food and water, and react to their environment.",
       },
       {
-        tag: "Data & Probability",
-        title: "Reading Pictographs",
-        summary: "Count each picture symbol carefully to compare categories and find the most or least.",
+        tag: "Safe Observation",
+        title: "Using Senses Wisely",
+        summary: "Never taste or touch unknown or sharp objects without adult guidance.",
       },
     ],
   },
@@ -86,26 +111,42 @@ const COURSES = [
     icon: scienceGif,
     accent: "#22d3ee",
     desc: "Meet gentle tide-pool creatures, feel how water moves, and spot living vs. non-living things by the shore.",
-    modules: ["Living vs. Non-Living by the Shore", "Tide Pool Friends & Shells", "Keeping Beaches & Waters Clean"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Living Things in Coastal Waters",
-        body: "Crabs, starfish, and seaweeds are living things because they grow, need food or sunlight, and respond to their surroundings.",
-        checkQuestion: "Which one is a living thing in a tide pool?",
-        options: ["Smooth pebble", "Hermit crab", "Dry driftwood"],
-        answerIndex: 1,
+        id: "l1",
+        heading: "Lesson 1: What Is a Tide Pool?",
+        body: "Tide pools are shallow pockets of seawater left along rocky shores when the tide goes out.",
+        checkQuestion: "Where are tide pools usually found?",
+        options: ["Along rocky shores when tides recede", "Inside volcanoes", "On the moon"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Coastal Animals & Shells",
+        body: "Hermit crabs, starfish, and snails live in coastal waters and use shells or textures to stay safe.",
+        checkQuestion: "Which animal is often seen near shores and tide pools?",
+        options: ["Hermit crab", "Polar bear", "Camel"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Clean Shores, Happy Sea Life",
+        body: "Trash blown or washed onto beaches can harm marine animals, so keeping shores clean protects ocean habitats.",
+        checkQuestion: "Why should we pick up litter at the beach?",
+        options: ["To keep marine animals safe and habitats clean", "To make waves stop", "Because sand is made of plastic"],
+        answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Coastal Discovery",
-        title: "Tide Pools",
-        summary: "Shallow rocky pools left behind when the tide goes out, home to small marine life.",
+        tag: "Coastal Discovery • G1",
+        title: "Tide Pool Habitats",
+        summary: "Small rocky pools holding seawater and hardy marine creatures between tides.",
       },
       {
-        tag: "Care for Nature",
-        title: "Leave No Trash",
-        summary: "Plastics harm sea animals; always place trash in proper bins.",
+        tag: "Ocean Care",
+        title: "Protecting Shorelines",
+        summary: "Clean beaches prevent plastic waste from entering rivers and oceans.",
       },
     ],
   },
@@ -120,26 +161,85 @@ const COURSES = [
     icon: mathIcon,
     accent: "#ffdf4e",
     desc: "Work with hundreds, tens, and ones up to 1,000 and solve addition and subtraction word problems.",
-    modules: ["Hundreds, Tens & Ones to 1,000", "Regrouping in Addition & Subtraction", "Halves & Quarters of Wholes"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Place Value to 1,000",
-        body: "Three-digit numbers combine hundreds, tens, and ones—for example, 425 means 4 hundreds, 2 tens, and 5 ones.",
-        checkQuestion: "What is the value of 3 in 360?",
-        options: ["3", "30", "300"],
+        id: "l1",
+        heading: "Lesson 1: Hundreds, Tens & Ones to 1,000",
+        body: "In MATATAG Grade 2 Math, three-digit numbers show hundreds, tens, and ones—for example, 548 = 500 + 40 + 8.",
+        checkQuestion: "What is the place value of 7 in 724?",
+        options: ["Ones", "Tens", "Hundreds"],
         answerIndex: 2,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Addition & Subtraction Within 1,000",
+        body: "Line up digits by place value and regroup carefully when adding or subtracting multi-digit numbers.",
+        checkQuestion: "What is 250 + 140?",
+        options: ["390", "410", "350"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Halves & Fourths",
+        body: "Splitting a whole into 2 equal parts gives halves (1/2); splitting into 4 equal parts gives fourths (1/4).",
+        checkQuestion: "How many equal fourths make one whole?",
+        options: ["2 fourths", "4 fourths", "6 fourths"],
+        answerIndex: 1,
       },
     ],
     notes: [
       {
-        tag: "Number & Algebra",
-        title: "Addition & Subtraction Strategies",
-        summary: "Align place values (ones under ones, tens under tens, hundreds under hundreds) and check answers.",
+        tag: "MATATAG Number & Algebra • G2",
+        title: "Expanded Form to 1,000",
+        summary: "Break numbers by place value: 635 = 600 + 30 + 5.",
       },
       {
-        tag: "Fractions Intro",
-        title: "Equal Parts",
-        summary: "One-half (1/2) means 1 of 2 equal parts; one-fourth (1/4) means 1 of 4 equal parts.",
+        tag: "Equal Parts",
+        title: "Halves and Quarters",
+        summary: "Equal sharing requires parts of the exact same size.",
+      },
+    ],
+  },
+  {
+    id: "science-g2-1",
+    title: "Push, Pull, Light & Daily Weather",
+    category: "Science • Grade 2",
+    subject: "Science",
+    grade: 2,
+    icon: scienceGif,
+    accent: "#38bdf8",
+    desc: "Explore pushes and pulls, sources of light and heat, and how weather changes across the day.",
+    lessons: [
+      {
+        id: "l1",
+        heading: "Lesson 1: Pushes and Pulls",
+        body: "A push moves something away from you, while a pull brings something closer—both can start, stop, or change motion.",
+        checkQuestion: "Opening a drawer toward yourself is mostly a what?",
+        options: ["Pull", "Push", "Freeze"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Natural & Artificial Light",
+        body: "The sun is our main natural source of light and heat, while lamps and flashlights are artificial light sources.",
+        checkQuestion: "Which is a natural source of light?",
+        options: ["The Sun", "Table lamp", "Flashlight"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Sunny, Rainy & Windy Days",
+        body: "Observing sky conditions, wind, and rain helps us dress and plan activities safely.",
+        checkQuestion: "What do you usually carry on a rainy day?",
+        options: ["Umbrella or raincoat", "Sunglasses only", "Ice skates"],
+        answerIndex: 0,
+      },
+    ],
+    notes: [
+      {
+        tag: "MATATAG Science • G2",
+        title: "Forces as Pushes & Pulls",
+        summary: "Pushes and pulls can make objects move, slow down, speed up, or change direction.",
       },
     ],
   },
@@ -152,21 +252,29 @@ const COURSES = [
     icon: scienceGif,
     accent: "#38bdf8",
     desc: "Explore how marine animals move, breathe, and shelter in open waters and coastal bays.",
-    modules: ["How Fish & Marine Mammals Move", "Shelters Under the Waves", "Water & Weather Near the Coast"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Fins, Tails & Swimming",
-        body: "Fins and tails help aquatic animals steer, balance, and push through water smoothly.",
-        checkQuestion: "What body parts help fish steer and swim in water?",
-        options: ["Fins and tail", "Wings and feathers", "Hooves"],
+        id: "l1",
+        heading: "Lesson 1: Swimming with Fins & Tails",
+        body: "Fish and marine mammals use streamlined bodies, fins, and tails to glide and turn through water.",
+        checkQuestion: "How does a streamlined body help swimmers in water?",
+        options: ["Reduces water resistance", "Makes them heavy like rocks", "Stops movement"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Shelters Under the Waves",
+        body: "Coral crevices, seagrass blades, and underwater rocks give small sea creatures places to hide and rest.",
+        checkQuestion: "Why do small fish hide near coral or seagrass?",
+        options: ["For shelter and protection", "To dry their scales", "To fly away"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Marine Life",
-        title: "Habitats & Needs",
-        summary: "Marine animals need clean water, food, oxygen, and safe shelter to survive.",
+        tag: "Marine Habitats • G2",
+        title: "Underwater Shelters",
+        summary: "Reefs and seagrass beds provide food and hiding spots for young marine animals.",
       },
     ],
   },
@@ -181,26 +289,42 @@ const COURSES = [
     icon: scienceGif,
     accent: "#38bdf8",
     desc: "Investigate observable properties of solids, liquids, and gases and how temperature changes matter.",
-    modules: ["Properties of Solids, Liquids & Gases", "Heating & Cooling Changes", "Safe Scientific Observation"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Solids, Liquids, and Gases",
-        body: "Under MATATAG Grade 3 Science, solids keep their own shape, liquids take the shape of their container while keeping volume, and gases spread to fill space.",
+        id: "l1",
+        heading: "Lesson 1: Solids, Liquids & Gases",
+        body: "In MATATAG Grade 3 Science, solids have a definite shape and volume, liquids have a definite volume and take container shape, and gases spread to fill their container.",
         checkQuestion: "Which state of matter takes the shape of its container and has a definite volume?",
         options: ["Solid", "Liquid", "Gas"],
         answerIndex: 1,
       },
+      {
+        id: "l2",
+        heading: "Lesson 2: Heating & Cooling Matter",
+        body: "Adding heat can melt ice into liquid water or evaporate water into vapor; cooling can condense vapor or freeze water.",
+        checkQuestion: "What happens when liquid water is cooled below its freezing point?",
+        options: ["It freezes into ice", "It turns into smoke", "It disappears"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Safe Science Investigations",
+        body: "Record observations carefully, follow instructions, and handle warm or breakable items with care.",
+        checkQuestion: "What should you do when doing a science activity with heat?",
+        options: ["Follow safety rules and keep a safe distance", "Touch hot surfaces with bare fingers", "Skip instructions"],
+        answerIndex: 0,
+      },
     ],
     notes: [
       {
-        tag: "MATATAG Science G3",
-        title: "States of Matter",
-        summary: "Solids hold shape; liquids flow and take container shape; gases expand to fill containers.",
+        tag: "MATATAG Science • G3",
+        title: "Three States of Matter",
+        summary: "Solids keep shape; liquids take container shape; gases fill available space.",
       },
       {
-        tag: "Inquiry Skills",
-        title: "Observing Changes",
-        summary: "Adding or removing heat can cause melting, freezing, evaporation, or condensation.",
+        tag: "Temperature Effects",
+        title: "Melting, Freezing & Evaporation",
+        summary: "Heating and cooling change states of matter between solid, liquid, and gas.",
       },
     ],
   },
@@ -213,26 +337,42 @@ const COURSES = [
     icon: mathIcon,
     accent: "#ffdf4e",
     desc: "Build multiplication and division fluency, explore unit fractions, and measure perimeter and area.",
-    modules: ["Multiplication & Equal Groups", "Division as Fair Sharing", "Unit Fractions & Area Grids"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Multiplication as Equal Groups",
-        body: "Multiplying 6 × 4 means 6 groups of 4, which equals 24.",
-        checkQuestion: "What is 6 × 4?",
-        options: ["10", "20", "24"],
-        answerIndex: 2,
+        id: "l1",
+        heading: "Lesson 1: Multiplication as Equal Groups",
+        body: "Under MATATAG Grade 3 Math, multiplication represents equal groups—so 5 × 3 means 5 groups of 3, or 15.",
+        checkQuestion: "What is 5 × 3?",
+        options: ["8", "15", "25"],
+        answerIndex: 1,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Division & Equal Sharing",
+        body: "Division splits a total into equal groups or finds how many equal groups fit—18 ÷ 3 = 6.",
+        checkQuestion: "What is 18 ÷ 3?",
+        options: ["6", "9", "15"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Unit Fractions & Area",
+        body: "A unit fraction like 1/4 names 1 equal part out of 4; area counts square units covering a flat region.",
+        checkQuestion: "In 1/6, how many equal parts make one whole?",
+        options: ["1 part", "6 parts", "7 parts"],
+        answerIndex: 1,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Math G3",
-        title: "Multiplication & Division Link",
-        summary: "Multiplication combines equal groups; division splits a total into equal groups or shares.",
+        tag: "MATATAG Math • G3",
+        title: "Multiplication & Division",
+        summary: "Multiplication and division are inverse operations built on equal groups.",
       },
       {
-        tag: "Measurement",
-        title: "Area vs. Perimeter",
-        summary: "Perimeter is the distance around a shape; area is the surface covered inside it.",
+        tag: "Geometry & Measurement",
+        title: "Area in Square Units",
+        summary: "Count unit squares inside a shape without gaps or overlaps to find its area.",
       },
     ],
   },
@@ -245,21 +385,29 @@ const COURSES = [
     icon: scienceGif,
     accent: "#22d3ee",
     desc: "See how living things in coral reefs and seas depend on one another and on non-living water and light.",
-    modules: ["Living & Non-Living Reef Factors", "Marine Food Chains", "Protecting Coral Ecosystems"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Living & Non-Living in the Sea",
-        body: "Corals, clownfish, and seagrasses are living components, while sunlight, seawater, and rocks are non-living components that support them.",
-        checkQuestion: "Which is a non-living part of a marine habitat?",
-        options: ["Sunlight & seawater", "Sea turtle", "Kelp"],
+        id: "l1",
+        heading: "Lesson 1: Living & Non-Living Reef Factors",
+        body: "Corals, sea anemones, and reef fish are living things supported by non-living water, sunlight, and minerals.",
+        checkQuestion: "Which is a non-living part of a coral reef environment?",
+        options: ["Seawater and sunlight", "Clownfish", "Sea urchin"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: How Energy Moves in a Food Chain",
+        body: "Energy flows from producers (like algae and seagrass) to animals that eat them in a food chain.",
+        checkQuestion: "What do organisms in a food chain need to survive and grow?",
+        options: ["Energy and nutrients", "Plastic waste", "Zero water"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Ocean Ecosystem",
-        title: "Interdependence",
-        summary: "Living things rely on other organisms and non-living resources like water, air, and sunlight.",
+        tag: "Ocean Ecosystem • G3",
+        title: "Reef Interdependence",
+        summary: "Living organisms in coral reefs rely on clean water, sunlight, and other species.",
       },
     ],
   },
@@ -274,21 +422,37 @@ const COURSES = [
     icon: scienceGif,
     accent: "#38bdf8",
     desc: "Classify materials by properties, explore mixtures, and observe physical and chemical changes.",
-    modules: ["Useful & Harmful Materials", "Mixtures & Separating Methods", "Changes When Heat or Force Is Applied"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Properties & Safe Use of Materials",
-        body: "MATATAG Grade 4 Science highlights choosing materials based on hardness, flexibility, conductivity, and safety.",
-        checkQuestion: "Why check material properties before using or disposing of household items?",
-        options: ["To use them safely and responsibly", "To ignore labels", "Because properties never matter"],
+        id: "l1",
+        heading: "Lesson 1: Useful & Harmful Properties of Materials",
+        body: "MATATAG Grade 4 Science examines hardness, flexibility, and safety so we pick the right material and manage waste responsibly.",
+        checkQuestion: "Why is knowing a material's properties important?",
+        options: ["To pick safe, suitable uses and manage waste properly", "To guess randomly", "Because all materials are identical"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Combining & Separating Mixtures",
+        body: "A mixture is made of two or more substances combined physically, such as pebbles and sand or water and salt.",
+        checkQuestion: "Which of these is a mixture?",
+        options: ["Trail mix of nuts and seeds", "A single pure gold atom", "Vacuum space"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Changes When Heat or Force Is Applied",
+        body: "Heating, cooling, bending, or cutting can change how a material looks or behaves, sometimes forming new materials when burned or reacted.",
+        checkQuestion: "Bending a wire or folding paper is an example of changing what?",
+        options: ["Shape or physical form", "The laws of gravity", "Day into night"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Science G4",
-        title: "Mixtures",
-        summary: "A mixture combines two or more substances physically without forming a brand-new chemical substance.",
+        tag: "MATATAG Science • G4",
+        title: "Mixtures vs. Pure Substances",
+        summary: "Mixtures contain multiple components blended together and can often be separated physically.",
       },
     ],
   },
@@ -301,21 +465,37 @@ const COURSES = [
     icon: mathIcon,
     accent: "#ffdf4e",
     desc: "Solve multi-step whole number problems, equivalent fractions, perimeter/area, and angle measurements.",
-    modules: ["Multi-Digit Multiplication & Division", "Equivalent & Proper Fractions", "Angles, Triangles & Bar Graphs"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Equivalent Fractions",
-        body: "Equivalent fractions name the same amount of a whole—for example, 1/2 is equal to 2/4 and 3/6.",
-        checkQuestion: "Which fraction is equivalent to 1/2?",
-        options: ["2/4", "1/5", "3/4"],
+        id: "l1",
+        heading: "Lesson 1: Multi-Digit Multiplication & Division",
+        body: "In MATATAG Grade 4 Math, apply place-value strategies and properties of operations to multiply and divide larger whole numbers.",
+        checkQuestion: "What is 12 × 5?",
+        options: ["50", "60", "65"],
+        answerIndex: 1,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Equivalent Fractions",
+        body: "Fractions like 1/2, 2/4, and 4/8 represent the exact same portion of a whole.",
+        checkQuestion: "Which fraction equals 1/2?",
+        options: ["3/6", "1/4", "2/5"],
         answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Angles & Bar Graphs",
+        body: "Angles measure turns or corners (such as right angles at 90°), while bar graphs compare data across categories.",
+        checkQuestion: "How many degrees is a right angle?",
+        options: ["45°", "90°", "180°"],
+        answerIndex: 1,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Math G4",
+        tag: "MATATAG Math • G4",
         title: "Equivalent Fractions",
-        summary: "Multiplying or dividing both numerator and denominator by the same non-zero number keeps the value equal.",
+        summary: "1/2 = 2/4 = 3/6 = 4/8 because the proportion of the whole stays the same.",
       },
     ],
   },
@@ -328,21 +508,29 @@ const COURSES = [
     icon: rocketGif,
     accent: "#63e1e8",
     desc: "Explore marine biodiversity in Philippine waters, coastal landforms, and how human actions affect oceans.",
-    modules: ["Archipelagic Seas & Marine Life", "Mangroves, Seagrass & Coral Reefs", "Sustainable Ocean Stewardship"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Coastal Buffers: Mangroves & Reefs",
-        body: "Mangrove forests along coasts help protect shorelines from wave energy and provide nurseries for young fish and crustaceans.",
-        checkQuestion: "How do coastal mangroves help marine life and shorelines?",
-        options: ["Provide nurseries and buffer waves", "Block all ocean currents", "Turn seawater into desert"],
+        id: "l1",
+        heading: "Lesson 1: Archipelagic Seas & Biodiversity",
+        body: "Surrounded by seas and straits, island nations like the Philippines host rich coral triangles, fish, and marine life.",
+        checkQuestion: "What defines an archipelago?",
+        options: ["A group or chain of islands", "A frozen glacier only", "A desert basin"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Mangroves, Seagrass & Coral Reefs",
+        body: "Mangroves protect coasts and trap sediment, seagrass meadows feed marine herbivores, and reefs shelter countless species.",
+        checkQuestion: "Which coastal forest helps shield shorelines from waves?",
+        options: ["Mangroves", "Pine tundra", "Cactus scrub"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Marine Stewardship",
-        title: "Connected Coastal Habitats",
-        summary: "Mangroves, seagrass beds, and coral reefs work together as connected marine ecosystems.",
+        tag: "Marine Stewardship • G4",
+        title: "Coastal Ecosystem Links",
+        summary: "Mangroves, seagrass beds, and coral reefs support one another and coastal communities.",
       },
     ],
   },
@@ -357,21 +545,37 @@ const COURSES = [
     icon: scienceGif,
     accent: "#c084fc",
     desc: "Trace how organ systems work together, how plants and animals reproduce, and how earth surfaces change.",
-    modules: ["Human Body Systems Working Together", "Plant & Animal Life Cycles", "Weathering, Soil & Land Changes"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Systems Working Together",
-        body: "In MATATAG Grade 5 Science, body systems coordinate tasks—such as the digestive and circulatory systems delivering nutrients around the body.",
-        checkQuestion: "Which system transports nutrients and gases throughout the body?",
-        options: ["Circulatory system", "Skeletal system alone", "Hair follicles"],
+        id: "l1",
+        heading: "Lesson 1: Human Body Systems Working Together",
+        body: "MATATAG Grade 5 Science shows how systems coordinate—digestive organs break down food while the circulatory system carries nutrients and oxygen.",
+        checkQuestion: "Which organs pump blood through the circulatory system?",
+        options: ["Heart and blood vessels", "Lungs and ribs only", "Stomach and intestines only"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Life Cycles & Reproduction",
+        body: "Plants and animals follow life cycles that allow species to grow, reproduce, and continue across generations.",
+        checkQuestion: "Why do life cycles matter for living organisms?",
+        options: ["They allow growth, reproduction, and survival of species", "They stop plants from growing", "They turn rocks into water"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Weathering & Soil Formation",
+        body: "Wind, water, temperature changes, and roots gradually break down rocks into smaller pieces that help form soil.",
+        checkQuestion: "What is weathering?",
+        options: ["Breaking down or wearing away of rocks over time", "Instant mountain creation in one second", "Moon eclipse"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Science G5",
-        title: "Systems & Cycles",
-        summary: "Organisms and Earth systems rely on interacting parts and recurring cycles.",
+        tag: "MATATAG Science • G5",
+        title: "System Interactions & Weathering",
+        summary: "Body systems work as a team, and Earth's surface reshapes slowly through weathering and erosion.",
       },
     ],
   },
@@ -384,21 +588,37 @@ const COURSES = [
     icon: mathIcon,
     accent: "#ffdf4e",
     desc: "Add and subtract decimals, work with fractions, compute volume of rectangular prisms, and read line graphs.",
-    modules: ["Decimal Place Value & Operations", "Adding & Subtracting Fractions", "Volume of Cubes & Prisms"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Volume of a Rectangular Prism",
-        body: "Volume measures 3D space inside a solid: Volume = length × width × height.",
-        checkQuestion: "What is the volume of a box that is 4 cm × 3 cm × 2 cm?",
-        options: ["9 cubic cm", "24 cubic cm", "14 cubic cm"],
+        id: "l1",
+        heading: "Lesson 1: Decimal Place Value & Operations",
+        body: "In MATATAG Grade 5 Math, decimals extend place value past the decimal point (tenths, hundredths) and align by decimal point when adding or subtracting.",
+        checkQuestion: "What is 1.5 + 2.25?",
+        options: ["3.75", "2.40", "4.25"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Adding & Subtracting Fractions",
+        body: "Find common denominators before adding or subtracting fractions with unlike denominators.",
+        checkQuestion: "What is 1/2 + 1/4?",
+        options: ["3/4", "2/6", "1/6"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Volume of Rectangular Prisms",
+        body: "Calculate volume in cubic units using length × width × height.",
+        checkQuestion: "What is the volume of a prism with length 5, width 2, and height 3?",
+        options: ["10 cubic units", "30 cubic units", "15 cubic units"],
         answerIndex: 1,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Math G5",
-        title: "Volume Formula",
-        summary: "V = l × w × h, measured in cubic units (such as cm³).",
+        tag: "MATATAG Math • G5",
+        title: "Decimals & Volume",
+        summary: "Align decimal points for addition/subtraction; use V = l × w × h for rectangular prism volume.",
       },
     ],
   },
@@ -411,21 +631,29 @@ const COURSES = [
     icon: rocketGif,
     accent: "#38bdf8",
     desc: "Dive from sunlit surface waters to twilight and midnight depths while learning about salinity and currents.",
-    modules: ["Sunlight & Ocean Depth Zones", "Salinity, Temperature & Currents", "Deep-Sea Adaptations"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Light & Temperature by Depth",
-        body: "Sunlight penetrates only the upper ocean layers; deeper zones become darker and cooler, shaping how marine organisms adapt.",
-        checkQuestion: "What happens to sunlight as you go deeper into the ocean?",
-        options: ["It decreases until deep waters are dark", "It becomes brighter at the bottom", "It stays the same at all depths"],
+        id: "l1",
+        heading: "Lesson 1: Ocean Depth Zones",
+        body: "Surface waters receive sunlight for photosynthesis, while deeper zones have less light, higher pressure, and cooler temperatures.",
+        checkQuestion: "Where does ocean photosynthesis mainly occur?",
+        options: ["In the sunlit upper surface zone", "In the pitch-dark abyss", "Inside dry sand"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Salinity, Temperature & Currents",
+        body: "Differences in temperature and saltiness (salinity), along with wind and Earth's rotation, drive ocean currents.",
+        checkQuestion: "What is salinity?",
+        options: ["The amount of dissolved salt in water", "The speed of a boat", "The height of a cloud"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Deep Ocean",
-        title: "Depth & Adaptations",
-        summary: "Organisms in darker or colder waters develop special traits like bioluminescence or energy-saving movement.",
+        tag: "Deep Ocean • G5",
+        title: "Currents & Depth Zones",
+        summary: "Sunlight fades with depth, and temperature/salinity differences help drive ocean circulation.",
       },
     ],
   },
@@ -440,21 +668,37 @@ const COURSES = [
     icon: rocketGif,
     accent: "#c084fc",
     desc: "Explore forms of energy, forces and motion, simple machines, earthquakes/volcanoes, and solar system motions.",
-    modules: ["Forms & Transformation of Energy", "Forces, Motion & Simple Machines", "Earthquakes, Volcanoes & Solar System"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Energy Transformation",
-        body: "MATATAG Grade 6 Science covers how energy changes from one form to another—such as electrical energy turning into light and heat.",
-        checkQuestion: "A flashlight converting battery chemical energy into light is an example of what?",
-        options: ["Energy transformation", "Destroying energy", "Stopping gravity"],
+        id: "l1",
+        heading: "Lesson 1: Forms & Transformation of Energy",
+        body: "MATATAG Grade 6 Science explores kinetic, potential, electrical, thermal, light, and sound energy changing from one form to another.",
+        checkQuestion: "A solar panel turning sunlight into electricity is an example of what?",
+        options: ["Energy transformation", "Creating energy from nothing", "Stopping time"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Forces, Motion & Simple Machines",
+        body: "Balanced and unbalanced forces affect motion, while simple machines (levers, pulleys, inclined planes) make work easier.",
+        checkQuestion: "What does a simple machine do to help with work?",
+        options: ["Changes force direction or magnitude to make tasks easier", "Eliminates friction everywhere", "Turns lead into gold"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Earth Movements, Quakes & Solar System",
+        body: "Earth's rotation causes day and night, its revolution and tilt relate to seasons, and tectonic activity drives earthquakes and volcanoes.",
+        checkQuestion: "What mainly causes day and night on Earth?",
+        options: ["Earth's rotation on its axis", "Moon phases", "Ocean tides alone"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Science G6",
-        title: "Forces & Energy",
-        summary: "Forces can change an object's speed or direction; energy can transform across forms.",
+        tag: "MATATAG Science • G6",
+        title: "Energy & Earth-Space Motions",
+        summary: "Energy transforms across forms; rotation gives day/night while revolution orbits the Sun.",
       },
     ],
   },
@@ -467,21 +711,37 @@ const COURSES = [
     icon: mathIcon,
     accent: "#ffdf4e",
     desc: "Master ratios and rates, percentages, integers, surface area/circles, and expressions & equations.",
-    modules: ["Ratios, Rates & Percentages", "Integers & Number Line", "Expressions, Equations & Circles"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Understanding Percentages",
-        body: "Percent means 'per hundred'—so 25% equals 25 out of 100, or 0.25.",
-        checkQuestion: "What is 50% of 80?",
-        options: ["20", "40", "50"],
+        id: "l1",
+        heading: "Lesson 1: Ratios, Rates & Percentages",
+        body: "In MATATAG Grade 6 Math, ratios compare quantities, rates compare different units, and percentages express parts per 100.",
+        checkQuestion: "What is 25% of 200?",
+        options: ["25", "50", "75"],
         answerIndex: 1,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Integers & Number Lines",
+        body: "Integers include positive numbers, zero, and negative numbers—useful for temperatures below zero or depth below sea level.",
+        checkQuestion: "Which integer represents 15 meters below sea level?",
+        options: ["-15", "+15", "0"],
+        answerIndex: 0,
+      },
+      {
+        id: "l3",
+        heading: "Lesson 3: Algebraic Expressions & Equations",
+        body: "Use letters (variables) to represent unknown numbers and write expressions or equations for real-world patterns.",
+        checkQuestion: "If x = 4, what is the value of 3x + 2?",
+        options: ["14", "12", "9"],
+        answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "MATATAG Math G6",
-        title: "Ratios & Percent",
-        summary: "A ratio compares two quantities; a percent compares a part to 100.",
+        tag: "MATATAG Math • G6",
+        title: "Percent, Integers & Algebra",
+        summary: "Percent is out of 100; integers include negative values; variables stand for unknown numbers.",
       },
     ],
   },
@@ -494,21 +754,29 @@ const COURSES = [
     icon: scienceGif,
     accent: "#63e1e8",
     desc: "Examine how oceans drive weather and climate patterns, blue carbon habitats, and marine conservation science.",
-    modules: ["Ocean Heat & Weather Patterns", "Blue Carbon: Mangroves & Seagrass", "Data & Conservation in Marine Science"],
-    lessonSteps: [
+    lessons: [
       {
-        heading: "1. Oceans & Climate Regulation",
-        body: "The ocean absorbs and distributes vast amounts of heat around Earth, strongly influencing regional weather and climate.",
-        checkQuestion: "How do oceans affect Earth's climate and weather?",
-        options: ["They absorb and circulate heat across the globe", "They have no effect on air or weather", "They stop water evaporation"],
+        id: "l1",
+        heading: "Lesson 1: Ocean Heat & Climate Systems",
+        body: "Oceans store and move large amounts of thermal energy, shaping winds, rainfall, and climate patterns across Earth.",
+        checkQuestion: "How do oceans help regulate Earth's climate?",
+        options: ["By absorbing and distributing heat", "By blocking all sunlight from Earth", "By removing all water vapor"],
+        answerIndex: 0,
+      },
+      {
+        id: "l2",
+        heading: "Lesson 2: Blue Carbon & Marine Conservation",
+        body: "Coastal ecosystems like mangroves, tidal marshes, and seagrass beds capture carbon ('blue carbon') and protect biodiversity.",
+        checkQuestion: "Which habitats are key 'blue carbon' coastal ecosystems?",
+        options: ["Mangroves, seagrass beds, and coastal marshes", "Deserts and sand dunes", "Mountain glaciers only"],
         answerIndex: 0,
       },
     ],
     notes: [
       {
-        tag: "Earth & Ocean Systems",
-        title: "Blue Carbon Ecosystems",
-        summary: "Coastal habitats like mangroves and seagrass trap carbon while supporting rich biodiversity.",
+        tag: "Earth & Ocean Systems • G6",
+        title: "Blue Carbon & Climate",
+        summary: "Coastal habitats store carbon and sustain biodiversity alongside ocean-atmosphere heat exchange.",
       },
     ],
   },
@@ -522,14 +790,54 @@ const SWIMMING_CREATURES = [
 ];
 
 export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
-  const [selectedGrade, setSelectedGrade] = useState(explorer?.grade || "all");
+  // Saved / chosen grade level from explorer (defaults to Grade 1).
+  // Any grade other than your chosen grade (or unlocked sequential grades) stays strictly locked!
+  const chosenGrade = Number(explorer?.grade) || 1;
+  const [selectedGrade, setSelectedGrade] = useState(chosenGrade);
   const [selectedSubject, setSelectedSubject] = useState("All");
   const [activeCourse, setActiveCourse] = useState(null);
   const [viewerTab, setViewerTab] = useState("lesson"); // "lesson" | "notes"
   const [stepIndex, setStepIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [completedStepKeys, setCompletedStepKeys] = useState({});
+  const [readLessonsByCourse, setReadLessonsByCourse] = useState({});
+  const [completedCourseIds, setCompletedCourseIds] = useState({});
+  const [completedXpKeys, setCompletedXpKeys] = useState({});
+  const [lockNotice, setLockNotice] = useState("");
+  const [shakingPill, setShakingPill] = useState(null);
   const [clickBursts, setClickBursts] = useState([]);
+
+  useEffect(() => {
+    const nextGrade = Number(explorer?.grade) || 1;
+    setSelectedGrade(nextGrade);
+  }, [explorer?.grade]);
+
+  const showTemporaryLockNotice = (msg) => {
+    setLockNotice(msg);
+    setTimeout(() => {
+      setLockNotice((prev) => (prev === msg ? "" : prev));
+    }, 2800);
+  };
+
+  // Sequential Grade Unlocking:
+  // Your chosen grade (e.g., Grade 1) is unlocked; higher grades unlock sequentially
+  // once all courses in the preceding grade are completed!
+  const unlockedGrades = useMemo(() => {
+    const unlocked = new Set([chosenGrade]);
+    for (let g = chosenGrade; g < 6; g += 1) {
+      const gradeCourses = COURSES.filter((c) => c.grade === g);
+      const allDone =
+        gradeCourses.length > 0 &&
+        gradeCourses.every((c) => Boolean(completedCourseIds[c.id]));
+      if (allDone) {
+        unlocked.add(g + 1);
+      } else {
+        break;
+      }
+    }
+    return unlocked;
+  }, [chosenGrade, completedCourseIds]);
+
+  const isGradeLocked = (gradeNum) => !unlockedGrades.has(Number(gradeNum));
 
   const stars = useMemo(
     () =>
@@ -567,13 +875,12 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     []
   );
 
-  const handleScreenClick = (e) => {
+  const spawnBurstAt = (x, y, icons = ["✨", "🫧", "⭐", "💫", "🐚"]) => {
     const id = Date.now() + Math.random();
-    const icons = ["✨", "🫧", "⭐", "💫", "🐚"];
     const burst = {
       id,
-      x: e.clientX,
-      y: e.clientY,
+      x,
+      y,
       particles: Array.from({ length: 6 }, (_, idx) => ({
         icon: icons[(idx + Math.floor(Math.random() * 5)) % icons.length],
         angle: idx * 60 * (Math.PI / 180),
@@ -586,6 +893,54 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     }, 900);
   };
 
+  const triggerButtonBurst = (e, icons) => {
+    if (!e?.currentTarget) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    spawnBurstAt(rect.left + rect.width / 2, rect.top + rect.height / 2, icons);
+  };
+
+  const handleScreenClick = (e) => {
+    spawnBurstAt(e.clientX, e.clientY);
+  };
+
+  const handleSelectGrade = (g, e) => {
+    if (g !== "all" && isGradeLocked(g)) {
+      triggerButtonBurst(e, ["🔒"]);
+      playSfx?.("wrong");
+      setShakingPill(String(g));
+      setTimeout(() => setShakingPill(null), 400);
+      showTemporaryLockNotice(
+        `🔒 Grade ${g} is locked! Complete all Grade ${g - 1} courses first (or change your grade in Profile).`
+      );
+      return;
+    }
+    triggerButtonBurst(e, ["⭐", "✨", "🚀"]);
+    playSfx?.("click");
+    setSelectedGrade(g);
+  };
+
+  const isLessonUnlocked = (course, idx) => {
+    if (idx === 0) return true;
+    const readIndices = readLessonsByCourse[course.id] || [];
+    return readIndices.includes(idx - 1);
+  };
+
+  const markLessonAsRead = (course, idx, e, xpReward = 25) => {
+    if (!course) return;
+    triggerButtonBurst(e, ["✨", "⭐", "💫", "🎉"]);
+    playSfx?.("correct");
+    setReadLessonsByCourse((prev) => {
+      const existing = prev[course.id] || [];
+      if (existing.includes(idx)) return prev;
+      return { ...prev, [course.id]: [...existing, idx] };
+    });
+    const xpKey = `${course.id}-read-${idx}`;
+    if (!completedXpKeys[xpKey]) {
+      setCompletedXpKeys((prev) => ({ ...prev, [xpKey]: true }));
+      onEarnXp?.(xpReward);
+    }
+  };
+
   const filteredCourses = useMemo(() => {
     return COURSES.filter((course) => {
       const gradeMatch = selectedGrade === "all" || course.grade === Number(selectedGrade);
@@ -594,7 +949,16 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     });
   }, [selectedGrade, selectedSubject]);
 
-  const openCourseViewer = (course) => {
+  const openCourseViewer = (course, e) => {
+    if (isGradeLocked(course.grade)) {
+      triggerButtonBurst(e, ["🔒"]);
+      playSfx?.("wrong");
+      showTemporaryLockNotice(
+        `🔒 Grade ${course.grade} is locked! Finish Grade ${course.grade - 1} first.`
+      );
+      return;
+    }
+    triggerButtonBurst(e, ["🚀", "✨", "🌊", "⭐"]);
     playSfx?.("click");
     setActiveCourse(course);
     setViewerTab("lesson");
@@ -602,20 +966,22 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     setSelectedOption(null);
   };
 
-  const currentStep =
-    activeCourse?.lessonSteps?.[stepIndex] || activeCourse?.lessonSteps?.[0] || null;
+  const currentLesson =
+    activeCourse?.lessons?.[stepIndex] || activeCourse?.lessons?.[0] || null;
+  const activeCourseReadIndices = activeCourse
+    ? readLessonsByCourse[activeCourse.id] || []
+    : [];
+  const allCourseLessonsRead = activeCourse
+    ? activeCourse.lessons.every((_, i) => activeCourseReadIndices.includes(i))
+    : false;
 
-  const handleCheckAnswer = (idx) => {
-    if (!activeCourse || !currentStep) return;
+  const handleCheckAnswer = (idx, e) => {
+    if (!activeCourse || !currentLesson) return;
     setSelectedOption(idx);
-    if (idx === currentStep.answerIndex) {
-      playSfx?.("correct");
-      const key = `${activeCourse.id}-${stepIndex}`;
-      if (!completedStepKeys[key]) {
-        setCompletedStepKeys((prev) => ({ ...prev, [key]: true }));
-        onEarnXp?.(25);
-      }
+    if (idx === currentLesson.answerIndex) {
+      markLessonAsRead(activeCourse, stepIndex, e, 25);
     } else {
+      triggerButtonBurst(e, ["🫧", "💫"]);
       playSfx?.("wrong");
     }
   };
@@ -625,16 +991,23 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
       onClick={handleScreenClick}
       style={{
         position: "relative",
-        minHeight: "82vh",
-        borderRadius: 24,
-        overflow: "hidden",
-        padding: "24px 18px 36px",
-        background:
-          "linear-gradient(180deg, #060818 0%, #191247 26%, #13255c 52%, #094566 78%, #06637a 100%)",
-        border: "1px solid rgba(99, 225, 232, 0.25)",
+        minHeight: "100vh",
+        width: "100%",
         cursor: "crosshair",
       }}
     >
+      {/* Full-Viewport Cosmic & Bioluminescent Ocean Background (Matches Splash & Welcome Screens) */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          background:
+            "linear-gradient(180deg, #060818 0%, #191247 26%, #13255c 52%, #094566 78%, #06637a 100%)",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
       {/* Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
       <motion.div
         animate={{
@@ -643,7 +1016,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
         }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         style={{
-          position: "absolute",
+          position: "fixed",
           inset: 0,
           background:
             "radial-gradient(circle at 18% 20%, rgba(139, 92, 246, 0.38) 0%, transparent 45%), radial-gradient(circle at 82% 32%, rgba(56, 189, 248, 0.32) 0%, transparent 48%), radial-gradient(circle at 50% 92%, rgba(20, 184, 166, 0.45) 0%, transparent 55%)",
@@ -662,7 +1035,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
               left: burst.x,
               top: burst.y,
               pointerEvents: "none",
-              zIndex: 50,
+              zIndex: 120,
             }}
           >
             {burst.particles.map((p, idx) => (
@@ -702,7 +1075,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             ease: "easeInOut",
           }}
           style={{
-            position: "absolute",
+            position: "fixed",
             left: star.left,
             top: star.top,
             width: star.size,
@@ -731,7 +1104,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             ease: "easeOut",
           }}
           style={{
-            position: "absolute",
+            position: "fixed",
             top: comet.top,
             left: comet.left,
             width: 90,
@@ -750,9 +1123,9 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
       {SWIMMING_CREATURES.map((creature, idx) => (
         <motion.div
           key={`creature-${idx}`}
-          initial={{ x: creature.reverse ? "105%" : "-10%" }}
+          initial={{ x: creature.reverse ? "105vw" : "-10vw" }}
           animate={{
-            x: creature.reverse ? "-10%" : "105%",
+            x: creature.reverse ? "-10vw" : "105vw",
             y: [-10, 12, -10],
           }}
           transition={{
@@ -765,7 +1138,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             y: { duration: 3.2, repeat: Infinity, ease: "easeInOut" },
           }}
           style={{
-            position: "absolute",
+            position: "fixed",
             top: creature.top,
             fontSize: creature.size,
             filter: "drop-shadow(0 0 12px rgba(56, 189, 248, 0.7))",
@@ -781,9 +1154,9 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
       {bubbles.map((b) => (
         <motion.span
           key={`bubble-${b.id}`}
-          initial={{ y: "105%", x: 0, opacity: 0 }}
+          initial={{ y: "105vh", x: 0, opacity: 0 }}
           animate={{
-            y: "-10%",
+            y: "-10vh",
             x: [0, b.sway, -b.sway, 0],
             opacity: [0, 0.65, 0.65, 0],
           }}
@@ -793,7 +1166,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             opacity: { duration: b.duration, repeat: Infinity, delay: b.delay },
           }}
           style={{
-            position: "absolute",
+            position: "fixed",
             left: b.left,
             width: b.size,
             height: b.size,
@@ -808,8 +1181,15 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
 
       {/* Foreground Content */}
       <div style={{ position: "relative", zIndex: 2 }}>
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <h1
+        <motion.div
+          initial={{ opacity: 0, y: -14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45 }}
+          style={{ textAlign: "center", marginBottom: 20 }}
+        >
+          <motion.h1
+            animate={{ y: [-2, 2, -2] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             style={{
               fontSize: 28,
               fontWeight: 900,
@@ -819,11 +1199,39 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             }}
           >
             📚 Explore Courses & Learning Modules
-          </h1>
+          </motion.h1>
           <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 4 }}>
             MATATAG-aligned Math, Science, and Ocean quests for Grades 1–6 with Interactive Lessons & Subject Notes!
           </p>
-        </div>
+          <p style={{ fontSize: 12, color: "#63e1e8", fontWeight: 800, marginTop: 4 }}>
+            Your Saved Grade: Grade {chosenGrade} • Complete all Grade {chosenGrade} courses to unlock the next grade sequentially!
+          </p>
+        </motion.div>
+
+        {/* Lock Notice Toast when clicking a locked grade */}
+        <AnimatePresence>
+          {lockNotice && (
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.96 }}
+              style={{
+                maxWidth: 540,
+                margin: "0 auto 14px",
+                padding: "9px 14px",
+                borderRadius: 12,
+                background: "rgba(248, 113, 113, 0.2)",
+                border: "1.5px solid #f87171",
+                color: "#fecaca",
+                fontSize: 12.5,
+                fontWeight: 800,
+                textAlign: "center",
+              }}
+            >
+              {lockNotice}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Grade Level (Grades 1–6) & Subject Filters */}
         <div
@@ -839,29 +1247,45 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
           <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 8 }}>
             {["all", 1, 2, 3, 4, 5, 6].map((g) => {
               const active = String(selectedGrade) === String(g);
+              const lockedChip = g !== "all" && isGradeLocked(g);
+              const isShaking = shakingPill === String(g);
               return (
-                <button
+                <motion.button
                   key={String(g)}
                   type="button"
-                  onClick={() => {
-                    playSfx?.("click");
-                    setSelectedGrade(g);
-                  }}
+                  aria-disabled={lockedChip}
+                  whileHover={lockedChip ? { scale: 1.02 } : { y: -3, scale: 1.07 }}
+                  whileTap={lockedChip ? { x: [-4, 4, -4, 4, 0] } : { scale: 0.88, rotate: -3 }}
+                  animate={
+                    isShaking
+                      ? { x: [-5, 5, -5, 5, 0] }
+                      : active
+                      ? { scale: [1, 1.06, 1] }
+                      : { scale: 1 }
+                  }
+                  transition={{ type: "spring", stiffness: 360, damping: 18 }}
+                  onClick={(e) => handleSelectGrade(g, e)}
                   style={{
                     padding: "6px 13px",
                     borderRadius: 999,
                     fontSize: 12,
                     fontWeight: 900,
-                    cursor: "pointer",
+                    cursor: lockedChip ? "not-allowed" : "pointer",
                     border: active ? "1.5px solid #63e1e8" : "1px solid rgba(148,163,184,0.28)",
                     background: active
                       ? "linear-gradient(90deg, #22d3ee, #818cf8)"
+                      : lockedChip
+                      ? "rgba(15, 23, 42, 0.55)"
                       : "rgba(15, 23, 42, 0.78)",
-                    color: active ? "#060818" : "#e2e8f0",
+                    color: active ? "#060818" : lockedChip ? "#64748b" : "#e2e8f0",
+                    boxShadow: active ? "0 0 16px rgba(34, 211, 238, 0.45)" : "none",
+                    opacity: lockedChip ? 0.65 : 1,
                   }}
                 >
-                  {g === "all" ? "All Grades (1–6)" : `Grade ${g}`}
-                </button>
+                  {g === "all"
+                    ? "All Grades (1–6)"
+                    : `${lockedChip ? "🔒 " : ""}Grade ${g}`}
+                </motion.button>
               );
             })}
           </div>
@@ -870,10 +1294,15 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             {["All", "Math", "Science", "Ocean"].map((subj) => {
               const active = selectedSubject === subj;
               return (
-                <button
+                <motion.button
                   key={subj}
                   type="button"
-                  onClick={() => {
+                  whileHover={{ y: -3, scale: 1.07 }}
+                  whileTap={{ scale: 0.88, rotate: 3 }}
+                  animate={active ? { scale: [1, 1.06, 1] } : { scale: 1 }}
+                  transition={{ type: "spring", stiffness: 360, damping: 18 }}
+                  onClick={(e) => {
+                    triggerButtonBurst(e, ["💫", "🫧", "✨"]);
                     playSfx?.("click");
                     setSelectedSubject(subj);
                   }}
@@ -886,70 +1315,111 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
                     border: active ? "1.5px solid #ffdf4e" : "1px solid rgba(148,163,184,0.28)",
                     background: active ? "rgba(255, 223, 78, 0.2)" : "rgba(15, 23, 42, 0.78)",
                     color: active ? "#ffdf4e" : "#cbd5e1",
+                    boxShadow: active ? "0 0 15px rgba(255, 223, 78, 0.35)" : "none",
                   }}
                 >
                   {subj === "All" ? "All Subjects" : subj}
-                </button>
+                </motion.button>
               );
             })}
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18 }}>
-          {filteredCourses.map((course) => (
-            <motion.div
-              key={course.id}
-              whileHover={{ y: -6, scale: 1.02 }}
-              className="card-panel"
-              style={{ border: `2px solid ${course.accent}44`, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
-            >
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                  <img src={course.icon} alt="" style={{ width: 44, height: 44, objectFit: "contain" }} />
-                  <div>
-                    <span style={{ fontSize: 10.5, fontWeight: 900, color: course.accent }}>{course.category}</span>
-                    <h3 style={{ fontSize: 18, fontWeight: 900, marginTop: 2 }}>{course.title}</h3>
-                  </div>
-                </div>
-                <p style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.5, marginBottom: 16 }}>{course.desc}</p>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openCourseViewer(course);
-                }}
-                style={{
-                  background: `linear-gradient(90deg, ${course.accent}, #818cf8)`,
-                  border: "none",
-                  color: "#060818",
-                  fontWeight: 900,
-                  padding: "10px 16px",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  fontSize: 13,
-                  width: "100%",
-                }}
+        <motion.div
+          layout
+          style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 18 }}
+        >
+          {filteredCourses.map((course, idx) => {
+            const gradeLocked = isGradeLocked(course.grade);
+            const readCount = (readLessonsByCourse[course.id] || []).length;
+            const courseDone = Boolean(completedCourseIds[course.id]);
+            return (
+              <motion.div
+                key={course.id}
+                layout
+                initial={{ opacity: 0, y: 18, scale: 0.97 }}
+                animate={{ opacity: gradeLocked ? 0.6 : 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, delay: Math.min(idx * 0.04, 0.28) }}
+                whileHover={
+                  gradeLocked
+                    ? { scale: 1 }
+                    : { y: -7, scale: 1.025, boxShadow: `0 16px 32px ${course.accent}33` }
+                }
+                className="card-panel"
+                style={{ border: `2px solid ${course.accent}44`, display: "flex", flexDirection: "column", justifyContent: "space-between" }}
               >
-                Start Learning →
-              </motion.button>
-            </motion.div>
-          ))}
-        </div>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                    <motion.img
+                      src={course.icon}
+                      alt=""
+                      animate={{ y: [-2, 3, -2], rotate: [-2, 2, -2] }}
+                      transition={{ duration: 3 + idx * 0.25, repeat: Infinity, ease: "easeInOut" }}
+                      style={{ width: 44, height: 44, objectFit: "contain" }}
+                    />
+                    <div>
+                      <span style={{ fontSize: 10.5, fontWeight: 900, color: course.accent }}>
+                        {gradeLocked ? "🔒 " : courseDone ? "✓ " : ""}
+                        {course.category} • {readCount}/{course.lessons.length} Read
+                      </span>
+                      <h3 style={{ fontSize: 18, fontWeight: 900, marginTop: 2 }}>{course.title}</h3>
+                    </div>
+                  </div>
+                  <p style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.5, marginBottom: 16 }}>{course.desc}</p>
+                </div>
+
+                <motion.button
+                  whileHover={gradeLocked ? {} : { scale: 1.04, boxShadow: `0 0 18px ${course.accent}66` }}
+                  whileTap={gradeLocked ? { x: [-4, 4, -4, 4, 0] } : { scale: 0.94 }}
+                  aria-disabled={gradeLocked}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openCourseViewer(course, e);
+                  }}
+                  style={{
+                    background: gradeLocked
+                      ? "#334155"
+                      : `linear-gradient(90deg, ${course.accent}, #818cf8)`,
+                    border: "none",
+                    color: gradeLocked ? "#94a3b8" : "#060818",
+                    fontWeight: 900,
+                    padding: "10px 16px",
+                    borderRadius: 12,
+                    cursor: gradeLocked ? "not-allowed" : "pointer",
+                    fontSize: 13,
+                    width: "100%",
+                  }}
+                >
+                  {gradeLocked
+                    ? `🔒 Locked (Complete Grade ${course.grade - 1} First)`
+                    : courseDone
+                    ? "Completed ✓ (Review Lessons)"
+                    : "Start Learning →"}
+                </motion.button>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </div>
 
-      {/* Course Modules, Interactive Lesson Viewer & Subject Notes Modal */}
+      {/* Course Lessons, Interactive Lesson Viewer & Subject Notes Modal */}
       <AnimatePresence>
         {activeCourse && (
-          <div className="modal-backdrop" onClick={() => setActiveCourse(null)}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="modal-backdrop"
+            onClick={() => setActiveCourse(null)}
+          >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.88, opacity: 0, y: 18 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 14 }}
+              transition={{ type: "spring", stiffness: 280, damping: 22 }}
               className="modal-box"
-              style={{ maxWidth: 620 }}
+              style={{ maxWidth: 640 }}
               onClick={(e) => e.stopPropagation()}
             >
               <span style={{ fontSize: 11, fontWeight: 900, color: activeCourse.accent }}>
@@ -957,14 +1427,17 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
               </span>
               <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>{activeCourse.title}</h2>
               <p style={{ fontSize: 13, color: "#cbd5e1", marginBottom: 14 }}>
-                Explore the interactive lesson, check your subject notes, or complete all modules to claim +75 XP!
+                Read each lesson in order to unlock the next lesson, review Subject Notes, and complete all lessons to claim +75 XP!
               </p>
 
               {/* Viewer Mode Switcher */}
               <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-                <button
+                <motion.button
                   type="button"
-                  onClick={() => {
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={(e) => {
+                    triggerButtonBurst(e, ["✨", "🚀"]);
                     playSfx?.("click");
                     setViewerTab("lesson");
                   }}
@@ -980,10 +1453,13 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
                   }}
                 >
                   Interactive Lesson Viewer
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
-                  onClick={() => {
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={(e) => {
+                    triggerButtonBurst(e, ["💫", "⭐"]);
                     playSfx?.("click");
                     setViewerTab("notes");
                   }}
@@ -999,171 +1475,352 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
                   }}
                 >
                   Subject Notes Viewer
-                </button>
+                </motion.button>
               </div>
 
-              {viewerTab === "lesson" && currentStep ? (
-                <div
-                  style={{
-                    background: "rgba(15, 23, 42, 0.78)",
-                    padding: "14px 16px",
-                    borderRadius: 14,
-                    border: "1px solid rgba(99, 225, 232, 0.35)",
-                    textAlign: "left",
-                    marginBottom: 16,
-                  }}
-                >
-                  <div style={{ fontSize: 11.5, fontWeight: 800, color: "#94a3b8" }}>
-                    Lesson Step {stepIndex + 1} of {activeCourse.lessonSteps.length}
-                  </div>
-                  <div style={{ fontSize: 15.5, fontWeight: 900, marginTop: 4, color: "#fff" }}>
-                    {currentStep.heading}
-                  </div>
-                  <p style={{ fontSize: 13, color: "#e2e8f0", lineHeight: 1.55, margin: "8px 0 12px" }}>
-                    {currentStep.body}
-                  </p>
-                  <div style={{ fontSize: 12.5, fontWeight: 900, color: "#ffdf4e", marginBottom: 8 }}>
-                    Quick Check: {currentStep.checkQuestion}
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                    {currentStep.options.map((opt, idx) => (
-                      <button
-                        key={opt}
-                        type="button"
-                        onClick={() => handleCheckAnswer(idx)}
+              <AnimatePresence mode="wait">
+                {viewerTab === "lesson" && currentLesson ? (
+                  <motion.div
+                    key={`lesson-${activeCourse.id}-${stepIndex}`}
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -16 }}
+                    transition={{ duration: 0.24 }}
+                    style={{
+                      background: "rgba(15, 23, 42, 0.78)",
+                      padding: "14px 16px",
+                      borderRadius: 14,
+                      border: "1px solid rgba(99, 225, 232, 0.35)",
+                      textAlign: "left",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 11.5, fontWeight: 800, color: "#94a3b8" }}>
+                        Lesson {stepIndex + 1} of {activeCourse.lessons.length}
+                      </span>
+                      <span
                         style={{
-                          padding: "7px 12px",
-                          borderRadius: 10,
-                          fontSize: 12,
-                          fontWeight: 800,
-                          cursor: "pointer",
-                          color: "#fff",
-                          background:
-                            selectedOption === idx
-                              ? idx === currentStep.answerIndex
-                                ? "rgba(74, 222, 128, 0.28)"
-                                : "rgba(248, 113, 113, 0.28)"
-                              : "rgba(30, 41, 59, 0.9)",
-                          border:
-                            selectedOption === idx
-                              ? idx === currentStep.answerIndex
-                                ? "1.5px solid #4ade80"
-                                : "1.5px solid #f87171"
-                              : "1px solid rgba(148, 163, 184, 0.3)",
+                          fontSize: 11,
+                          fontWeight: 900,
+                          color: activeCourseReadIndices.includes(stepIndex) ? "#4ade80" : "#ffdf4e",
                         }}
                       >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                  {activeCourse.lessonSteps.length > 1 && (
-                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12 }}>
-                      <button
-                        type="button"
-                        disabled={stepIndex === 0}
-                        onClick={() => {
-                          setStepIndex((i) => Math.max(0, i - 1));
-                          setSelectedOption(null);
-                        }}
-                        style={{
-                          background: "#1e293b",
-                          border: "1px solid rgba(148,163,184,0.3)",
-                          color: "#fff",
-                          borderRadius: 8,
-                          padding: "5px 10px",
-                          fontSize: 11.5,
-                          fontWeight: 800,
-                          cursor: stepIndex === 0 ? "not-allowed" : "pointer",
-                          opacity: stepIndex === 0 ? 0.5 : 1,
-                        }}
-                      >
-                        ← Prev
-                      </button>
-                      <button
-                        type="button"
-                        disabled={stepIndex >= activeCourse.lessonSteps.length - 1}
-                        onClick={() => {
-                          setStepIndex((i) => Math.min(activeCourse.lessonSteps.length - 1, i + 1));
-                          setSelectedOption(null);
-                        }}
-                        style={{
-                          background: "#1e293b",
-                          border: "1px solid rgba(148,163,184,0.3)",
-                          color: "#fff",
-                          borderRadius: 8,
-                          padding: "5px 10px",
-                          fontSize: 11.5,
-                          fontWeight: 800,
-                          cursor: stepIndex >= activeCourse.lessonSteps.length - 1 ? "not-allowed" : "pointer",
-                          opacity: stepIndex >= activeCourse.lessonSteps.length - 1 ? 0.5 : 1,
-                        }}
-                      >
-                        Next →
-                      </button>
+                        {activeCourseReadIndices.includes(stepIndex) ? "✓ Lesson Read" : "Unread"}
+                      </span>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 10,
-                    textAlign: "left",
-                    marginBottom: 16,
-                  }}
-                >
-                  {activeCourse.notes.map((note, idx) => (
-                    <div
-                      key={idx}
+                    <div style={{ fontSize: 15.5, fontWeight: 900, marginTop: 4, color: "#fff" }}>
+                      {currentLesson.heading}
+                    </div>
+                    <p style={{ fontSize: 13, color: "#e2e8f0", lineHeight: 1.55, margin: "8px 0 12px" }}>
+                      {currentLesson.body}
+                    </p>
+                    <div style={{ fontSize: 12.5, fontWeight: 900, color: "#ffdf4e", marginBottom: 8 }}>
+                      Quick Check: {currentLesson.checkQuestion}
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {currentLesson.options.map((opt, idx) => (
+                        <motion.button
+                          key={opt}
+                          type="button"
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          whileTap={{ scale: 0.92 }}
+                          animate={
+                            selectedOption === idx && idx === currentLesson.answerIndex
+                              ? { scale: [1, 1.1, 1] }
+                              : selectedOption === idx
+                              ? { x: [-4, 4, -4, 4, 0] }
+                              : { scale: 1 }
+                          }
+                          transition={{ duration: 0.3 }}
+                          onClick={(e) => handleCheckAnswer(idx, e)}
+                          style={{
+                            padding: "7px 12px",
+                            borderRadius: 10,
+                            fontSize: 12,
+                            fontWeight: 800,
+                            cursor: "pointer",
+                            color: "#fff",
+                            background:
+                              selectedOption === idx
+                                ? idx === currentLesson.answerIndex
+                                  ? "rgba(74, 222, 128, 0.28)"
+                                  : "rgba(248, 113, 113, 0.28)"
+                                : "rgba(30, 41, 59, 0.9)",
+                            border:
+                              selectedOption === idx
+                                ? idx === currentLesson.answerIndex
+                                  ? "1.5px solid #4ade80"
+                                  : "1.5px solid #f87171"
+                                : "1px solid rgba(148, 163, 184, 0.3)",
+                          }}
+                        >
+                          {opt}
+                        </motion.button>
+                      ))}
+                    </div>
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.04 }}
+                        whileTap={{ scale: 0.94 }}
+                        onClick={(e) => markLessonAsRead(activeCourse, stepIndex, e, 25)}
+                        style={{
+                          background: activeCourseReadIndices.includes(stepIndex)
+                            ? "rgba(74, 222, 128, 0.22)"
+                            : "linear-gradient(90deg, #22d3ee, #818cf8)",
+                          border: activeCourseReadIndices.includes(stepIndex)
+                            ? "1.5px solid #4ade80"
+                            : "none",
+                          color: activeCourseReadIndices.includes(stepIndex) ? "#4ade80" : "#060818",
+                          borderRadius: 9,
+                          padding: "6px 12px",
+                          fontSize: 11.5,
+                          fontWeight: 900,
+                          cursor: "pointer",
+                        }}
+                      >
+                        {activeCourseReadIndices.includes(stepIndex)
+                          ? "✓ Marked as Read"
+                          : "Mark Lesson Read & Unlock Next (+25 XP)"}
+                      </motion.button>
+
+                      {activeCourse.lessons.length > 1 && (
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <motion.button
+                            type="button"
+                            whileHover={stepIndex === 0 ? {} : { scale: 1.06, x: -2 }}
+                            whileTap={stepIndex === 0 ? {} : { scale: 0.92 }}
+                            disabled={stepIndex === 0}
+                            onClick={(e) => {
+                              triggerButtonBurst(e, ["✨"]);
+                              playSfx?.("click");
+                              setStepIndex((i) => Math.max(0, i - 1));
+                              setSelectedOption(null);
+                            }}
+                            style={{
+                              background: "#1e293b",
+                              border: "1px solid rgba(148,163,184,0.3)",
+                              color: "#fff",
+                              borderRadius: 8,
+                              padding: "5px 10px",
+                              fontSize: 11.5,
+                              fontWeight: 800,
+                              cursor: stepIndex === 0 ? "not-allowed" : "pointer",
+                              opacity: stepIndex === 0 ? 0.5 : 1,
+                            }}
+                          >
+                            ← Prev
+                          </motion.button>
+                          <motion.button
+                            type="button"
+                            whileHover={
+                              stepIndex >= activeCourse.lessons.length - 1 ||
+                              !isLessonUnlocked(activeCourse, stepIndex + 1)
+                                ? {}
+                                : { scale: 1.06, x: 2 }
+                            }
+                            whileTap={
+                              stepIndex >= activeCourse.lessons.length - 1 ||
+                              !isLessonUnlocked(activeCourse, stepIndex + 1)
+                                ? { x: [-4, 4, -4, 4, 0] }
+                                : { scale: 0.92 }
+                            }
+                            aria-disabled={
+                              stepIndex >= activeCourse.lessons.length - 1 ||
+                              !isLessonUnlocked(activeCourse, stepIndex + 1)
+                            }
+                            onClick={(e) => {
+                              if (stepIndex >= activeCourse.lessons.length - 1) return;
+                              if (!isLessonUnlocked(activeCourse, stepIndex + 1)) {
+                                triggerButtonBurst(e, ["🔒"]);
+                                playSfx?.("wrong");
+                                return;
+                              }
+                              triggerButtonBurst(e, ["🚀", "✨"]);
+                              playSfx?.("click");
+                              setStepIndex((i) =>
+                                Math.min(activeCourse.lessons.length - 1, i + 1)
+                              );
+                              setSelectedOption(null);
+                            }}
+                            style={{
+                              background: "#1e293b",
+                              border: "1px solid rgba(148,163,184,0.3)",
+                              color: "#fff",
+                              borderRadius: 8,
+                              padding: "5px 10px",
+                              fontSize: 11.5,
+                              fontWeight: 800,
+                              cursor:
+                                stepIndex >= activeCourse.lessons.length - 1 ||
+                                !isLessonUnlocked(activeCourse, stepIndex + 1)
+                                  ? "not-allowed"
+                                  : "pointer",
+                              opacity:
+                                stepIndex >= activeCourse.lessons.length - 1 ||
+                                !isLessonUnlocked(activeCourse, stepIndex + 1)
+                                  ? 0.5
+                                  : 1,
+                            }}
+                          >
+                            {stepIndex < activeCourse.lessons.length - 1 &&
+                            !isLessonUnlocked(activeCourse, stepIndex + 1)
+                              ? "🔒 Next"
+                              : "Next →"}
+                          </motion.button>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key={`notes-${activeCourse.id}`}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 16 }}
+                    transition={{ duration: 0.24 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 10,
+                      textAlign: "left",
+                      marginBottom: 16,
+                    }}
+                  >
+                    {activeCourse.notes.map((note, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.06 }}
+                        whileHover={{ x: 4, borderColor: "rgba(192, 132, 252, 0.75)" }}
+                        style={{
+                          background: "rgba(15, 23, 42, 0.78)",
+                          padding: "12px 16px",
+                          borderRadius: 14,
+                          border: "1px solid rgba(192, 132, 252, 0.35)",
+                        }}
+                      >
+                        <span style={{ fontSize: 10.5, fontWeight: 900, color: "#e9d5ff" }}>
+                          {note.tag}
+                        </span>
+                        <div style={{ fontSize: 14.5, fontWeight: 900, marginTop: 2 }}>
+                          {note.title}
+                        </div>
+                        <p style={{ fontSize: 12.5, color: "#cbd5e1", margin: "4px 0 0", lineHeight: 1.5 }}>
+                          {note.summary}
+                        </p>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Ordered Lesson List with Sequential Lock State */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", marginBottom: 22 }}>
+                {activeCourse.lessons.map((lessonItem, idx) => {
+                  const unlocked = isLessonUnlocked(activeCourse, idx);
+                  const isRead = activeCourseReadIndices.includes(idx);
+                  return (
+                    <motion.div
+                      key={lessonItem.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: unlocked ? 1 : 0.6, y: 0 }}
+                      transition={{ delay: idx * 0.05 }}
+                      whileHover={unlocked ? { x: 4, borderColor: "rgba(99, 225, 232, 0.65)" } : {}}
+                      whileTap={unlocked ? {} : { x: [-4, 4, -4, 4, 0] }}
+                      onClick={(e) => {
+                        if (!unlocked) {
+                          triggerButtonBurst(e, ["🔒"]);
+                          playSfx?.("wrong");
+                          return;
+                        }
+                        triggerButtonBurst(e, ["✨"]);
+                        playSfx?.("click");
+                        setViewerTab("lesson");
+                        setStepIndex(idx);
+                        setSelectedOption(null);
+                      }}
                       style={{
-                        background: "rgba(15, 23, 42, 0.78)",
+                        background: "rgba(15, 23, 42, 0.7)",
                         padding: "12px 16px",
                         borderRadius: 14,
-                        border: "1px solid rgba(192, 132, 252, 0.35)",
+                        border:
+                          stepIndex === idx && viewerTab === "lesson"
+                            ? "1.5px solid #63e1e8"
+                            : "1px solid rgba(99, 225, 232, 0.3)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        fontSize: 13.5,
+                        fontWeight: 800,
+                        cursor: unlocked ? "pointer" : "not-allowed",
                       }}
                     >
-                      <span style={{ fontSize: 10.5, fontWeight: 900, color: "#e9d5ff" }}>
-                        {note.tag}
+                      <span>
+                        {unlocked ? "🚀" : "🔒"} {lessonItem.heading}
                       </span>
-                      <div style={{ fontSize: 14.5, fontWeight: 900, marginTop: 2 }}>
-                        {note.title}
-                      </div>
-                      <p style={{ fontSize: 12.5, color: "#cbd5e1", margin: "4px 0 0", lineHeight: 1.5 }}>
-                        {note.summary}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", marginBottom: 22 }}>
-                {activeCourse.modules.map((mod, idx) => (
-                  <div key={idx} style={{ background: "rgba(15, 23, 42, 0.7)", padding: "12px 16px", borderRadius: 14, border: "1px solid rgba(99, 225, 232, 0.3)", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 13.5, fontWeight: 800 }}>
-                    <span>🚀 Module {idx + 1}: {mod}</span>
-                    <span style={{ color: "#4ade80" }}>Unlocked</span>
-                  </div>
-                ))}
+                      <span
+                        style={{
+                          color: !unlocked ? "#94a3b8" : isRead ? "#4ade80" : "#ffdf4e",
+                        }}
+                      >
+                        {!unlocked ? "Locked (Read Previous)" : isRead ? "Read ✓" : "Unlocked"}
+                      </span>
+                    </motion.div>
+                  );
+                })}
               </div>
 
               <div style={{ display: "flex", gap: 10 }}>
                 <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => { onEarnXp(75); setActiveCourse(null); }}
-                  style={{ flex: 1, background: "#4ade80", border: "none", color: "#060818", fontWeight: 900, padding: "11px", borderRadius: 12, cursor: "pointer", fontSize: 13.5 }}
+                  whileHover={
+                    allCourseLessonsRead
+                      ? { scale: 1.04, boxShadow: "0 0 18px rgba(74, 222, 128, 0.55)" }
+                      : {}
+                  }
+                  whileTap={allCourseLessonsRead ? { scale: 0.94 } : { x: [-4, 4, -4, 4, 0] }}
+                  aria-disabled={!allCourseLessonsRead}
+                  onClick={(e) => {
+                    if (!allCourseLessonsRead) {
+                      triggerButtonBurst(e, ["🔒"]);
+                      playSfx?.("wrong");
+                      return;
+                    }
+                    triggerButtonBurst(e, ["⭐", "✨", "🎉", "🚀"]);
+                    setCompletedCourseIds((prev) => ({ ...prev, [activeCourse.id]: true }));
+                    onEarnXp(75);
+                    setActiveCourse(null);
+                  }}
+                  style={{
+                    flex: 1,
+                    background: allCourseLessonsRead ? "#4ade80" : "#334155",
+                    border: "none",
+                    color: allCourseLessonsRead ? "#060818" : "#94a3b8",
+                    fontWeight: 900,
+                    padding: "11px",
+                    borderRadius: 12,
+                    cursor: allCourseLessonsRead ? "pointer" : "not-allowed",
+                    fontSize: 13.5,
+                  }}
                 >
-                  Complete Module (+75 XP)
+                  {allCourseLessonsRead
+                    ? "Complete Module (+75 XP)"
+                    : `🔒 Read All ${activeCourse.lessons.length} Lessons to Claim (+75 XP)`}
                 </motion.button>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.94 }}
                   onClick={() => setActiveCourse(null)}
                   style={{ background: "#334155", border: "none", color: "#fff", fontWeight: 800, padding: "11px 18px", borderRadius: 12, cursor: "pointer" }}
                 >
                   Close
-                </button>
+                </motion.button>
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
