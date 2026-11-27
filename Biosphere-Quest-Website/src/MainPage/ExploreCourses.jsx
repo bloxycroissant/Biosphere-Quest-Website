@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import scienceGif from "../assets/BiosphereQuestAssets/Science gif.gif";
 import mathIcon from "../assets/BiosphereQuestAssets/Math Icon.png";
 import rocketGif from "../assets/BiosphereQuestAssets/Rocket.gif";
+import InteractiveLessonViewer from "../components/InteractiveLessonViewer";
+import SubjectNotesViewer from "../components/SubjectNotesViewer";
 
 const COURSES = [
   // ================= GRADE 1 =================
@@ -796,7 +798,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
   const [selectedGrade, setSelectedGrade] = useState(chosenGrade);
   const [selectedSubject, setSelectedSubject] = useState("All");
   const [activeCourse, setActiveCourse] = useState(null);
-  const [viewerTab, setViewerTab] = useState("lesson"); // "lesson" | "notes"
+  const [viewerMode, setViewerMode] = useState(null); // null | "lesson" | "notes"
   const [stepIndex, setStepIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [readLessonsByCourse, setReadLessonsByCourse] = useState({});
@@ -961,30 +963,78 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     triggerButtonBurst(e, mode === "notes" ? ["💫", "📖", "⭐"] : ["🚀", "✨", "🌊", "⭐"]);
     playSfx?.("click");
     setActiveCourse(course);
-    setViewerTab(mode);
+    setViewerMode(mode);
     setStepIndex(0);
     setSelectedOption(null);
   };
 
-  const currentLesson =
-    activeCourse?.lessons?.[stepIndex] || activeCourse?.lessons?.[0] || null;
-  const activeCourseReadIndices = activeCourse
-    ? readLessonsByCourse[activeCourse.id] || []
-    : [];
-  const allCourseLessonsRead = activeCourse
-    ? activeCourse.lessons.every((_, i) => activeCourseReadIndices.includes(i))
-    : false;
-
-  const handleCheckAnswer = (idx, e) => {
-    if (!activeCourse || !currentLesson) return;
-    setSelectedOption(idx);
-    if (idx === currentLesson.answerIndex) {
-      markLessonAsRead(activeCourse, stepIndex, e, 25);
-    } else {
-      triggerButtonBurst(e, ["🫧", "💫"]);
-      playSfx?.("wrong");
-    }
+  const closeFullScreenViewer = () => {
+    setViewerMode(null);
+    setActiveCourse(null);
+    setStepIndex(0);
+    setSelectedOption(null);
   };
+
+  const handleCompleteCourseModule = (course, xpReward = 75) => {
+    if (!course) return;
+    setCompletedCourseIds((prev) => ({ ...prev, [course.id]: true }));
+    onEarnXp?.(xpReward);
+    closeFullScreenViewer();
+  };
+
+  if (activeCourse && viewerMode === "lesson") {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 90,
+          overflowY: "auto",
+          background: "#060818",
+        }}
+      >
+        <InteractiveLessonViewer
+          course={activeCourse}
+          explorer={explorer}
+          stepIndex={stepIndex}
+          setStepIndex={setStepIndex}
+          selectedOption={selectedOption}
+          setSelectedOption={setSelectedOption}
+          readLessons={readLessonsByCourse[activeCourse.id] || []}
+          isLessonUnlocked={(idx) => isLessonUnlocked(activeCourse, idx)}
+          onMarkLessonRead={(idx, e, xp) => markLessonAsRead(activeCourse, idx, e, xp)}
+          onCompleteModule={(xp) => handleCompleteCourseModule(activeCourse, xp)}
+          onClose={closeFullScreenViewer}
+          onEarnXp={onEarnXp}
+          playSfx={playSfx}
+        />
+      </div>
+    );
+  }
+
+  if (activeCourse && viewerMode === "notes") {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 90,
+          overflowY: "auto",
+          background: "#060818",
+        }}
+      >
+        <SubjectNotesViewer
+          course={activeCourse}
+          explorer={explorer}
+          readLessons={readLessonsByCourse[activeCourse.id] || []}
+          onOpenLessonViewer={() => setViewerMode("lesson")}
+          onClose={closeFullScreenViewer}
+          onEarnXp={onEarnXp}
+          playSfx={playSfx}
+        />
+      </div>
+    );
+  }
 
   return (
     <div
@@ -1441,428 +1491,6 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
           })}
         </motion.div>
       </div>
-
-      {/* Course Lessons & Subject Notes Modal */}
-      <AnimatePresence>
-        {activeCourse && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="modal-backdrop"
-            onClick={() => setActiveCourse(null)}
-          >
-            <motion.div
-              initial={{ scale: 0.88, opacity: 0, y: 18 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 14 }}
-              transition={{ type: "spring", stiffness: 280, damping: 22 }}
-              className="modal-box"
-              style={{ maxWidth: 640 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span style={{ fontSize: 11, fontWeight: 900, color: activeCourse.accent }}>
-                {activeCourse.category}
-              </span>
-              <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>{activeCourse.title}</h2>
-              <p style={{ fontSize: 13, color: "#cbd5e1", marginBottom: 14 }}>
-                Choose Lesson Viewer or Subject Notes, read each lesson in order to unlock the next lesson, and complete all lessons to claim +75 XP!
-              </p>
-
-              {/* Viewer Mode Switcher */}
-              <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.92 }}
-                  onClick={(e) => {
-                    triggerButtonBurst(e, ["✨", "🚀"]);
-                    playSfx?.("click");
-                    setViewerTab("lesson");
-                  }}
-                  style={{
-                    padding: "8px 14px",
-                    borderRadius: 10,
-                    fontSize: 12.5,
-                    fontWeight: 900,
-                    cursor: "pointer",
-                    border: viewerTab === "lesson" ? "1.5px solid #63e1e8" : "1px solid rgba(148,163,184,0.3)",
-                    background: viewerTab === "lesson" ? "#22d3ee" : "rgba(15, 23, 42, 0.75)",
-                    color: viewerTab === "lesson" ? "#060818" : "#fff",
-                  }}
-                >
-                  Lesson Viewer
-                </motion.button>
-                <motion.button
-                  type="button"
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.92 }}
-                  onClick={(e) => {
-                    triggerButtonBurst(e, ["💫", "⭐"]);
-                    playSfx?.("click");
-                    setViewerTab("notes");
-                  }}
-                  style={{
-                    padding: "8px 14px",
-                    borderRadius: 10,
-                    fontSize: 12.5,
-                    fontWeight: 900,
-                    cursor: "pointer",
-                    border: viewerTab === "notes" ? "1.5px solid #c084fc" : "1px solid rgba(148,163,184,0.3)",
-                    background: viewerTab === "notes" ? "#c084fc" : "rgba(15, 23, 42, 0.75)",
-                    color: viewerTab === "notes" ? "#060818" : "#fff",
-                  }}
-                >
-                  Subject Notes
-                </motion.button>
-              </div>
-
-              <AnimatePresence mode="wait">
-                {viewerTab === "lesson" && currentLesson ? (
-                  <motion.div
-                    key={`lesson-${activeCourse.id}-${stepIndex}`}
-                    initial={{ opacity: 0, x: 16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -16 }}
-                    transition={{ duration: 0.24 }}
-                    style={{
-                      background: "rgba(15, 23, 42, 0.78)",
-                      padding: "14px 16px",
-                      borderRadius: 14,
-                      border: "1px solid rgba(99, 225, 232, 0.35)",
-                      textAlign: "left",
-                      marginBottom: 16,
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
-                      <span style={{ fontSize: 11.5, fontWeight: 800, color: "#94a3b8" }}>
-                        Lesson {stepIndex + 1} of {activeCourse.lessons.length}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 900,
-                          color: activeCourseReadIndices.includes(stepIndex) ? "#4ade80" : "#ffdf4e",
-                        }}
-                      >
-                        {activeCourseReadIndices.includes(stepIndex) ? "✓ Lesson Read" : "Unread"}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: 15.5, fontWeight: 900, marginTop: 4, color: "#fff" }}>
-                      {currentLesson.heading}
-                    </div>
-                    <p style={{ fontSize: 13, color: "#e2e8f0", lineHeight: 1.55, margin: "8px 0 12px" }}>
-                      {currentLesson.body}
-                    </p>
-                    <div style={{ fontSize: 12.5, fontWeight: 900, color: "#ffdf4e", marginBottom: 8 }}>
-                      Quick Check: {currentLesson.checkQuestion}
-                    </div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {currentLesson.options.map((opt, idx) => (
-                        <motion.button
-                          key={opt}
-                          type="button"
-                          whileHover={{ scale: 1.05, y: -2 }}
-                          whileTap={{ scale: 0.92 }}
-                          animate={
-                            selectedOption === idx && idx === currentLesson.answerIndex
-                              ? { scale: [1, 1.1, 1] }
-                              : selectedOption === idx
-                              ? { x: [-4, 4, -4, 4, 0] }
-                              : { scale: 1 }
-                          }
-                          transition={{ duration: 0.3 }}
-                          onClick={(e) => handleCheckAnswer(idx, e)}
-                          style={{
-                            padding: "7px 12px",
-                            borderRadius: 10,
-                            fontSize: 12,
-                            fontWeight: 800,
-                            cursor: "pointer",
-                            color: "#fff",
-                            background:
-                              selectedOption === idx
-                                ? idx === currentLesson.answerIndex
-                                  ? "rgba(74, 222, 128, 0.28)"
-                                  : "rgba(248, 113, 113, 0.28)"
-                                : "rgba(30, 41, 59, 0.9)",
-                            border:
-                              selectedOption === idx
-                                ? idx === currentLesson.answerIndex
-                                  ? "1.5px solid #4ade80"
-                                  : "1.5px solid #f87171"
-                                : "1px solid rgba(148, 163, 184, 0.3)",
-                          }}
-                        >
-                          {opt}
-                        </motion.button>
-                      ))}
-                    </div>
-
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 14 }}>
-                      <motion.button
-                        type="button"
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.94 }}
-                        onClick={(e) => markLessonAsRead(activeCourse, stepIndex, e, 25)}
-                        style={{
-                          background: activeCourseReadIndices.includes(stepIndex)
-                            ? "rgba(74, 222, 128, 0.22)"
-                            : "linear-gradient(90deg, #22d3ee, #818cf8)",
-                          border: activeCourseReadIndices.includes(stepIndex)
-                            ? "1.5px solid #4ade80"
-                            : "none",
-                          color: activeCourseReadIndices.includes(stepIndex) ? "#4ade80" : "#060818",
-                          borderRadius: 9,
-                          padding: "6px 12px",
-                          fontSize: 11.5,
-                          fontWeight: 900,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {activeCourseReadIndices.includes(stepIndex)
-                          ? "✓ Marked as Read"
-                          : "Mark Lesson Read & Unlock Next (+25 XP)"}
-                      </motion.button>
-
-                      {activeCourse.lessons.length > 1 && (
-                        <div style={{ display: "flex", gap: 8 }}>
-                          <motion.button
-                            type="button"
-                            whileHover={stepIndex === 0 ? {} : { scale: 1.06, x: -2 }}
-                            whileTap={stepIndex === 0 ? {} : { scale: 0.92 }}
-                            disabled={stepIndex === 0}
-                            onClick={(e) => {
-                              triggerButtonBurst(e, ["✨"]);
-                              playSfx?.("click");
-                              setStepIndex((i) => Math.max(0, i - 1));
-                              setSelectedOption(null);
-                            }}
-                            style={{
-                              background: "#1e293b",
-                              border: "1px solid rgba(148,163,184,0.3)",
-                              color: "#fff",
-                              borderRadius: 8,
-                              padding: "5px 10px",
-                              fontSize: 11.5,
-                              fontWeight: 800,
-                              cursor: stepIndex === 0 ? "not-allowed" : "pointer",
-                              opacity: stepIndex === 0 ? 0.5 : 1,
-                            }}
-                          >
-                            ← Prev
-                          </motion.button>
-                          <motion.button
-                            type="button"
-                            whileHover={
-                              stepIndex >= activeCourse.lessons.length - 1 ||
-                              !isLessonUnlocked(activeCourse, stepIndex + 1)
-                                ? {}
-                                : { scale: 1.06, x: 2 }
-                            }
-                            whileTap={
-                              stepIndex >= activeCourse.lessons.length - 1 ||
-                              !isLessonUnlocked(activeCourse, stepIndex + 1)
-                                ? { x: [-4, 4, -4, 4, 0] }
-                                : { scale: 0.92 }
-                            }
-                            aria-disabled={
-                              stepIndex >= activeCourse.lessons.length - 1 ||
-                              !isLessonUnlocked(activeCourse, stepIndex + 1)
-                            }
-                            onClick={(e) => {
-                              if (stepIndex >= activeCourse.lessons.length - 1) return;
-                              if (!isLessonUnlocked(activeCourse, stepIndex + 1)) {
-                                triggerButtonBurst(e, ["🔒"]);
-                                playSfx?.("wrong");
-                                return;
-                              }
-                              triggerButtonBurst(e, ["🚀", "✨"]);
-                              playSfx?.("click");
-                              setStepIndex((i) =>
-                                Math.min(activeCourse.lessons.length - 1, i + 1)
-                              );
-                              setSelectedOption(null);
-                            }}
-                            style={{
-                              background: "#1e293b",
-                              border: "1px solid rgba(148,163,184,0.3)",
-                              color: "#fff",
-                              borderRadius: 8,
-                              padding: "5px 10px",
-                              fontSize: 11.5,
-                              fontWeight: 800,
-                              cursor:
-                                stepIndex >= activeCourse.lessons.length - 1 ||
-                                !isLessonUnlocked(activeCourse, stepIndex + 1)
-                                  ? "not-allowed"
-                                  : "pointer",
-                              opacity:
-                                stepIndex >= activeCourse.lessons.length - 1 ||
-                                !isLessonUnlocked(activeCourse, stepIndex + 1)
-                                  ? 0.5
-                                  : 1,
-                            }}
-                          >
-                            {stepIndex < activeCourse.lessons.length - 1 &&
-                            !isLessonUnlocked(activeCourse, stepIndex + 1)
-                              ? "🔒 Next"
-                              : "Next →"}
-                          </motion.button>
-                        </div>
-                      )}
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key={`notes-${activeCourse.id}`}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 16 }}
-                    transition={{ duration: 0.24 }}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: 10,
-                      textAlign: "left",
-                      marginBottom: 16,
-                    }}
-                  >
-                    {activeCourse.notes.map((note, idx) => (
-                      <motion.div
-                        key={idx}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.06 }}
-                        whileHover={{ x: 4, borderColor: "rgba(192, 132, 252, 0.75)" }}
-                        style={{
-                          background: "rgba(15, 23, 42, 0.78)",
-                          padding: "12px 16px",
-                          borderRadius: 14,
-                          border: "1px solid rgba(192, 132, 252, 0.35)",
-                        }}
-                      >
-                        <span style={{ fontSize: 10.5, fontWeight: 900, color: "#e9d5ff" }}>
-                          {note.tag}
-                        </span>
-                        <div style={{ fontSize: 14.5, fontWeight: 900, marginTop: 2 }}>
-                          {note.title}
-                        </div>
-                        <p style={{ fontSize: 12.5, color: "#cbd5e1", margin: "4px 0 0", lineHeight: 1.5 }}>
-                          {note.summary}
-                        </p>
-                      </motion.div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Ordered Lesson List with Sequential Lock State */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, textAlign: "left", marginBottom: 22 }}>
-                {activeCourse.lessons.map((lessonItem, idx) => {
-                  const unlocked = isLessonUnlocked(activeCourse, idx);
-                  const isRead = activeCourseReadIndices.includes(idx);
-                  return (
-                    <motion.div
-                      key={lessonItem.id}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: unlocked ? 1 : 0.6, y: 0 }}
-                      transition={{ delay: idx * 0.05 }}
-                      whileHover={unlocked ? { x: 4, borderColor: "rgba(99, 225, 232, 0.65)" } : {}}
-                      whileTap={unlocked ? {} : { x: [-4, 4, -4, 4, 0] }}
-                      onClick={(e) => {
-                        if (!unlocked) {
-                          triggerButtonBurst(e, ["🔒"]);
-                          playSfx?.("wrong");
-                          return;
-                        }
-                        triggerButtonBurst(e, ["✨"]);
-                        playSfx?.("click");
-                        setViewerTab("lesson");
-                        setStepIndex(idx);
-                        setSelectedOption(null);
-                      }}
-                      style={{
-                        background: "rgba(15, 23, 42, 0.7)",
-                        padding: "12px 16px",
-                        borderRadius: 14,
-                        border:
-                          stepIndex === idx && viewerTab === "lesson"
-                            ? "1.5px solid #63e1e8"
-                            : "1px solid rgba(99, 225, 232, 0.3)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        fontSize: 13.5,
-                        fontWeight: 800,
-                        cursor: unlocked ? "pointer" : "not-allowed",
-                      }}
-                    >
-                      <span>
-                        {unlocked ? "🚀" : "🔒"} {lessonItem.heading}
-                      </span>
-                      <span
-                        style={{
-                          color: !unlocked ? "#94a3b8" : isRead ? "#4ade80" : "#ffdf4e",
-                        }}
-                      >
-                        {!unlocked ? "Locked (Read Previous)" : isRead ? "Read ✓" : "Unlocked"}
-                      </span>
-                    </motion.div>
-                  );
-                })}
-              </div>
-
-              <div style={{ display: "flex", gap: 10 }}>
-                <motion.button
-                  whileHover={
-                    allCourseLessonsRead
-                      ? { scale: 1.04, boxShadow: "0 0 18px rgba(74, 222, 128, 0.55)" }
-                      : {}
-                  }
-                  whileTap={allCourseLessonsRead ? { scale: 0.94 } : { x: [-4, 4, -4, 4, 0] }}
-                  aria-disabled={!allCourseLessonsRead}
-                  onClick={(e) => {
-                    if (!allCourseLessonsRead) {
-                      triggerButtonBurst(e, ["🔒"]);
-                      playSfx?.("wrong");
-                      return;
-                    }
-                    triggerButtonBurst(e, ["⭐", "✨", "🎉", "🚀"]);
-                    setCompletedCourseIds((prev) => ({ ...prev, [activeCourse.id]: true }));
-                    onEarnXp(75);
-                    setActiveCourse(null);
-                  }}
-                  style={{
-                    flex: 1,
-                    background: allCourseLessonsRead ? "#4ade80" : "#334155",
-                    border: "none",
-                    color: allCourseLessonsRead ? "#060818" : "#94a3b8",
-                    fontWeight: 900,
-                    padding: "11px",
-                    borderRadius: 12,
-                    cursor: allCourseLessonsRead ? "pointer" : "not-allowed",
-                    fontSize: 13.5,
-                  }}
-                >
-                  {allCourseLessonsRead
-                    ? "Complete Module (+75 XP)"
-                    : `🔒 Read All ${activeCourse.lessons.length} Lessons to Claim (+75 XP)`}
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.94 }}
-                  onClick={() => setActiveCourse(null)}
-                  style={{ background: "#334155", border: "none", color: "#fff", fontWeight: 800, padding: "11px 18px", borderRadius: 12, cursor: "pointer" }}
-                >
-                  Close
-                </motion.button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
