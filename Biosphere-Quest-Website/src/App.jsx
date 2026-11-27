@@ -314,7 +314,6 @@ export default function App() {
   };
 
   const handleLogout = async () => {
-    // Wait for any in-flight save and flush the latest explorer state before signing out
     await pendingSaveRef.current.catch(() => {});
 
     const latest = explorerRef.current;
