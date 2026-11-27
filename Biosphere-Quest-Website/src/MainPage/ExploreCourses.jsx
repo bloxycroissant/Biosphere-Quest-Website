@@ -949,7 +949,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     });
   }, [selectedGrade, selectedSubject]);
 
-  const openCourseViewer = (course, e) => {
+  const openCourseViewer = (course, mode = "lesson", e) => {
     if (isGradeLocked(course.grade)) {
       triggerButtonBurst(e, ["🔒"]);
       playSfx?.("wrong");
@@ -958,10 +958,10 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
       );
       return;
     }
-    triggerButtonBurst(e, ["🚀", "✨", "🌊", "⭐"]);
+    triggerButtonBurst(e, mode === "notes" ? ["💫", "📖", "⭐"] : ["🚀", "✨", "🌊", "⭐"]);
     playSfx?.("click");
     setActiveCourse(course);
-    setViewerTab("lesson");
+    setViewerTab(mode);
     setStepIndex(0);
     setSelectedOption(null);
   };
@@ -1201,7 +1201,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
             📚 Explore Courses & Learning Modules
           </motion.h1>
           <p style={{ fontSize: 13.5, color: "#cbd5e1", marginTop: 4 }}>
-            MATATAG-aligned Math, Science, and Ocean quests for Grades 1–6 with Interactive Lessons & Subject Notes!
+            MATATAG-aligned Math, Science, and Ocean quests for Grades 1–6 with Lesson Viewer or Subject Notes!
           </p>
           <p style={{ fontSize: 12, color: "#63e1e8", fontWeight: 800, marginTop: 4 }}>
             Your Saved Grade: Grade {chosenGrade} • Complete all Grade {chosenGrade} courses to unlock the next grade sequentially!
@@ -1368,41 +1368,81 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
                   <p style={{ fontSize: 13, color: "#cbd5e1", lineHeight: 1.5, marginBottom: 16 }}>{course.desc}</p>
                 </div>
 
-                <motion.button
-                  whileHover={gradeLocked ? {} : { scale: 1.04, boxShadow: `0 0 18px ${course.accent}66` }}
-                  whileTap={gradeLocked ? { x: [-4, 4, -4, 4, 0] } : { scale: 0.94 }}
-                  aria-disabled={gradeLocked}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    openCourseViewer(course, e);
-                  }}
-                  style={{
-                    background: gradeLocked
-                      ? "#334155"
-                      : `linear-gradient(90deg, ${course.accent}, #818cf8)`,
-                    border: "none",
-                    color: gradeLocked ? "#94a3b8" : "#060818",
-                    fontWeight: 900,
-                    padding: "10px 16px",
-                    borderRadius: 12,
-                    cursor: gradeLocked ? "not-allowed" : "pointer",
-                    fontSize: 13,
-                    width: "100%",
-                  }}
-                >
-                  {gradeLocked
-                    ? `🔒 Locked (Complete Grade ${course.grade - 1} First)`
-                    : courseDone
-                    ? "Completed ✓ (Review Lessons)"
-                    : "Start Learning →"}
-                </motion.button>
+                {gradeLocked ? (
+                  <motion.button
+                    whileTap={{ x: [-4, 4, -4, 4, 0] }}
+                    aria-disabled={true}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openCourseViewer(course, "lesson", e);
+                    }}
+                    style={{
+                      background: "#334155",
+                      border: "none",
+                      color: "#94a3b8",
+                      fontWeight: 900,
+                      padding: "10px 16px",
+                      borderRadius: 12,
+                      cursor: "not-allowed",
+                      fontSize: 13,
+                      width: "100%",
+                    }}
+                  >
+                    {`🔒 Locked (Complete Grade ${course.grade - 1} First)`}
+                  </motion.button>
+                ) : (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <motion.button
+                      whileHover={{ scale: 1.03, boxShadow: `0 0 16px ${course.accent}66` }}
+                      whileTap={{ scale: 0.94 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openCourseViewer(course, "lesson", e);
+                      }}
+                      style={{
+                        flex: 1,
+                        background: `linear-gradient(90deg, ${course.accent}, #818cf8)`,
+                        border: "none",
+                        color: "#060818",
+                        fontWeight: 900,
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        cursor: "pointer",
+                        fontSize: 12.5,
+                      }}
+                    >
+                      {courseDone ? "Lesson Viewer ✓" : "Lesson Viewer →"}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.03, boxShadow: "0 0 16px rgba(192, 132, 252, 0.55)" }}
+                      whileTap={{ scale: 0.94 }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openCourseViewer(course, "notes", e);
+                      }}
+                      style={{
+                        flex: 1,
+                        background: "rgba(192, 132, 252, 0.18)",
+                        border: "1.5px solid #c084fc",
+                        color: "#f3e8ff",
+                        fontWeight: 900,
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        cursor: "pointer",
+                        fontSize: 12.5,
+                      }}
+                    >
+                      Subject Notes 📖
+                    </motion.button>
+                  </div>
+                )}
               </motion.div>
             );
           })}
         </motion.div>
       </div>
 
-      {/* Course Lessons, Interactive Lesson Viewer & Subject Notes Modal */}
+      {/* Course Lessons & Subject Notes Modal */}
       <AnimatePresence>
         {activeCourse && (
           <motion.div
@@ -1427,7 +1467,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
               </span>
               <h2 style={{ fontSize: 22, fontWeight: 900, marginBottom: 8 }}>{activeCourse.title}</h2>
               <p style={{ fontSize: 13, color: "#cbd5e1", marginBottom: 14 }}>
-                Read each lesson in order to unlock the next lesson, review Subject Notes, and complete all lessons to claim +75 XP!
+                Choose Lesson Viewer or Subject Notes, read each lesson in order to unlock the next lesson, and complete all lessons to claim +75 XP!
               </p>
 
               {/* Viewer Mode Switcher */}
@@ -1452,7 +1492,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
                     color: viewerTab === "lesson" ? "#060818" : "#fff",
                   }}
                 >
-                  Interactive Lesson Viewer
+                  Lesson Viewer
                 </motion.button>
                 <motion.button
                   type="button"
@@ -1474,7 +1514,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
                     color: viewerTab === "notes" ? "#060818" : "#fff",
                   }}
                 >
-                  Subject Notes Viewer
+                  Subject Notes
                 </motion.button>
               </div>
 
