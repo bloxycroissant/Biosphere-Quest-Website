@@ -57,7 +57,7 @@ const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
   let pictureBoard;
 
   if (isScience) {
-    if (/plant|seed|flower|photosynth|reproduction/.test(title)) {
+    if (/plant|seed|flower|photosynth|reproduction|grow/.test(title)) {
       steps = [
         {
           icon: "🌱",
@@ -83,7 +83,7 @@ const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
         { art: "☀️ + 💧 + 🌿", caption: "Sunlight & Water" },
         { art: "🌸 🐝 🍓", caption: "Flower & Fruit" },
       ];
-    } else if (/life cycle|metamorph|animal/.test(title)) {
+    } else if (/life cycle|metamorph|animal|habitat|ecosystem/.test(title)) {
       steps = [
         {
           icon: "🥚",
@@ -109,7 +109,7 @@ const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
         { art: "🐛 ➔ 🪭", caption: "Growth & Cocoon" },
         { art: "🦋 ➔ 🌸", caption: "Adult Stage" },
       ];
-    } else if (/matter|solid|liquid|gas|mixture|melting/.test(title)) {
+    } else if (/matter|solid|liquid|gas|mixture|melting|evap|change/.test(title)) {
       steps = [
         {
           icon: "🧊",
@@ -134,6 +134,32 @@ const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
         { art: "🧊 [Tight]", caption: "Fixed Shape" },
         { art: "💧 [Flows]", caption: "Takes Container" },
         { art: "☁️ [Spreads]", caption: "Fills Space" },
+      ];
+    } else if (/force|motion|push|pull|energy|light|sound|magnet|gravity/.test(title)) {
+      steps = [
+        {
+          icon: "👉",
+          label: "Apply Push or Pull",
+          detail:
+            "A force acts on an object to start motion, stop motion, or change direction.",
+        },
+        {
+          icon: "⚡",
+          label: "Energy Transfer",
+          detail:
+            "Energy moves or changes form—such as light, heat, sound, or motion energy.",
+        },
+        {
+          icon: "🎯",
+          label: "Observe Outcome",
+          detail:
+            "Measure how far, fast, or differently the object responds.",
+        },
+      ];
+      pictureBoard = [
+        { art: "👉 [Push] ➔ ⚽", caption: "Force Starts Move" },
+        { art: "🔦 ➔ 📦 ➔ 👤", caption: "Light & Shadow" },
+        { art: "🧲 🔩", caption: "Magnetic Pull" },
       ];
     } else {
       steps = [
@@ -293,30 +319,84 @@ const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
       ];
     }
   } else {
-    steps = [
-      {
-        icon: "📘",
-        label: "Rule Identification",
-        detail: "Read and analyze the core mathematical rule or principle.",
-      },
-      {
-        icon: "🧩",
-        label: "Variable Alignment",
-        detail:
-          "Substitute given numerical values into the target equation correctly.",
-      },
-      {
-        icon: "✅",
-        label: "Verification",
-        detail:
-          "Execute steps systematically and double-check units and calculations.",
-      },
-    ];
-    pictureBoard = [
-      { art: "📐 a² + b² = c²", caption: "Formula Setup" },
-      { art: "🔢 x = 6", caption: "Solve Value" },
-      { art: "✔️ Checked", caption: "Verify Result" },
-    ];
+    if (/fraction|decimal|ratio|percent/.test(title)) {
+      steps = [
+        {
+          icon: "🍕",
+          label: "Parts of a Whole / Ratio",
+          detail:
+            "Identify equal parts, tenths/hundredths, or proportional quantities.",
+        },
+        {
+          icon: "🔄",
+          label: "Convert or Simplify",
+          detail:
+            "Match common denominators, decimal places, or equivalent ratios.",
+        },
+        {
+          icon: "✅",
+          label: "Verify Value",
+          detail:
+            "Check that the fraction, decimal, or percentage matches the total.",
+        },
+      ];
+      pictureBoard = [
+        { art: "🍕 1/2 = 0.5", caption: "Half & Decimal" },
+        { art: "🪙 3:2 Ratio", caption: "Compare Parts" },
+        { art: "💯 25% = 1/4", caption: "Quarter Percent" },
+      ];
+    } else if (/area|perimeter|volume|angle|geometry/.test(title)) {
+      steps = [
+        {
+          icon: "📏",
+          label: "Identify Dimensions",
+          detail:
+            "Read length, width, height, or side lengths with matching units.",
+        },
+        {
+          icon: "📐",
+          label: "Apply Formula",
+          detail:
+            "Add sides for perimeter, L×W for area, or L×W×H for volume.",
+        },
+        {
+          icon: "✅",
+          label: "Include Proper Unit",
+          detail:
+            "Write cm, sq cm, or cm³ clearly on your final answer.",
+        },
+      ];
+      pictureBoard = [
+        { art: "▭ 6×4 = 24", caption: "Area (sq cm)" },
+        { art: "⬜ 4×4 = 16", caption: "Perimeter (cm)" },
+        { art: "📦 5×3×2 = 30", caption: "Volume (cm³)" },
+      ];
+    } else {
+      steps = [
+        {
+          icon: "📘",
+          label: "Rule Identification",
+          detail: "Read and analyze the core mathematical rule or principle.",
+        },
+        {
+          icon: "🧩",
+          label: "Variable Alignment",
+          detail:
+            "Substitute given numerical values into the target equation correctly.",
+        },
+        {
+          icon: "✅",
+          label: "Verification",
+          detail:
+            "Execute steps systematically and double-check units and calculations.",
+        },
+      ];
+      pictureBoard = [
+        { art: "📐 2x + 4 = 12", caption: "Formula Setup" },
+        { art: "🔢 x = 4", caption: "Solve Value" },
+        { art: "✔️ Checked", caption: "Verify Result" },
+      ];
+    }
   }
 
   return {
@@ -330,6 +410,59 @@ const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
     steps,
     pictureBoard,
   };
+};
+
+const getTopicWorkedExample = (
+  gradeLevel,
+  isScience,
+  lessonTitle,
+  lessonExample
+) => {
+  if (lessonExample) return lessonExample;
+  const title = (lessonTitle || "").toLowerCase();
+
+  if (isScience) {
+    if (/plant|seed|flower|photosynth|reproduction|grow/.test(title)) {
+      return gradeLevel <= 3
+        ? "Worked Example: Place a mongo seed on wet cotton in a bright spot and keep it damp. After a few days, a root and green sprout grow."
+        : "Worked Example: Compare two potted seedlings receiving equal light; watering Plant A regularly keeps leaves turgid and green while unwatered Plant B wilts.";
+    }
+    if (/life cycle|metamorph|animal|habitat|ecosystem/.test(title)) {
+      return gradeLevel <= 3
+        ? "Worked Example: A butterfly starts as a tiny egg on a leaf, becomes a hungry caterpillar, rests in a pupa, and emerges as a butterfly."
+        : "Worked Example: In a pond food chain, algae (producer) capture sunlight, small fish (primary consumer) feed on algae, and larger fish prey on small fish.";
+    }
+    if (/matter|solid|liquid|gas|mixture|melting|evap|change/.test(title)) {
+      return gradeLevel <= 3
+        ? "Worked Example: An ice cube is a hard solid; when warmed on a plate, it melts into liquid water."
+        : "Worked Example: Heating liquid water in a kettle adds heat energy and turns part of it into water vapor (gas); stirring salt into water forms a solution.";
+    }
+    return gradeLevel <= 3
+      ? "Worked Example: Push a toy car gently for a short roll, then push it a bit firmer so it rolls farther across the floor."
+      : "Worked Example: A flashlight beam shines onto a solid book to form a shadow behind it, or a battery powers a bulb through a closed circuit.";
+  }
+
+  if (/count|number|sense|ordinal/.test(title)) {
+    return gradeLevel <= 3
+      ? "Worked Example: Count 6 mangoes one by one (1, 2, 3, 4, 5, 6); 6 is 1 more than 5, and the 3rd mango is in the middle of a row of 5."
+      : "Worked Example: In 4,825, the digit 4 is in the thousands place (4,000), 8 is in the hundreds place (800), 2 is in the tens place (20), and 5 is in the ones place (5).";
+  }
+  if (/shape|pattern/.test(title)) {
+    return gradeLevel <= 3
+      ? "Worked Example: In 🔴, 🟦, 🔴, 🟦, 🔴, the pattern repeats every two shapes, so the next shape is 🟦."
+      : "Worked Example: A rectangle 8 cm long and 5 cm wide has perimeter 2 × (8 + 5) = 26 cm and area 8 × 5 = 40 sq cm.";
+  }
+  if (/fraction|decimal|ratio|percent/.test(title)) {
+    return "Worked Example: 3/4 of a 12-slice pizza is 9 slices, which equals 0.75 or 75% of the whole pizza.";
+  }
+  if (/addition|subtraction|sum|difference/.test(title)) {
+    return gradeLevel <= 3
+      ? "Worked Example: Start with 7 stickers and add 4 more: 7 + 4 = 11 stickers. Take away 3: 11 − 3 = 8 stickers left."
+      : "Worked Example: A school library has 245 books and receives 138 more (245 + 138 = 383 books), then lends out 64 (383 − 64 = 319 books).";
+  }
+  return gradeLevel <= 3
+    ? "Worked Example: Put 8 counters into 2 equal groups: 8 ÷ 2 = 4 counters in each group."
+    : "Worked Example: Solve 3x + 6 = 21 by subtracting 6 from both sides (3x = 15) and dividing by 3 (x = 5).";
 };
 
 function LessonVisual({ data }) {
@@ -503,9 +636,12 @@ const buildLessonExpansion = (
   const meaningText =
     lessonMeaning ||
     `Study the foundational laws and structural mechanics governing ${keyword}.`;
-  const exampleText =
-    lessonExample ||
-    `Examine practical everyday phenomena to see how ${keyword} works in real-world environments!`;
+  const exampleText = getTopicWorkedExample(
+    gradeLevel,
+    isScience,
+    lessonTitle,
+    lessonExample
+  );
 
   return {
     isScience,
@@ -1014,6 +1150,18 @@ export default function SubjectNotesViewer({
                 </motion.div>
               ))}
             </div>
+
+            <h3
+              style={{
+                color: "#334155",
+                fontSize: 16,
+                fontWeight: 900,
+                margin: "14px 0 8px",
+              }}
+            >
+              ⭐ Worked Example Snapshot
+            </h3>
+            {renderParagraphs(expansion.example, `c${index}-p1-ex`)}
 
             <h3
               style={{
