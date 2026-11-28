@@ -25,709 +25,1032 @@ const buildQuestion = (qText, correct, wrongs, explanation) => {
   };
 };
 
-const resolveSubjectAndLesson = (initialSubject, initialLesson, gradeLevel) => {
-  const rawTitle = (initialSubject?.title || "").trim();
-  const lowerTitle = rawTitle.toLowerCase();
+const SUBJECT_GRADE_LESSONS = {
+  Math: {
+    1: [
+      {
+        title: "Numbers Up to 100 & Place Value",
+        meaning: "Count, read, write, and compare whole numbers up to 100 using tens and ones blocks.",
+        example: "3 tens + 2 ones = 32; 45 is greater than 38.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Addition & Subtraction Within 100",
+        meaning: "Combine sets to add and take away items to subtract within 100.",
+        example: "14 + 5 = 19 mangoes; 19 − 4 = 15 left.",
+        difficulty: "Easy",
+      },
+      {
+        title: "2D Shapes, Ordinal Numbers & Patterns",
+        meaning: "Identify shapes, positions (1st, 2nd, 3rd), and repeating patterns.",
+        example: "Circle, Square, Circle, Square, [Circle].",
+        difficulty: "Easy",
+      },
+    ],
+    2: [
+      {
+        title: "Numbers Up to 1,000, Addition & Subtraction",
+        meaning: "Read, write, and compute with hundreds, tens, and ones up to 1,000.",
+        example: "245 + 138 = 383; 400 − 125 = 275.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Money, Length & Word Problems",
+        meaning: "Solve addition and subtraction word problems involving money and length.",
+        example: "₱100 + ₱25 = ₱125; 15 cm − 6 cm = 9 cm.",
+        difficulty: "Medium",
+      },
+    ],
+    3: [
+      {
+        title: "Multiplication, Division & Unit Fractions",
+        meaning: "Relate equal groups to multiplication and division, and name unit fractions.",
+        example: "3 × 4 = 12; 12 ÷ 3 = 4; 1/4 of a whole.",
+        difficulty: "Medium",
+      },
+      {
+        title: "Perimeter & Area of Rectangles",
+        meaning: "Measure around a figure for perimeter and count square units inside for area.",
+        example: "4 cm × 3 cm rectangle has perimeter 14 cm and area 12 sq cm.",
+        difficulty: "Medium",
+      },
+    ],
+    4: [
+      {
+        title: "Multi-Digit Operations, Fractions & Angles",
+        meaning: "Solve multi-step operations, equivalent fractions, perimeter/area, and angles.",
+        example: "2/4 = 1/2; right angle measures 90°.",
+        difficulty: "Medium",
+      },
+      {
+        title: "Number Patterns & Problem Solving",
+        meaning: "Analyze growing number sequences and solve multi-step word problems.",
+        example: "2, 5, 8, 11, 14 (+3 rule).",
+        difficulty: "Hard",
+      },
+    ],
+    5: [
+      {
+        title: "Decimals, Fractions & Volume",
+        meaning: "Add and subtract decimals, work with fractions, and find rectangular prism volume.",
+        example: "Volume = 5 cm × 3 cm × 2 cm = 30 cm³.",
+        difficulty: "Hard",
+      },
+      {
+        title: "Line Graphs & Data Interpretation",
+        meaning: "Read trends and changes over time using line graphs.",
+        example: "Comparing daily temperature or savings across a week.",
+        difficulty: "Hard",
+      },
+    ],
+    6: [
+      {
+        title: "Ratios, Percentages & Integers",
+        meaning: "Work with ratios, rates, percentages, and positive/negative integers.",
+        example: "Ratio 3:2; 50% of 80 = 40; −4 + 7 = 3.",
+        difficulty: "Hard",
+      },
+      {
+        title: "Algebraic Patterns, Surface Area & Circles",
+        meaning: "Evaluate expressions and equations, and compute circle and surface measurements.",
+        example: "If x = 4, then 2x + 3 = 11.",
+        difficulty: "Hard",
+      },
+    ],
+  },
+  Science: {
+    1: [
+      {
+        title: "Senses, Living Things & Earth Surroundings",
+        meaning: "Use your senses safely to observe living and non-living things, plants, animals, and surroundings.",
+        example: "A leafy plant and dog are living; a rock and sunlight are non-living.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Parts of Plants & Animals",
+        meaning: "Identify outer body parts of animals and main parts of plants and their uses.",
+        example: "Roots take in water; fins help fish swim.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Caring for Our Surroundings",
+        meaning: "Practice safe and clean habits around home, school, and local nature.",
+        example: "Throwing trash in proper bins and avoiding unsafe objects.",
+        difficulty: "Easy",
+      },
+    ],
+    2: [
+      {
+        title: "Push, Pull, Light & Daily Weather",
+        meaning: "Explore how pushes and pulls move objects, light/heat sources, and daily weather.",
+        example: "Pushing a cart starts motion; weather shifts from sunny to rainy.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Needs of Living Things & Habitats",
+        meaning: "Observe what plants and animals need to live and where they stay.",
+        example: "Plants need sunlight, water, and air to grow.",
+        difficulty: "Medium",
+      },
+    ],
+    3: [
+      {
+        title: "Matter Around Us: Solids, Liquids & Gases",
+        meaning: "Investigate properties of solids, liquids, and gases and how temperature changes matter.",
+        example: "Ice (solid) melts into water (liquid) when warmed.",
+        difficulty: "Medium",
+      },
+      {
+        title: "Heating, Cooling & Material Changes",
+        meaning: "Observe how heating or cooling changes the state or texture of materials.",
+        example: "Water evaporates into vapor or freezes into ice.",
+        difficulty: "Medium",
+      },
+    ],
+    4: [
+      {
+        title: "Materials, Mixtures & Changes in Matter",
+        meaning: "Classify materials by properties, explore mixtures, and observe physical/chemical changes.",
+        example: "Mixing pebbles and sand forms a physical mixture.",
+        difficulty: "Medium",
+      },
+      {
+        title: "Plant & Animal Life Cycles",
+        meaning: "Trace growth stages and adaptations of living organisms.",
+        example: "Egg → larva → pupa → adult butterfly.",
+        difficulty: "Medium",
+      },
+    ],
+    5: [
+      {
+        title: "Body Systems, Reproduction & Weathering",
+        meaning: "Trace body systems, plant/animal reproduction, and how Earth surfaces weather.",
+        example: "Water, wind, and temperature break down rocks over time.",
+        difficulty: "Hard",
+      },
+      {
+        title: "Circuits, Sound & Light Interactions",
+        meaning: "Examine how energy travels and interacts with materials.",
+        example: "Complete circuit lights a bulb; light reflects or refracts.",
+        difficulty: "Hard",
+      },
+    ],
+    6: [
+      {
+        title: "Energy, Force, Motion & Earth-Moon Systems",
+        meaning: "Explore energy forms, forces and motion, simple machines, and Earth-Moon cycles.",
+        example: "Gravity and orbital motion govern Earth and Moon movements.",
+        difficulty: "Hard",
+      },
+      {
+        title: "Ecosystems & Earth Processes",
+        meaning: "Analyze food webs, habitats, and how Earth processes shape environments.",
+        example: "Producers, consumers, and decomposers keep ecosystems balanced.",
+        difficulty: "Hard",
+      },
+    ],
+  },
+  Ocean: {
+    1: [
+      {
+        title: "Hello, Shallow Reef & Tide Pools",
+        meaning: "Meet gentle tide-pool creatures, feel how water moves, and spot living vs. non-living things.",
+        example: "Crabs and shells in a shallow tide pool as gentle waves roll in.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Living vs. Non-Living by the Shore",
+        meaning: "Tell living coastal organisms apart from non-living sand, water, and rocks.",
+        example: "A hermit crab moves and grows; a rock stays non-living.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Keeping Shores & Water Clean",
+        meaning: "Learn simple ways to keep coastal areas and water safe for marine life.",
+        example: "Picking up litter so sea creatures don't mistake it for food.",
+        difficulty: "Easy",
+      },
+    ],
+    2: [
+      {
+        title: "Whales, Dolphins & Ocean Movement",
+        meaning: "Explore how marine animals move, breathe, and shelter in open waters and coastal bays.",
+        example: "Dolphins and whales swim through currents and surface for air.",
+        difficulty: "Easy",
+      },
+      {
+        title: "Waves, Tides & Coastal Shelters",
+        meaning: "Observe how waves and tides rise and fall along beaches and reefs.",
+        example: "High tide covers tide pools; low tide reveals wet rocks.",
+        difficulty: "Medium",
+      },
+    ],
+    3: [
+      {
+        title: "Coral Reefs & Marine Food Chains",
+        meaning: "See how living things in coral reefs and seas depend on one another and on water/light.",
+        example: "Sunlight and algae support reef fish and larger predators.",
+        difficulty: "Medium",
+      },
+      {
+        title: "Protecting Reef Habitats",
+        meaning: "Understand why coral reefs need clean water and gentle human habits.",
+        example: "Avoiding touching or stepping on delicate corals.",
+        difficulty: "Medium",
+      },
+    ],
+    4: [
+      {
+        title: "Philippine Seas, Tides & Coastal Habitats",
+        meaning: "Explore marine biodiversity in Philippine waters, coastal landforms, and human impact.",
+        example: "Coral triangles, mangroves, and bays shelter rich marine life.",
+        difficulty: "Medium",
+      },
+      {
+        title: "Tidal Cycles & Shoreline Changes",
+        meaning: "Connect tide cycles to coastal erosion, deposition, and organism survival.",
+        example: "Intertidal organisms adapt to wet and dry tide periods.",
+        difficulty: "Hard",
+      },
+    ],
+    5: [
+      {
+        title: "Pelagic Zones, Currents & Ocean Chemistry",
+        meaning: "Dive from sunlit surface waters to deeper zones while learning salinity and currents.",
+        example: "Sunlight decreases with depth; currents move heat and nutrients.",
+        difficulty: "Hard",
+      },
+      {
+        title: "Salinity, Temperature & Marine Life",
+        meaning: "See how salt levels and water temperature shape where ocean organisms live.",
+        example: "Warm sunlit surface layers vs. cooler deeper ocean water.",
+        difficulty: "Hard",
+      },
+    ],
+    6: [
+      {
+        title: "Ocean-Atmosphere Climate & Blue Carbon",
+        meaning: "Examine how oceans drive weather and climate patterns, blue carbon habitats, and conservation.",
+        example: "Mangroves, seagrasses, and salt marshes store blue carbon.",
+        difficulty: "Hard",
+      },
+      {
+        title: "Marine Conservation & Sustainable Seas",
+        meaning: "Apply ocean science to protect marine biodiversity and climate balance.",
+        example: "Restoring coastal mangroves protects shorelines and captures carbon.",
+        difficulty: "Hard",
+      },
+    ],
+  },
+};
 
-  const isOceanCard =
-    lowerTitle.includes("ocean") ||
-    lowerTitle.includes("marine") ||
-    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
-      lowerTitle
-    );
+const detectSubjectKey = (rawSubject, rawLesson) => {
+  const combined = `${rawSubject || ""} ${rawLesson || ""}`.toLowerCase();
+  if (
+    combined.includes("ocean") ||
+    combined.includes("marine") ||
+    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal|shore/.test(
+      combined
+    )
+  ) {
+    return "Ocean";
+  }
+  if (
+    combined.includes("science") ||
+    /sense|living|earth|matter|solid|liquid|gas|push|pull|light|weather|mixture|body|reproduction|weathering|energy|force|motion|moon|plant|animal/.test(
+      combined
+    )
+  ) {
+    return "Science";
+  }
+  return "Math";
+};
 
-  const isScienceCard =
-    !isOceanCard &&
-    (lowerTitle.includes("science") ||
-      [
-        "sense",
-        "living",
-        "earth",
-        "matter",
-        "solid",
-        "liquid",
-        "gas",
-        "push",
-        "pull",
-        "light",
-        "weather",
-        "mixture",
-        "body",
-        "reproduction",
-        "weathering",
-        "energy",
-        "force",
-        "motion",
-        "moon",
-      ].some((kw) => lowerTitle.includes(kw)));
-
-  const resolvedSubject = initialSubject?.title
-    ? {
-        title: initialSubject.title,
-        icon:
-          initialSubject.icon ||
-          (isOceanCard ? "🌊" : isScienceCard ? "🔬" : "📐"),
-        color:
-          initialSubject.color ||
-          (isOceanCard ? "#38bdf8" : isScienceCard ? "#4ade80" : "#9c63e8"),
-        lessons: Array.isArray(initialSubject.lessons)
-          ? initialSubject.lessons
-          : [],
-      }
-    : {
-        title: "Math",
-        icon: "📐",
-        color: "#9c63e8",
-        lessons: [],
-      };
-
-  const candidateLesson =
-    initialLesson && typeof initialLesson === "object" && initialLesson.title
+const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => {
+  const rawSubjTitle =
+    typeof initialSubject === "string"
+      ? initialSubject
+      : initialSubject?.title || initialSubject?.subject || "";
+  const rawLessonTitle =
+    typeof initialLesson === "string"
       ? initialLesson
+      : initialLesson?.title || initialSubject?.lessonTitle || "";
+
+  const subjectKey = detectSubjectKey(rawSubjTitle, rawLessonTitle);
+  const subjectMeta = {
+    Math: { title: "Math", icon: "📐", color: "#9c63e8" },
+    Science: { title: "Science", icon: "🔬", color: "#4ade80" },
+    Ocean: { title: "Ocean", icon: "🌊", color: "#38bdf8" },
+  }[subjectKey];
+
+  const gradeBank =
+    SUBJECT_GRADE_LESSONS[subjectKey]?.[gradeLevel] ||
+    SUBJECT_GRADE_LESSONS[subjectKey]?.[1] ||
+    SUBJECT_GRADE_LESSONS.Math[1];
+
+  const incomingLessons = Array.isArray(initialSubject?.lessons)
+    ? initialSubject.lessons
+        .filter((item) => item && (typeof item === "string" || item.title))
+        .map((item, idx) =>
+          typeof item === "string"
+            ? {
+                title: item,
+                meaning: gradeBank[idx]?.meaning || `Explore ${item} in ${subjectMeta.title}.`,
+                example: gradeBank[idx]?.example || `Classroom example of ${item}.`,
+                difficulty: gradeBank[idx]?.difficulty || "Easy",
+              }
+            : {
+                title: item.title,
+                meaning:
+                  item.meaning ||
+                  item.description ||
+                  gradeBank[idx]?.meaning ||
+                  `Explore ${item.title} in ${subjectMeta.title}.`,
+                example:
+                  item.example ||
+                  gradeBank[idx]?.example ||
+                  `Classroom example of ${item.title}.`,
+                difficulty: item.difficulty || gradeBank[idx]?.difficulty || "Easy",
+              }
+        )
+    : [];
+
+  let lessons = incomingLessons.length > 0 ? incomingLessons : [...gradeBank];
+
+  const targetLessonObj =
+    initialLesson && typeof initialLesson === "object" && initialLesson.title
+      ? {
+          title: initialLesson.title,
+          meaning:
+            initialLesson.meaning ||
+            initialLesson.description ||
+            `Explore ${initialLesson.title} in ${subjectMeta.title}.`,
+          example:
+            initialLesson.example || `Classroom example of ${initialLesson.title}.`,
+          difficulty: initialLesson.difficulty || "Easy",
+        }
       : typeof initialLesson === "string" && initialLesson.trim()
-      ? { title: initialLesson.trim() }
-      : Array.isArray(resolvedSubject.lessons) && resolvedSubject.lessons[0]
-      ? resolvedSubject.lessons[0]
+      ? {
+          title: initialLesson.trim(),
+          meaning: `Explore ${initialLesson.trim()} in ${subjectMeta.title}.`,
+          example: `Classroom example of ${initialLesson.trim()}.`,
+          difficulty: "Easy",
+        }
       : null;
 
-  const lessonTitle =
-    candidateLesson?.title ||
-    (isOceanCard
-      ? gradeLevel === 1
-        ? "Hello, Shallow Reef & Tide Pools"
-        : `${resolvedSubject.title} Exploration`
-      : isScienceCard
-      ? gradeLevel === 1
-        ? "Senses, Living Things & Earth Surroundings"
-        : `${resolvedSubject.title} Investigation`
-      : "Counting");
+  let initialSelectedIndex = 0;
 
-  const lessonMeaning =
-    candidateLesson?.meaning ||
-    (isOceanCard
-      ? `Explore ${lessonTitle.toLowerCase()}, including marine life, water movement, and coastal habitats.`
-      : isScienceCard
-      ? `Observe and investigate ${lessonTitle.toLowerCase()} using evidence and safe exploration.`
-      : "Numbers tell us amounts.");
-
-  const lessonExample =
-    candidateLesson?.example ||
-    (isOceanCard
-      ? "Spotting crabs and shells in a shallow tide pool as gentle waves move along the shore."
-      : isScienceCard
-      ? "Using your senses safely to observe living plants and animals versus non-living rocks and water."
-      : "1, 2, 3");
+  if (targetLessonObj) {
+    const foundIdx = lessons.findIndex(
+      (l) => l.title.toLowerCase() === targetLessonObj.title.toLowerCase()
+    );
+    if (foundIdx >= 0) {
+      lessons[foundIdx] = {
+        ...lessons[foundIdx],
+        meaning: targetLessonObj.meaning || lessons[foundIdx].meaning,
+        example: targetLessonObj.example || lessons[foundIdx].example,
+      };
+      initialSelectedIndex = foundIdx;
+    } else {
+      lessons = [targetLessonObj, ...lessons];
+      initialSelectedIndex = 0;
+    }
+  } else if (
+    initialSubject &&
+    typeof initialSubject === "object" &&
+    initialSubject.title &&
+    !/^(math|science|ocean)$/i.test(initialSubject.title.trim())
+  ) {
+    const cardTopicTitle = initialSubject.title.trim();
+    const foundCardIdx = lessons.findIndex(
+      (l) => l.title.toLowerCase() === cardTopicTitle.toLowerCase()
+    );
+    if (foundCardIdx >= 0) {
+      initialSelectedIndex = foundCardIdx;
+    } else {
+      lessons = [
+        {
+          title: cardTopicTitle,
+          meaning:
+            initialSubject.description ||
+            initialSubject.meaning ||
+            `Explore ${cardTopicTitle} in ${subjectMeta.title}.`,
+          example:
+            initialSubject.example || `Classroom example of ${cardTopicTitle}.`,
+          difficulty: initialSubject.difficulty || "Easy",
+        },
+        ...lessons,
+      ];
+      initialSelectedIndex = 0;
+    }
+  }
 
   return {
-    subject: resolvedSubject,
-    lesson: {
-      title: lessonTitle,
-      meaning: lessonMeaning,
-      example: lessonExample,
-      difficulty: candidateLesson?.difficulty || "Easy",
+    subject: {
+      title: subjectMeta.title,
+      icon: (typeof initialSubject === "object" && initialSubject?.icon) || subjectMeta.icon,
+      color: (typeof initialSubject === "object" && initialSubject?.color) || subjectMeta.color,
+      lessons,
     },
+    lessons,
+    initialSelectedIndex,
   };
 };
 
 const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
   const cleanSubject = subjectTitle.toLowerCase();
   const cleanLesson = lesson.title.toLowerCase();
+  const grade = Number(gradeLevel) || 1;
+
   const isOcean =
     cleanSubject.includes("ocean") ||
     cleanSubject.includes("marine") ||
-    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
+    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal|shore/.test(
       cleanLesson
-    ) ||
-    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
-      cleanSubject
     );
 
   const isScience =
-    isOcean ||
-    cleanSubject.includes("science") ||
-    [
-      "matter",
-      "living",
-      "force",
-      "earth",
-      "sense",
-      "weather",
-      "body",
-      "energy",
-      "mixture",
-      "solid",
-      "liquid",
-      "gas",
-      "push",
-      "pull",
-      "light",
-    ].some((s) => cleanSubject.includes(s) || cleanLesson.includes(s));
+    !isOcean &&
+    (cleanSubject.includes("science") ||
+      [
+        "matter",
+        "living",
+        "force",
+        "earth",
+        "sense",
+        "weather",
+        "body",
+        "energy",
+        "mixture",
+        "solid",
+        "liquid",
+        "gas",
+        "push",
+        "pull",
+        "light",
+        "plant",
+        "animal",
+        "reproduction",
+        "weathering",
+        "moon",
+      ].some((s) => cleanSubject.includes(s) || cleanLesson.includes(s)));
 
   let visualIllustration = "";
   let pictureExamples = [];
   let howItWorks = "";
   let storyText = "";
-  let demoText = "";
+  const demoText = lesson.example;
   let t1Pool = [];
   let t2Pool = [];
   let t3Pool = [];
 
   if (isOcean) {
-    if (gradeLevel <= 2 || /reef|tide|whale|dolphin|movement/.test(cleanLesson)) {
+    if (grade === 1) {
       visualIllustration =
-        "🌊 Gentle Waves (Motion)  ➔  🦀🐚 Tide Pool & Reef Life  ➔  🐋🐬 Open Ocean";
+        "🌊 Gentle Tide-Pool Water  ➔  🦀🐚 Living Shore Creatures  ➔  🪨💧 Non-Living Surroundings";
       pictureExamples = [
         {
           pics: "🦀 🐚 ⭐",
-          caption: "Shallow Tide Pool & Reef",
-          note: "Crabs, shells & sea stars in coastal water",
+          caption: "Shallow Reef & Tide Pools",
+          note: "Grade 1 Ocean • Gentle coastal creatures",
         },
         {
-          pics: "🐋 🐬 🌊",
-          caption: "Whales & Dolphins Moving",
-          note: "Swimming through ocean currents & waves",
+          pics: "🦀 🌱 🪨",
+          caption: "Living vs. Non-Living",
+          note: "Crabs & seaweeds are living; rocks & water are not",
         },
         {
-          pics: "🪨 💧 🦀",
-          caption: "Living vs. Non-Living Shore",
-          note: "Crabs grow & move; rocks & water are non-living",
+          pics: "🗑️❌ ➔ 🌊✨",
+          caption: "Clean Shore Habits",
+          note: "Keep tide pools and beaches safe",
         },
       ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Ocean Explorer: Exploring ${lesson.title}—observing how water moves, spotting living vs. non-living things, and meeting marine animals safely.`;
+      storyText = `DepEd MATATAG Grade 1 Ocean: Exploring ${lesson.title}—meeting gentle tide-pool life, feeling water movement, and spotting living vs. non-living things.`;
       howItWorks =
-        "Observe how water moves with tides and waves, and distinguish living ocean creatures (which grow, breathe, and respond) from non-living elements like rocks, sand, and water.";
-      demoText = lesson.example;
-    } else {
+        "Use careful observation to see how gentle water moves along the shore, spot living organisms vs. non-living rocks and water, and practice safe care around tide pools.";
+    } else if (grade === 2) {
       visualIllustration =
-        "☀️ Sunlit Surface ➔ 🌊 Currents & Tides ➔ 🪸 Coral Reefs & 🌿 Blue Carbon";
+        "🐋🐬 Marine Animals Moving  ➔  🌊 Tides & Waves  ➔  🏖️ Coastal & Open-Water Shelters";
       pictureExamples = [
         {
-          pics: "🪸 🐠 🦈",
-          caption: "Coral Reef & Marine Food Chain",
-          note: "Producers, grazers & predators stay balanced",
+          pics: "🐋 🐬 🌊",
+          caption: "Whales & Dolphins in Motion",
+          note: "Grade 2 Ocean • Swimming & breathing at surface",
         },
         {
-          pics: "🏖️ 🌊 🪨",
-          caption: "Coastal Habitats & Tides",
-          note: "Rise and fall of sea levels shape shorelines",
+          pics: "🌊⬆️ 🏖️ 🌊⬇️",
+          caption: "Rising & Falling Tides",
+          note: "Water movement shapes bays and shores",
         },
         {
-          pics: "🌿🌊 🌍",
-          caption: "Pelagic Zones & Blue Carbon",
-          note: "Mangroves, seagrasses & ocean currents regulate climate",
+          pics: "🪸 🐚 🪨",
+          caption: "Shelters Along the Coast",
+          note: "How marine animals find protection",
         },
       ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Ocean Science: Investigating ${lesson.title} across marine ecosystems, currents, chemistry, and climate connections.`;
+      storyText = `DepEd MATATAG Grade 2 Ocean: Exploring ${lesson.title}—how whales, dolphins, and coastal life move, breathe, and shelter across waters.`;
       howItWorks =
-        "Trace energy flow through marine food chains, analyze how tides, currents, and depth zones affect organisms, and see how coastal habitats like mangroves and coral reefs protect marine biodiversity.";
-      demoText = lesson.example;
+        "Observe how marine animals move through water, come up to breathe when needed, and use bays, reefs, and coastal features for shelter.";
+    } else if (grade === 3) {
+      visualIllustration =
+        "☀️ Sunlight & Algae  ➔  🐠 Reef Grazers  ➔  🦈 Marine Predators  ➔  💧🌊 Water & Light";
+      pictureExamples = [
+        {
+          pics: "🪸 🐠 🦀",
+          caption: "Coral Reef Community",
+          note: "Grade 3 Ocean • Interconnected reef life",
+        },
+        {
+          pics: "☀️ 🌿 ➔ 🐠 ➔ 🦈",
+          caption: "Marine Food Chain Flow",
+          note: "Energy moves from producers to consumers",
+        },
+        {
+          pics: "☀️ 💧 🪸",
+          caption: "Non-Living Needs of Reefs",
+          note: "Clean water and sunlight keep reefs alive",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 3 Ocean: Exploring ${lesson.title}—how coral reef organisms depend on each other, water, and sunlight.`;
+      howItWorks =
+        "Trace how living organisms in coral reefs and seas depend on food chains as well as non-living water and sunlight to survive.";
+    } else if (grade === 4) {
+      visualIllustration =
+        "🇵🇭 Philippine Seas & Bays  ➔  🌊 Tidal Cycles  ➔  🏖️ Mangroves & Coastlines  ➔  🤝 Human Stewardship";
+      pictureExamples = [
+        {
+          pics: "🐠 🐢 🪸",
+          caption: "Philippine Marine Biodiversity",
+          note: "Grade 4 Ocean • Rich tropical seas & reefs",
+        },
+        {
+          pics: "🌗 🌊 🏖️",
+          caption: "Tides & Coastal Landforms",
+          note: "How tides shape beaches, coves & shores",
+        },
+        {
+          pics: "🌿🌊 🛡️",
+          caption: "Protecting Coastal Habitats",
+          note: "How human actions affect oceans",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 4 Ocean: Investigating ${lesson.title} across Philippine seas, coastal landforms, tides, and human impact.`;
+      howItWorks =
+        "Connect tidal movement and coastal features in Philippine waters to marine habitats and everyday human choices.";
+    } else if (grade === 5) {
+      visualIllustration =
+        "☀️ Sunlit Epipelagic Zone  ➔  🌊 Ocean Currents  ➔  🧂 Salinity & Temperature  ➔  🌑 Deeper Pelagic Zones";
+      pictureExamples = [
+        {
+          pics: "☀️🌊 / 🌊🌗 / 🌑🐟",
+          caption: "Pelagic Depth Zones",
+          note: "Grade 5 Ocean • Light drops with depth",
+        },
+        {
+          pics: "🌀 🌡️ 🌊",
+          caption: "Ocean Currents & Heat",
+          note: "Circulating water moves heat & nutrients",
+        },
+        {
+          pics: "🧂 💧 🧪",
+          caption: "Salinity & Ocean Chemistry",
+          note: "Dissolved salts & water properties",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 5 Ocean: Investigating ${lesson.title}—diving across pelagic zones, currents, salinity, and ocean chemistry.`;
+      howItWorks =
+        "Compare ocean layers from sunlit surface waters to deeper zones, and analyze how currents, temperature, and salinity shape marine conditions.";
+    } else {
+      visualIllustration =
+        "🌊 Ocean Heat & Winds  ➔  🌦️ Weather & Climate  ➔  🌿 Mangrove/Seagrass Blue Carbon  ➔  🌍 Conservation";
+      pictureExamples = [
+        {
+          pics: "🌊 ☁️ 🌦️",
+          caption: "Ocean-Atmosphere Climate Link",
+          note: "Grade 6 Ocean • Oceans drive weather & climate",
+        },
+        {
+          pics: "🌿🌊 🪨💨",
+          caption: "Blue Carbon Ecosystems",
+          note: "Mangroves & seagrasses store carbon",
+        },
+        {
+          pics: "🛡️ 🐠 🌍",
+          caption: "Marine Conservation Science",
+          note: "Sustaining coastal & ocean health",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 6 Ocean: Investigating ${lesson.title}—how oceans influence climate, blue carbon habitats, and marine conservation.`;
+      howItWorks =
+        "Analyze how oceans and the atmosphere interact to shape climate, how blue carbon habitats store carbon, and how science guides conservation.";
     }
 
     t1Pool = [
       buildQuestion(
-        `What is the main focus of ${lesson.title} in Grade ${gradeLevel} Ocean studies?`,
+        `In Grade ${grade} Ocean (${lesson.title}), what is the core concept?`,
         lesson.meaning,
         [
-          "Ignoring how water and living things interact.",
-          "Assuming all objects in the sea are alive.",
+          "Assuming ocean conditions never change.",
+          "Ignoring how organisms and water interact.",
         ],
-        "Correct! Ocean studies connect water movement, habitats, and marine organisms."
+        `Spot on! In Grade ${grade} Ocean, ${lesson.title} focuses on that exact relationship.`
       ),
       buildQuestion(
-        "Which pair shows a living ocean organism and a non-living ocean feature?",
-        "A sea turtle or crab (living) and ocean water or a rock (non-living).",
+        `Which example fits Grade ${grade} Ocean studies for "${lesson.title}"?`,
+        lesson.example,
         [
-          "A pebble (living) and a fish (non-living).",
-          "Sand grains (living) and sunlight (non-living).",
+          "Ocean habitats have no living organisms.",
+          "Water movement has no effect on coastal life.",
         ],
-        "Spot on! Living things grow and need food/water, while rocks, sand, and water are non-living."
+        "Great job connecting the lesson concept to a concrete ocean example!"
       ),
     ];
     t2Pool = [
       buildQuestion(
-        `In our classroom ocean demonstration (${lesson.example}), what should you observe carefully?`,
+        `During our Grade ${grade} Ocean classroom demo (${lesson.example}), what should you observe?`,
         lesson.example,
         [
-          "Nothing changes in marine environments.",
-          "Guessing without looking at organisms or water movement.",
+          "Guessing without observing water or organisms.",
+          "Treating all non-living rocks as alive.",
         ],
-        "Great job! Careful observation helps explain marine behavior and ocean dynamics."
+        `Well done! Careful observation is essential in Grade ${grade} Ocean exploration.`
       ),
     ];
     t3Pool = [
       buildQuestion(
-        "How can we help protect ocean habitats and marine creatures in daily life?",
-        "Reduce plastic waste, avoid disturbing wildlife, and support clean coastal and water habits.",
+        `How can a Grade ${grade} learner apply "${lesson.title}" to protect marine environments?`,
+        "Practice responsible waste habits, respect habitats, and use evidence to care for water and coastal life.",
         [
-          "Leave trash along beaches and waterways.",
-          "Harm marine animals for fun.",
+          "Leave plastic waste along shorelines.",
+          "Disturb marine animals without care.",
         ],
-        "Wonderful! Caring for water and habitats keeps marine ecosystems healthy."
+        "Awesome! Responsible habits help protect ocean ecosystems."
       ),
     ];
-  } else if (!isScience && cleanSubject.includes("math")) {
-    if (gradeLevel === 1) {
-      if (/count|number|sense|ordinal|100|place/.test(cleanLesson)) {
-        visualIllustration =
-          "🟦 (10-Rod) 🟦 (10-Rod)  +  🟨 🟨 🟨 (3-Ones)  =  23 (Up to 100)   |   1️⃣st ➔ 2️⃣nd ➔ 3️⃣rd";
-        pictureExamples = [
-          {
-            pics: "🥭 🥭 🥭 🥭\n🪙 🪙 🪙 🪙 🪙",
-            caption: "4 Mangoes & 5 Piso Coins",
-            note: "Tap each item 1 by 1 to count accurately",
-          },
-          {
-            pics: "🟦🟦🟦  🟨🟨",
-            caption: "3 Tens + 2 Ones = 32",
-            note: "Group tens blocks and count leftover ones",
-          },
-          {
-            pics: "1️⃣st 🐢  2️⃣nd 🦀  3️⃣rd 🐠",
-            caption: "Ordinal Positions in Line",
-            note: "Compare quantities & tell positions up to 100",
-          },
-        ];
-        storyText =
-          "DepEd MATATAG Grade 1 Math: In our classroom, we count, read, write, and compare whole numbers up to 100 using tens and ones blocks, mangoes, and piso coins.";
-        howItWorks =
-          "One-to-one correspondence and place value: Point to each object one by one from left to right, group tens rods with ones units, and compare which set has more, fewer, or is equal.";
-        demoText = lesson.example;
-        t1Pool = [
-          buildQuestion(
-            "When counting physical objects on your desk, what is the proper method?",
-            "Touch and count each item one by one from left to right.",
-            [
-              "Guess the total number without pointing.",
-              "Ignore the objects entirely.",
-            ],
-            "Correct! Touching each object ensures every item is counted once."
-          ),
-          buildQuestion(
-            "What does the final number spoken when counting a set indicate?",
-            "The total quantity of items in that set.",
-            ["The size of the table.", "A random label."],
-            "Spot on! The last number names the total amount."
-          ),
-          buildQuestion(
-            "If you have 4 red counters and add 2 more counters, how do you find the new total?",
-            "Count all the counters together from the beginning.",
-            ["Throw half of them away.", "Stop counting immediately."],
-            "Correct! Combining sets means recounting all items together."
-          ),
-        ];
-        t2Pool = [
-          buildQuestion(
-            "Look at the visual set: [🍎 🍎 🍎] vs [🍎 🍎]. Which group is greater?",
-            "The group with 3 mangoes.",
-            ["The group with 2 mangoes.", "Both groups have zero."],
-            "Great observation! 3 is greater in quantity than 2."
-          ),
-          buildQuestion(
-            "Which number comes right after 7 when counting forward?",
-            "8",
-            ["6", "10"],
-            "Spot on! Counting sequence goes 7, then 8."
-          ),
-        ];
-        t3Pool = [
-          buildQuestion(
-            "Where do we apply counting skills in our daily community life?",
-            "When buying pan de sal or counting our school supplies.",
-            [
-              "Nowhere, numbers only exist in textbooks.",
-              "Only during bedtime.",
-            ],
-            "Wonderful! Math is part of our everyday routines."
-          ),
-        ];
-      } else if (/shape|pattern/.test(cleanLesson)) {
-        visualIllustration =
-          "🔴 Circle ➔ 🟦 Square ➔ 🔺 Triangle ➔ 🔴 Circle ➔ [?]";
-        pictureExamples = [
-          {
-            pics: "🔴 🟦 🔴 🟦 🔴 [🟦]",
-            caption: "ABAB Shape Pattern",
-            note: "Red circle & blue square alternate",
-          },
-          {
-            pics: "🔺 🔺 🟢 🔺 🔺 [🟢]",
-            caption: "AAB Pattern with Triangles & Circles",
-            note: "Two triangles, then one green circle",
-          },
-          {
-            pics: "⭐ 🌙 ⭐ 🌙 [⭐]",
-            caption: "Night Sky Pattern",
-            note: "Star, moon, star, moon, star",
-          },
-        ];
-        storyText =
-          "DepEd MATATAG Grade 1 Math: Exploring 2D geometric shapes and repeating pattern sequences in our environment.";
-        howItWorks =
-          "Observe the repeating order of shapes and colors (such as A-B-A-B) to determine what comes next in the row.";
-        demoText = lesson.example;
-        t1Pool = [
-          buildQuestion(
-            "What shape comes next in the repeating sequence: Circle, Square, Circle, Square, [?]",
-            "Circle",
-            ["Triangle", "Rectangle"],
-            "Correct! The pattern alternates between Circle and Square."
-          ),
-          buildQuestion(
-            "How many straight sides does a triangle have?",
-            "3 straight sides",
-            ["4 straight sides", "0 straight sides"],
-            "Correct! Triangles always have 3 straight sides."
-          ),
-        ];
-        t2Pool = [
-          buildQuestion(
-            "What attributes define a square in geometry?",
-            "4 equal straight sides and 4 square corners",
-            ["Round curved edges only", "3 unequal sides"],
-            "Spot on! Squares are bounded by four equal straight sides."
-          ),
-        ];
-        t3Pool = [
-          buildQuestion(
-            "Why do we study repeating patterns in Grade 1?",
-            "To recognize order and predict upcoming elements in a sequence.",
-            ["To make art confusing.", "Patterns have no practical use."],
-            "Exactly! Pattern recognition builds foundational logical thinking."
-          ),
-        ];
-      } else {
-        visualIllustration = "🟢 🟢 🟢  +  🟢 🟢  =  5 Counters Total";
-        pictureExamples = [
-          {
-            pics: "🍎 🍎 🍎  +  🍎 🍎  =  🍎🍎🍎🍎🍎",
-            caption: "3 Apples + 2 Apples = 5 Apples",
-            note: "Joining two sets makes a bigger set",
-          },
-          {
-            pics: "🧁 🧁 🧁 🧁  −  🧁  =  🧁 🧁 🧁",
-            caption: "4 Cupcakes − 1 Eaten = 3 Left",
-            note: "Taking away leaves fewer items",
-          },
-        ];
-        storyText = `DepEd MATATAG Grade 1 Math: Exploring ${lesson.title} using concrete counters and visual addition/subtraction.`;
-        howItWorks =
-          "Putting sets together creates addition (+); taking away items from a set represents subtraction (-).";
-        demoText = lesson.example;
-        t1Pool = [
-          buildQuestion(
-            `What is the primary objective of ${lesson.title}?`,
-            lesson.meaning,
-            ["Ignoring numbers completely.", "Guessing without looking."],
-            "Correct! Understanding the foundational meaning is essential."
-          ),
-        ];
-        t2Pool = [
-          buildQuestion(
-            `In our classroom demonstration (${lesson.example}), what was illustrated?`,
-            lesson.example,
-            ["An imaginary event.", "No action."],
-            "Spot on! Concrete examples bring math concepts to life."
-          ),
-        ];
-        t3Pool = [
-          buildQuestion(
-            "How do manipulatives help us learn addition and subtraction?",
-            "They let us physically see quantities combine or separate.",
-            ["They make numbers disappear.", "They are just toys."],
-            "Wonderful! Physical objects bridge concrete actions to math symbols."
-          ),
-        ];
-      }
-    } else if (gradeLevel === 2) {
+  } else if (isScience) {
+    if (grade === 1) {
       visualIllustration =
-        "🟦 (100-Flat)  |  🟩 🟩 (20-Rods)  |  🟨 🟨 🟨 (3-Units)  ➔  123 (Up to 1,000)";
+        "👀👂👃👅✋ Five Senses (Safe Use)  ➔  🌱🐕 Living Things  ➔  🪨☀️ Non-Living Surroundings";
       pictureExamples = [
         {
-          pics: "🟦 🟩 🟨🟨",
-          caption: "1 Hundred + 1 Ten + 2 Ones = 112",
-          note: "Read place value up to 1,000 from left to right",
+          pics: "👀 👂 👃 ✋",
+          caption: "Safe Sense Observation",
+          note: "Grade 1 Science • Observe safely with senses",
         },
         {
-          pics: "💵 ₱100  +  🪙 ₱20  +  🪙 ₱5  =  ₱125",
-          caption: "Addition & Subtraction with Money",
-          note: "Add or subtract within each place value column",
+          pics: "🐕 🌱 🐦",
+          caption: "Living Plants & Animals",
+          note: "Grow, need food/water & respond",
         },
         {
-          pics: "📏 [0 cm ━━━ 15 cm Ruler]",
-          caption: "Measuring & Word Problems",
-          note: "Align edge with 0 cm & solve step word problems",
+          pics: "🪨 ☀️ 💧",
+          caption: "Non-Living Earth Surroundings",
+          note: "Rocks, sunlight, air & water around us",
         },
       ];
-      storyText = `DepEd MATATAG Grade 2 Math: Mastering ${lesson.title} with hundreds, tens, and ones up to 1,000, multi-digit addition/subtraction word problems, and measurement.`;
+      storyText = `DepEd MATATAG Grade 1 Science: Exploring ${lesson.title}—using your senses safely to observe living and non-living things, plants, animals, and surroundings.`;
       howItWorks =
-        "Organize numbers by place value (Hundreds, Tens, Ones up to 1,000) and regroup when adding or subtracting across columns in word problems.";
-      demoText = lesson.example;
-      t1Pool = [
-        buildQuestion(
-          `What rule governs ${lesson.title}?`,
-          lesson.meaning,
-          ["Random number assignment.", "Ignoring column alignment."],
-          "Correct! Systematic place value organization is key."
-        ),
-      ];
-      t2Pool = [
-        buildQuestion(
-          `Based on our example (${lesson.example}), how do we calculate the result?`,
-          lesson.example,
-          ["By guessing blindly.", "By skipping operations."],
-          "Great job following the step-by-step procedure!"
-        ),
-      ];
-      t3Pool = [
-        buildQuestion(
-          "Why is understanding place value crucial in Grade 2?",
-          "It ensures numbers are added and subtracted across correct columns.",
-          ["It makes numbers smaller.", "It is optional."],
-          "Spot on! Place value maintains true numerical value."
-        ),
-      ];
-    } else if (gradeLevel === 3) {
+        "Use your senses safely to observe details, tell living plants and animals apart from non-living things, and describe daily surroundings.";
+    } else if (grade === 2) {
       visualIllustration =
-        "⭐⭐⭐⭐ / ⭐⭐⭐⭐ / ⭐⭐⭐⭐  (3 × 4 = 12)   |   🍕 1/2, 1/4   |   ⬜ Area & Perimeter";
+        "👉 Push / 🤲 Pull (Forces)  ➔  ☀️💡 Light & Heat  ➔  ☀️⛅🌧️ Daily Weather";
       pictureExamples = [
         {
-          pics: "🍪🍪🍪\n🍪🍪🍪\n🍪🍪🍪",
-          caption: "Multiplication & Division (3 × 3 = 9)",
-          note: "Equal rows form arrays and relate to division",
+          pics: "👉 📦  /  🤲 🎒",
+          caption: "Pushes & Pulls in Motion",
+          note: "Grade 2 Science • Forces start/stop/change motion",
         },
         {
-          pics: "🍕 [1/2 Shaded]   🥧 [1/4 Shaded]",
-          caption: "Unit Fractions of a Whole",
-          note: "Denominator shows equal parts of one whole",
-        },
-        {
-          pics: "⬜ 4cm + 4cm + 4cm + 4cm = 16cm",
-          caption: "Perimeter & Area of Rectangles",
-          note: "Add outer sides for perimeter; multiply rows × cols for area",
-        },
-      ];
-      storyText = `DepEd MATATAG Grade 3 Math: Exploring ${lesson.title} through multiplication and division fluency, unit fractions, and perimeter/area measurement.`;
-      howItWorks =
-        "Multiplication and division connect equal groups and arrays; unit fractions represent one equal part of a whole; perimeter measures around a shape and area counts square units inside.";
-      demoText = lesson.example;
-      t1Pool = [
-        buildQuestion(
-          `What principle underlies ${lesson.title}?`,
-          lesson.meaning,
-          ["Random guessing.", "Unequal partitioning."],
-          "Correct! Equal grouping forms the foundation of multiplication."
-        ),
-      ];
-      t2Pool = [
-        buildQuestion(
-          `In our worked example (${lesson.example}), what is the outcome?`,
-          lesson.example,
-          ["An incorrect estimate.", "Zero."],
-          "Spot on! Accurate calculation yields the correct product or fraction."
-        ),
-      ];
-      t3Pool = [
-        buildQuestion(
-          "How do multiplication arrays help solve real problems?",
-          "They allow rapid calculation of large quantities arranged in rows.",
-          ["They have no real use.", "Only for school tests."],
-          "Wonderful! Arrays make counting items efficient and structured."
-        ),
-      ];
-    } else {
-      visualIllustration =
-        "📊 [MATATAG Curriculum Framework: Operations, Fractions/Decimals, Geometry & Ratios]";
-      pictureExamples = [
-        {
-          pics: "📐 2x + 4 = 12  ➔  x = 4\n📐 ∠ 90° Right Angle",
-          caption: "Operations, Angles & Algebraic Patterns",
-          note: "Follow order of operations, measure angles & balance equations",
-        },
-        {
-          pics: "📦 L=5cm, W=3cm, H=2cm  ➔  V=30cm³",
-          caption: "Volume, Decimals & Line Graphs",
-          note: "Compute rectangular prism volume & read trends over time",
-        },
-        {
-          pics: "📈 [20% 🟦 | 50% 🟩 | 30% 🟨]\n⚖️ Ratio 3:2 = 6:4",
-          caption: "Ratios, Percentages & Integers",
-          note: "Compare quantities proportionally & work with positive/negative values",
-        },
-      ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Math: Structured problem solving for ${lesson.title}.`;
-      howItWorks =
-        "Analyze given data, apply standard mathematical rules or formulas step-by-step, and verify solutions against problem constraints and units.";
-      demoText = lesson.example;
-      t1Pool = [
-        buildQuestion(
-          `What rule defines ${lesson.title}?`,
-          lesson.meaning,
-          ["Random estimation.", "Ignoring equation balance."],
-          "Correct! Precise operational rules govern this topic."
-        ),
-      ];
-      t2Pool = [
-        buildQuestion(
-          `How do we solve challenges like: ${lesson.example}?`,
-          lesson.example,
-          ["Guessing without formulas.", "Discarding units."],
-          "Spot on! Systematic execution ensures mathematical accuracy."
-        ),
-      ];
-      t3Pool = [
-        buildQuestion(
-          "Why is verifying your calculated result important?",
-          "It confirms that your solution satisfies all given problem conditions.",
-          ["It is never required.", "To waste time."],
-          "Exact proof! Verification guarantees correctness."
-        ),
-      ];
-    }
-  } else {
-    if (/sense|living|earth|surround/.test(cleanLesson) || /sense|living|earth|surround/.test(cleanSubject)) {
-      visualIllustration =
-        "👀 Eyes 👂 Ears 👃 Nose 👅 Tongue ✋ Skin  ➔  🌿 Animals, Plants & Surroundings";
-      pictureExamples = [
-        {
-          pics: "👀 👂 👃 👅 ✋",
-          caption: "Five Senses for Safe Observation",
-          note: "Never taste or touch unknown or unsafe items",
-        },
-        {
-          pics: "🐕 🌳 🪨 ☀️",
-          caption: "Living vs. Non-Living Things",
-          note: "Dogs & trees grow/need food; rocks & sunlight do not",
-        },
-        {
-          pics: "🏠 ☁️ 🌳 🛣️",
-          caption: "Daily Earth Surroundings",
-          note: "Observe weather, soil, plants & animals around school/home",
-        },
-      ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Using your senses safely to observe living and non-living things, plants, animals, and daily Earth surroundings.`;
-      howItWorks =
-        "Use sight, hearing, smell, touch, and taste safely to notice details, tell living things apart from non-living things, and describe surroundings.";
-      demoText = lesson.example;
-    } else if (/push|pull|light|weather/.test(cleanLesson) || /push|pull|light|weather/.test(cleanSubject)) {
-      visualIllustration =
-        "👉 Push / 🤲 Pull (Motion)  |  ☀️🔦 Light & Heat  |  ☀️⛅🌧️ Daily Weather";
-      pictureExamples = [
-        {
-          pics: "👉 [Push] 🛒  /  🤲 [Pull] 🎒",
-          caption: "Pushes & Pulls Move Objects",
-          note: "Forces start, stop, or change how objects move",
-        },
-        {
-          pics: "☀️ 💡 🔦",
+          pics: "☀️ 🔦 🔥",
           caption: "Sources of Light & Heat",
-          note: "Sunlight and lamps give light and warmth",
+          note: "Natural and artificial light/heat sources",
         },
         {
           pics: "☀️ ➔ ⛅ ➔ 🌧️",
           caption: "Daily Weather Changes",
-          note: "Sunny, cloudy, windy, or rainy conditions across the day",
+          note: "Observing weather across the day",
         },
       ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Exploring pushes and pulls, sources of light and heat, and how daily weather changes.`;
+      storyText = `DepEd MATATAG Grade 2 Science: Exploring ${lesson.title}—pushes and pulls, sources of light and heat, and daily weather changes.`;
       howItWorks =
-        "Notice how pushes and pulls change motion, how light and heat come from natural and artificial sources, and how daily weather can shift from morning to afternoon.";
-      demoText = lesson.example;
-    } else if (/matter|solid|liquid|gas|mixture|change/.test(cleanLesson) || /matter|solid|liquid|gas|mixture|change/.test(cleanSubject)) {
+        "Observe how pushes and pulls move objects, identify sources of light and heat, and track how weather changes during the day.";
+    } else if (grade === 3) {
       visualIllustration =
-        "🧊 Solid (Fixed Shape)  ➔  💧 Liquid (Flows)  ➔  ☁️ Gas (Spreads)  |  🥣 Mixtures";
+        "🧊 Solid (Fixed Shape)  ➔  💧 Liquid (Flows)  ➔  ☁️ Gas (Spreads)  ➔  🌡️ Temperature Changes";
       pictureExamples = [
         {
           pics: "🧊 🪨 📦",
-          caption: "Solids Keep Their Shape",
-          note: "Particles are closely packed together",
+          caption: "Observable Properties of Solids",
+          note: "Grade 3 Science • Definite shape & volume",
         },
         {
           pics: "💧 🥛 🫖",
-          caption: "Liquids Flow & Take Container Shape",
-          note: "Temperature changes can melt or freeze matter",
+          caption: "Liquids & Gases",
+          note: "Liquids flow; gases spread in space",
         },
         {
-          pics: "☁️ 🎈 💨",
-          caption: "Gases Spread to Fill Space",
-          note: "Mixtures combine materials physically or change state",
+          pics: "🧊 ──(+Heat)──▶ 💧 ──(+Heat)──▶ ☁️",
+          caption: "Temperature Changes Matter",
+          note: "Heating & cooling change states",
         },
       ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Investigating ${lesson.title}—observable properties, mixtures, and physical/chemical changes.`;
+      storyText = `DepEd MATATAG Grade 3 Science: Investigating ${lesson.title}—properties of solids, liquids, and gases and how temperature changes matter.`;
       howItWorks =
-        "Classify materials by properties like shape, texture, and state (solid, liquid, gas), observe mixtures, and note how heating, cooling, or mixing changes matter.";
-      demoText = lesson.example;
-    } else if (/body|reproduction|weathering|energy|force|motion|earth-moon/.test(cleanLesson) || /body|reproduction|weathering|energy|force|motion|earth-moon/.test(cleanSubject)) {
+        "Compare observable properties of solids, liquids, and gases, and observe how adding or removing heat changes matter.";
+    } else if (grade === 4) {
       visualIllustration =
-        "🫀 Body Systems & Life Cycles  |  🪨🌦️ Weathering  |  ⚡🧲🌕 Energy, Forces & Earth-Moon";
+        "🧪 Material Properties  ➔  🥣 Mixtures  ➔  🔄 Physical & Chemical Changes";
       pictureExamples = [
         {
-          pics: "🫀 Lungs/Heart  🌱🌸 Life Cycle",
-          caption: "Body Systems & Reproduction",
-          note: "Organs work together; plants & animals reproduce",
+          pics: "🧲 💧 🪨",
+          caption: "Classifying Materials",
+          note: "Grade 4 Science • Hardness, magnetism, solubility",
         },
         {
-          pics: "🪨 💧💨 Weathering",
-          caption: "Earth Surfaces & Weathering",
-          note: "Wind, water & temperature break down rocks over time",
+          pics: "🥜 + 🍇 = 🥣",
+          caption: "Exploring Mixtures",
+          note: "Combining materials in mixtures",
         },
         {
-          pics: "⚡ 🧲 🌎🌕",
-          caption: "Energy, Forces & Earth-Moon System",
-          note: "Energy transfers, forces move objects & Moon orbits Earth",
+          pics: "🧊➔💧  /  🪵🔥➔🌫️",
+          caption: "Physical & Chemical Changes",
+          note: "Observing how materials change",
         },
       ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Investigating ${lesson.title} through structured evidence and real-world systems.`;
+      storyText = `DepEd MATATAG Grade 4 Science: Investigating ${lesson.title}—material properties, mixtures, and physical and chemical changes.`;
       howItWorks =
-        "Scientific inquiry involves observing physical phenomena, identifying how parts or forces interact, recording empirical data, and drawing evidence-based conclusions.";
-      demoText = lesson.example;
+        "Classify materials by properties, examine how mixtures form, and tell physical changes apart from chemical changes using evidence.";
+    } else if (grade === 5) {
+      visualIllustration =
+        "🫀 Organ Systems Working Together  ➔  🌱🐣 Reproduction  ➔  🪨🌦️ Weathering of Earth Surfaces";
+      pictureExamples = [
+        {
+          pics: "🫁 ❤️ 🧠",
+          caption: "Body Systems & Functions",
+          note: "Grade 5 Science • How systems work together",
+        },
+        {
+          pics: "🌱 🌸 🐣",
+          caption: "Plant & Animal Reproduction",
+          note: "Passing traits & continuing life cycles",
+        },
+        {
+          pics: "⛰️ 💧💨 🪨",
+          caption: "Weathering Earth Surfaces",
+          note: "How rocks & landforms break down",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 5 Science: Investigating ${lesson.title}—body systems, plant and animal reproduction, and how Earth surfaces weather.`;
+      howItWorks =
+        "Trace how body systems coordinate, how plants and animals reproduce, and how weathering breaks down rocks and shapes Earth's surface.";
     } else {
       visualIllustration =
-        "🌱 Roots (Water Absorption) ➔ 🌿 Stem (Transport) ➔ ☀️ Leaves (Food Synthesis)";
+        "⚡ Forms of Energy  ➔  🧲⚖️ Forces & Motion  ➔  ⚙️ Simple Machines  ➔  🌍🌕 Earthquakes, Volcanoes & Solar System";
       pictureExamples = [
         {
-          pics: "☀️ ➔ 🌿 ➔ 🍃 (O₂ + Glucose)",
-          caption: "Sunlight & Leaf Energy Cycle",
-          note: "Chlorophyll captures light energy",
+          pics: "⚡ 💡 🔋",
+          caption: "Energy, Forces & Motion",
+          note: "Grade 6 Science • Energy transfer & movement",
         },
         {
-          pics: "🧊 ➔ 💧 ➔ ☁️",
-          caption: "Solid, Liquid & Gas States",
-          note: "Heat energy drives state changes",
+          pics: "⚙️ 📐 🏋️",
+          caption: "Simple Machines & Work",
+          note: "Making tasks easier with mechanical advantage",
         },
         {
-          pics: "🌊 ➔ ☁️ ➔ 🌧️ ➔ 🏞️",
-          caption: "Water Cycle in Nature",
-          note: "Evaporation, condensation & precipitation",
+          pics: "🌋 🌎 🌕",
+          caption: "Earth Processes & Space Motions",
+          note: "Quakes, volcanoes & Earth-Moon motions",
         },
       ];
-      storyText = `DepEd MATATAG Science Curriculum: Investigating ${lesson.title} in our natural environment.`;
+      storyText = `DepEd MATATAG Grade 6 Science: Investigating ${lesson.title}—energy, forces and motion, simple machines, Earth events, and solar system motions.`;
       howItWorks =
-        "Scientific inquiry involves observing physical phenomena, recording empirical data, and drawing evidence-based conclusions.";
-      demoText = lesson.example;
+        "Analyze how energy and forces drive motion and simple machines, how earthquakes and volcanoes occur, and how Earth, Moon, and solar system bodies move.";
     }
 
     t1Pool = [
       buildQuestion(
-        `What scientific principle explains ${lesson.title}?`,
+        `In Grade ${grade} Science (${lesson.title}), what is the key scientific idea?`,
         lesson.meaning,
-        ["Unproven folklore.", "Pure guesswork."],
-        "Correct! Science relies on verifiable empirical laws."
+        [
+          "Relying on random guesses without evidence.",
+          "Ignoring observable properties or changes.",
+        ],
+        `Correct! In Grade ${grade} Science, ${lesson.title} centers on ${lesson.meaning.toLowerCase()}`
+      ),
+      buildQuestion(
+        `Which example matches Grade ${grade} Science for "${lesson.title}"?`,
+        lesson.example,
+        [
+          "An unrelated topic with no scientific observation.",
+          "Assuming changes happen without cause.",
+        ],
+        "Spot on! That example directly shows the lesson in action."
       ),
     ];
     t2Pool = [
       buildQuestion(
-        `In our observation example (${lesson.example}), what was demonstrated?`,
+        `In our Grade ${grade} Science demonstration (${lesson.example}), what should you record?`,
         lesson.example,
-        ["An impossible anomaly.", "Nothing."],
-        "Spot on! Empirical evidence proves scientific concepts."
+        [
+          "Fabricated results without observing.",
+          "Ignoring how conditions or objects behave.",
+        ],
+        `Great job! Accurate observations build strong Grade ${grade} science skills.`
       ),
     ];
     t3Pool = [
       buildQuestion(
-        "Why is studying science essential for our community?",
-        "It helps us understand nature, conserve resources, and solve local challenges.",
-        ["It has no practical application.", "Only for indoor reading."],
-        "Wonderful! Science empowers us to care for our world."
+        `How does "${lesson.title}" help in Grade ${grade} everyday science?`,
+        "It helps us explain natural events, stay safe, and make evidence-based choices.",
+        [
+          "It only applies inside a single textbook page.",
+          "Observations are never useful outside class.",
+        ],
+        "Awesome! Science helps us understand and care for our surroundings."
+      ),
+    ];
+  } else {
+    if (grade === 1) {
+      visualIllustration =
+        "🟦 (10-Rod) 🟦 (10-Rod) + 🟨🟨🟨 (3-Ones) = 23  |  🔢 Count, Read, Write & Compare (Up to 100)";
+      pictureExamples = [
+        {
+          pics: "🟦🟦🟦  🟨🟨",
+          caption: "Tens & Ones Place Value",
+          note: "Grade 1 Math • Group tens & count ones up to 100",
+        },
+        {
+          pics: "🥭🥭🥭🥭  vs  🥭🥭",
+          caption: "Comparing Quantities",
+          note: "4 is greater than 2; count & compare sets",
+        },
+        {
+          pics: "1️⃣st ➔ 2️⃣nd ➔ 3️⃣rd",
+          caption: "Order & Counting Sequence",
+          note: "Read, write & order numbers cleanly",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 1 Math: Exploring ${lesson.title}—counting, reading, writing, and comparing numbers up to 100 with tens and ones blocks.`;
+      howItWorks =
+        "Group objects into tens and ones, count accurately one by one, and compare quantities using greater than, less than, or equal to.";
+    } else if (grade === 2) {
+      visualIllustration =
+        "🟦 (100-Flat)  🟩 (10-Rod)  🟨 (1-Unit)  ➔  Up to 1,000  |  ➕➖ Word Problems";
+      pictureExamples = [
+        {
+          pics: "🟦 🟩🟩 🟨🟨🟨",
+          caption: "Hundreds, Tens & Ones",
+          note: "Grade 2 Math • Place value up to 1,000",
+        },
+        {
+          pics: "➕ 245 + 138 = 383",
+          caption: "Addition & Subtraction",
+          note: "Align columns & regroup carefully",
+        },
+        {
+          pics: "📝 Read ➔ Plan ➔ Solve ➔ Check",
+          caption: "Word Problems",
+          note: "Solve real-life addition & subtraction stories",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 2 Math: Exploring ${lesson.title}—working with hundreds, tens, and ones up to 1,000 and solving addition/subtraction word problems.`;
+      howItWorks =
+        "Align digits by hundreds, tens, and ones up to 1,000, regroup accurately when adding or subtracting, and check word problem steps.";
+    } else if (grade === 3) {
+      visualIllustration =
+        "✖️ Equal Groups & Arrays  ➔  ➗ Division Fluency  ➔  🍕 Unit Fractions  ➔  ⬜ Perimeter & Area";
+      pictureExamples = [
+        {
+          pics: "⭐⭐⭐\n⭐⭐⭐  (2 × 3 = 6)",
+          caption: "Multiplication & Division",
+          note: "Grade 3 Math • Equal groups, arrays & division facts",
+        },
+        {
+          pics: "🍕 [1/2]   🥧 [1/4]",
+          caption: "Unit Fractions",
+          note: "Equal parts of one whole",
+        },
+        {
+          pics: "⬜ Perimeter & Area",
+          caption: "Measure Around & Inside",
+          note: "Add sides for perimeter; count/multiply squares for area",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 3 Math: Exploring ${lesson.title}—multiplication and division fluency, unit fractions, and perimeter and area.`;
+      howItWorks =
+        "Use equal groups and arrays for multiplication and division, identify unit fractions of a whole, and measure perimeter and area.";
+    } else if (grade === 4) {
+      visualIllustration =
+        "🔢 Multi-Digit Operations  ➔  🍰 Equivalent Fractions  ➔  📐 Angles  ➔  ⬜ Perimeter & Area";
+      pictureExamples = [
+        {
+          pics: "✖️➗ Multi-Step Whole Numbers",
+          caption: "Multi-Digit Operations",
+          note: "Grade 4 Math • Multi-step whole-number problems",
+        },
+        {
+          pics: "1/2 = 2/4 = 3/6",
+          caption: "Equivalent Fractions",
+          note: "Fractions naming the same amount",
+        },
+        {
+          pics: "📐 ∠ 90°  |  ⬜ P & A",
+          caption: "Angles, Perimeter & Area",
+          note: "Measure angles & solve shape problems",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 4 Math: Exploring ${lesson.title}—multi-digit operations, equivalent fractions, perimeter/area, and angle measurements.`;
+      howItWorks =
+        "Break multi-step problems into clear operations, recognize equivalent fractions, and apply angle and perimeter/area rules.";
+    } else if (grade === 5) {
+      visualIllustration =
+        "🔢 Decimals  ➔  🍰 Fractions  ➔  📦 Volume of Rectangular Prisms  ➔  📈 Line Graphs";
+      pictureExamples = [
+        {
+          pics: "0.5 + 0.25 = 0.75",
+          caption: "Decimals & Fractions",
+          note: "Grade 5 Math • Add & subtract decimals & fractions",
+        },
+        {
+          pics: "📦 L × W × H = Volume",
+          caption: "Volume of Rectangular Prisms",
+          note: "Measure 3D space in cubic units",
+        },
+        {
+          pics: "📈 ↗️ ↘️",
+          caption: "Line Graphs",
+          note: "Read changes & trends over time",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 5 Math: Exploring ${lesson.title}—adding and subtracting decimals, working with fractions, volume of rectangular prisms, and line graphs.`;
+      howItWorks =
+        "Line up decimal places and common fraction parts carefully, multiply length × width × height for prism volume, and read trends on line graphs.";
+    } else {
+      visualIllustration =
+        "⚖️ Ratios & Percentages  ➔  ➕➖ Integers  ➔  ⭕ Surface Area & Circles  ➔  🔤 Algebraic Patterns & Equations";
+      pictureExamples = [
+        {
+          pics: "3:2  |  25% = 1/4",
+          caption: "Ratios, Rates & Percentages",
+          note: "Grade 6 Math • Proportional reasoning & percents",
+        },
+        {
+          pics: "−5  ◀── 0 ──▶  +5",
+          caption: "Integers",
+          note: "Positive & negative whole numbers",
+        },
+        {
+          pics: "⭕ Area/Circumference  |  2x + 1",
+          caption: "Circles, Surface Area & Algebra",
+          note: "Patterns, expressions & equations",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade 6 Math: Exploring ${lesson.title}—ratios, percentages, integers, surface area/circles, and algebraic patterns and equations.`;
+      howItWorks =
+        "Set up ratios and percentages accurately, follow integer sign rules, apply circle/surface area formulas, and solve or evaluate algebraic patterns and equations.";
+    }
+
+    t1Pool = [
+      buildQuestion(
+        `In Grade ${grade} Math (${lesson.title}), what is the key math rule to remember?`,
+        lesson.meaning,
+        [
+          "Skipping steps and guessing randomly.",
+          "Ignoring place value, units, or number relationships.",
+        ],
+        `Correct! In Grade ${grade} Math, ${lesson.title} relies on ${lesson.meaning.toLowerCase()}`
+      ),
+      buildQuestion(
+        `Which example illustrates Grade ${grade} Math for "${lesson.title}"?`,
+        lesson.example,
+        [
+          "An unrelated non-math story.",
+          "An answer that ignores the given numbers.",
+        ],
+        "Spot on! That example shows how the concept works."
+      ),
+    ];
+    t2Pool = [
+      buildQuestion(
+        `When solving a Grade ${grade} Math problem like "${lesson.example}", what should you do?`,
+        `Follow the steps shown in "${lesson.example}" and double-check your result.`,
+        [
+          "Rush without checking numbers or units.",
+          "Ignore the problem's given values.",
+        ],
+        `Great job! Checking each step keeps your Grade ${grade} math accurate.`
+      ),
+    ];
+    t3Pool = [
+      buildQuestion(
+        `How do we apply Grade ${grade} Math ("${lesson.title}") outside the classroom?`,
+        "By solving real-life quantities, measurements, comparisons, or patterns accurately.",
+        [
+          "Math has no connection to daily life.",
+          "Numbers are only used for decoration.",
+        ],
+        "Awesome! Math helps solve everyday problems clearly."
       ),
     ];
   }
@@ -744,8 +1067,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
     },
     {
       title: "2. Worked Classroom Demonstration",
-      story:
-        "Let's examine how this works in a real MATATAG classroom setting step by step.",
+      story: `Let's see how ${lesson.title} works in a Grade ${grade} ${subjectTitle} classroom step by step.`,
       howItWorks: "Follow the visual illustration and picture cards below:",
       visualIllustration,
       pictureExamples,
@@ -754,8 +1076,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
     },
     {
       title: "3. Real-World Explorer Mission",
-      story: `Now let's see how ${lesson.title} connects to our everyday environment.`,
-      howItWorks: "Apply what you observed to answer the checkpoint question.",
+      story: `Now let's apply ${lesson.title} in Grade ${grade} ${subjectTitle} to a real-world situation.`,
+      howItWorks: "Use what you observed to answer the checkpoint question.",
       visualIllustration,
       pictureExamples,
       demonstration: demoText,
@@ -765,74 +1087,26 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
 
   const fullRecapPool = [
     buildQuestion(
-      `Mastery Check 1: What is the primary definition of ${lesson.title}?`,
+      `Grade ${grade} ${subjectTitle} Recap 1: What is the main focus of "${lesson.title}"?`,
       lesson.meaning,
-      ["An unproven guess.", "A temporary trick."],
-      "Accurate recall of the core rule!"
+      ["An unrelated topic.", "Pure guesswork without rules."],
+      `Accurate recall of Grade ${grade} ${subjectTitle}!`
     ),
     buildQuestion(
-      `Mastery Check 2: When explaining ${lesson.title}, which statement is correct?`,
-      lesson.meaning,
-      ["It is completely random.", "It has no rules."],
-      "Clear communication of knowledge!"
+      `Grade ${grade} ${subjectTitle} Recap 2: Which example belongs to "${lesson.title}"?`,
+      lesson.example,
+      ["A completely different subject.", "No example at all."],
+      "Great job matching the example to the lesson!"
     ),
     buildQuestion(
-      `Mastery Check 3: Recall our example: "${lesson.example}". What did it illustrate?`,
-      lesson.title,
-      ["An unrelated topic.", "An error in calculation."],
-      "Great recognition of worked examples!"
-    ),
-    buildQuestion(
-      "Mastery Check 4: True or False: Paying attention to details leads to accurate solutions.",
-      "True, observant learners find correct answers.",
-      ["False, rushing is better.", "False, details do not matter."],
-      "Observant thinking is key!"
-    ),
-    buildQuestion(
-      `Mastery Check 5: Which practice best helps us master ${lesson.title}?`,
-      "Reviewing classroom examples and checking our work carefully.",
-      [
-        "Guessing answers quickly without looking.",
-        "Ignoring all instructions.",
-      ],
-      "Systematic review builds mastery!"
-    ),
-    buildQuestion(
-      `Mastery Check 6: How does ${lesson.title} connect to our daily classroom activities?`,
-      "By helping us solve practical problems logically and accurately.",
-      ["It only exists inside storybooks.", "It has no use in real life."],
-      "Practical connection verified!"
-    ),
-    buildQuestion(
-      "Mastery Check 7: What should you do if your first attempt at solving a problem is incorrect?",
-      "Review the steps, correct mistakes, and try again patiently.",
-      ["Give up and throw your notebook away.", "Change the rules of math."],
-      "Perseverance leads to learning!"
-    ),
-    buildQuestion(
-      `Mastery Check 8: In the context of ${subjectTitle}, why is careful observation important?`,
-      "It ensures our findings and calculations are factual and precise.",
-      ["It wastes valuable study time.", "Observations do not matter at all."],
-      "Observation is the foundation of learning!"
-    ),
-    buildQuestion(
-      "Mastery Check 9: Which habit helps you remember what you learn in class?",
-      "Discussing concepts with classmates and practicing regularly.",
-      [
-        "Forgetting everything after the bell rings.",
-        "Never reviewing your notes.",
-      ],
-      "Active practice reinforces memory!"
-    ),
-    buildQuestion(
-      `Mastery Check 10: Final Reflection: How confident are you in applying ${lesson.title}?`,
-      "Very confident after working through the lesson guides and examples.",
-      ["Not sure at all.", "I will never use this."],
-      "Great job completing your learning mission!"
+      `Grade ${grade} ${subjectTitle} Recap 3: Why is practicing "${lesson.title}" helpful?`,
+      `It strengthens Grade ${grade} ${subjectTitle} understanding and problem-solving skills.`,
+      ["It makes learning harder.", "Practice does not help."],
+      "Consistent practice builds confidence and mastery!"
     ),
   ];
 
-  const recapQuestions = shuffle(fullRecapPool).slice(0, 10);
+  const recapQuestions = shuffle(fullRecapPool);
   return { topics, recapQuestions };
 };
 
@@ -851,13 +1125,16 @@ export default function InteractiveLessonViewer({
   onComplete,
   playSfx,
 }) {
-  const { subject, lesson } = useMemo(
-    () => resolveSubjectAndLesson(initialSubject, initialLesson, gradeLevel),
+  const { subject, lessons, initialSelectedIndex } = useMemo(
+    () => resolveSubjectAndLessons(initialSubject, initialLesson, gradeLevel),
     [initialSubject, initialLesson, gradeLevel]
   );
+
+  const [selectedLessonIdx, setSelectedLessonIdx] = useState(initialSelectedIndex);
+
+  const lesson = lessons[selectedLessonIdx] || lessons[0];
   const storageKey = getStorageKey(gradeLevel, subject.title, lesson.title);
 
-  // Ambient Lofi BGM (auto-plays gently with mute toggle)
   const bgmRef = useRef(null);
   const [bgmMuted, setBgmMuted] = useState(false);
 
@@ -893,7 +1170,7 @@ export default function InteractiveLessonViewer({
     [lesson, subject.title, gradeLevel]
   );
 
-  const [stage, setStage] = useState("topic_learn"); // "topic_learn" | "topic_quiz" | "recap_quiz" | "summary"
+  const [stage, setStage] = useState("topic_learn");
   const [topicIndex, setTopicIndex] = useState(0);
   const [topicQuestionIndex, setTopicQuestionIndex] = useState(0);
   const [recapQuestionIndex, setRecapQuestionIndex] = useState(0);
@@ -910,6 +1187,30 @@ export default function InteractiveLessonViewer({
   const [savedProgressData, setSavedProgressData] = useState(null);
   const [clickBursts, setClickBursts] = useState([]);
 
+  useEffect(() => {
+    setSelectedLessonIdx(initialSelectedIndex);
+    setStage("topic_learn");
+    setTopicIndex(0);
+    setTopicQuestionIndex(0);
+    setRecapQuestionIndex(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setIsCorrect(false);
+  }, [initialSelectedIndex, initialLesson, subject.title, gradeLevel]);
+
+  const handleSelectLessonTab = (idx, e) => {
+    e?.stopPropagation();
+    playSfx?.("click");
+    setSelectedLessonIdx(idx);
+    setStage("topic_learn");
+    setTopicIndex(0);
+    setTopicQuestionIndex(0);
+    setRecapQuestionIndex(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setIsCorrect(false);
+  };
+
   const currentTopic = topics[topicIndex] || topics[0];
   const activeQuiz =
     stage === "topic_quiz"
@@ -922,7 +1223,6 @@ export default function InteractiveLessonViewer({
   const timeSavedRef = useRef(false);
   const quizStartTimeRef = useRef(null);
 
-  // Full-Viewport Cosmic & Ocean Background Particles (Matches Splash & Welcome Screens)
   const stars = useMemo(
     () =>
       Array.from({ length: 55 }, (_, i) => ({
@@ -1241,7 +1541,6 @@ export default function InteractiveLessonViewer({
         cursor: "crosshair",
       }}
     >
-      {/* Full-Viewport Cosmic & Bioluminescent Ocean Background (Matches Splash & Welcome Screens) */}
       <div
         style={{
           position: "fixed",
@@ -1253,7 +1552,6 @@ export default function InteractiveLessonViewer({
         }}
       />
 
-      {/* Animated Shifting Aurora & Bioluminescent Gradient Overlay */}
       <motion.div
         animate={{ opacity: [0.35, 0.65, 0.35], scale: [1, 1.08, 1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
@@ -1267,7 +1565,6 @@ export default function InteractiveLessonViewer({
         }}
       />
 
-      {/* Interactive Click Stardust & Bubble Bursts */}
       <AnimatePresence>
         {clickBursts.map((burst) => (
           <div
@@ -1301,7 +1598,6 @@ export default function InteractiveLessonViewer({
         ))}
       </AnimatePresence>
 
-      {/* Twinkling Starfield */}
       {stars.map((star) => (
         <motion.span
           key={`star-${star.id}`}
@@ -1332,7 +1628,6 @@ export default function InteractiveLessonViewer({
         />
       ))}
 
-      {/* Diagonal Shooting Stars */}
       {shootingStars.map((comet) => (
         <motion.div
           key={`comet-${comet.id}`}
@@ -1361,7 +1656,6 @@ export default function InteractiveLessonViewer({
         />
       ))}
 
-      {/* Swimming Bioluminescent Ocean Creatures */}
       {SWIMMING_CREATURES.map((creature, idx) => (
         <motion.div
           key={`creature-${idx}`}
@@ -1392,7 +1686,6 @@ export default function InteractiveLessonViewer({
         </motion.div>
       ))}
 
-      {/* Rising Ocean Bubbles */}
       {bubbles.map((b) => (
         <motion.span
           key={`bubble-${b.id}`}
@@ -1427,7 +1720,7 @@ export default function InteractiveLessonViewer({
         style={{
           position: "relative",
           zIndex: 2,
-          maxWidth: 780,
+          maxWidth: 1120,
           margin: "0 auto",
         }}
       >
@@ -1513,7 +1806,7 @@ export default function InteractiveLessonViewer({
         {/* Animated Rocket-to-Moon Progress Track */}
         <div
           style={{
-            marginBottom: 20,
+            marginBottom: 16,
             display: "flex",
             alignItems: "center",
             gap: 10,
@@ -1562,7 +1855,6 @@ export default function InteractiveLessonViewer({
               </motion.div>
             </div>
 
-            {/* Flying Rocket Indicator */}
             <motion.div
               animate={{
                 left: `calc(${progressPercent}% - 14px)`,
@@ -1594,654 +1886,764 @@ export default function InteractiveLessonViewer({
           </motion.div>
         </div>
 
-        {/* Hero Lesson Header Card with Floating Stella Mascot */}
-        <motion.div
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
+        {/* All Lessons Horizontal Strip for Subject & Grade */}
+        <div
           style={{
-            background: "rgba(22, 37, 74, 0.88)",
-            backdropFilter: "blur(10px)",
-            border: `2px solid ${subject.color || "#63e1e8"}`,
-            borderRadius: 20,
-            padding: "16px 20px",
+            background: "rgba(18, 30, 62, 0.9)",
+            border: "1px solid rgba(99, 225, 232, 0.32)",
+            borderRadius: 16,
+            padding: "12px 14px",
             marginBottom: 16,
-            boxShadow: `0 10px 28px ${(subject.color || "#63e1e8")}28`,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <motion.img
-              src={stellaMascotImage}
-              alt="Stella Mascot"
-              animate={{ y: [-4, 4, -4], rotate: [-3, 3, -3] }}
-              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 8,
+            }}
+          >
+            <span
               style={{
-                width: 52,
-                height: 52,
-                objectFit: "contain",
-                filter: "drop-shadow(0 0 10px rgba(99, 225, 232, 0.65))",
+                color: "#8be7ff",
+                fontSize: 12,
+                fontWeight: 900,
+                letterSpacing: 0.4,
               }}
-            />
-            <div style={{ flex: 1 }}>
-              <div
-                style={{
-                  color: "#a5b8e8",
-                  fontSize: 12.5,
-                  fontWeight: 800,
-                  marginBottom: 2,
-                }}
-              >
-                {subject.icon} {subject.title} (Grade {gradeLevel})
-              </div>
-              <h2
-                style={{
-                  color: "#ffffff",
-                  fontSize: 22,
-                  fontWeight: 900,
-                  margin: 0,
-                }}
-              >
-                {lesson.title}
-              </h2>
-            </div>
+            >
+              {subject.icon} ALL {subject.title.toUpperCase()} LESSONS (GRADE {gradeLevel}) • {lessons.length} LESSONS
+            </span>
+            <span style={{ color: "#a5b8e8", fontSize: 11.5, fontWeight: 700 }}>
+              Scroll / Tap Lesson →
+            </span>
           </div>
 
           <div
             style={{
-              color: "#ffd05a",
-              fontSize: 13.5,
-              fontWeight: 800,
-              marginTop: 10,
+              display: "flex",
+              flexDirection: "row",
+              gap: 10,
+              overflowX: "auto",
+              paddingBottom: 4,
             }}
           >
-            {stage === "summary"
-              ? "Mission Accomplished!"
-              : stage === "recap_quiz"
-              ? `Final Mastery Quiz (${recapQuestionIndex + 1} of ${recapQuestions.length})`
-              : `Topic ${topicIndex + 1} of ${topics.length}: ${currentTopic.title}`}
+            {lessons.map((item, idx) => {
+              const active = idx === selectedLessonIdx;
+              return (
+                <button
+                  key={`${item.title}-${idx}`}
+                  type="button"
+                  onClick={(e) => handleSelectLessonTab(idx, e)}
+                  style={{
+                    minWidth: 220,
+                    maxWidth: 260,
+                    flexShrink: 0,
+                    textAlign: "left",
+                    background: active
+                      ? "linear-gradient(135deg, rgba(88, 85, 234, 0.48), rgba(56, 189, 248, 0.25))"
+                      : "rgba(28, 44, 88, 0.85)",
+                    border: active
+                      ? `2px solid ${subject.color || "#63e1e8"}`
+                      : "1px solid #395296",
+                    borderRadius: 14,
+                    padding: "10px 12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      color: active ? "#ffd05a" : "#93c5fd",
+                      fontSize: 11,
+                      fontWeight: 900,
+                      marginBottom: 3,
+                    }}
+                  >
+                    Lesson {idx + 1} • {item.difficulty || "Easy"}
+                  </div>
+                  <div
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 13.5,
+                      fontWeight: 800,
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {item.title}
+                  </div>
+                </button>
+              );
+            })}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Stage Content Panels */}
-        <AnimatePresence mode="wait">
-          {stage === "topic_learn" && (
-            <motion.div
-              key={`learn-${topicIndex}`}
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.28 }}
-              style={{
-                background: "rgba(31, 46, 96, 0.88)",
-                backdropFilter: "blur(10px)",
-                border: "1.5px solid #3d4fa6",
-                borderRadius: 20,
-                padding: 22,
-              }}
-            >
-              <p
+        {/* Hero Lesson Header Card + Lesson Viewer Going Right */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gap: 16,
+            alignItems: "start",
+          }}
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            style={{
+              background: "rgba(22, 37, 74, 0.88)",
+              backdropFilter: "blur(10px)",
+              border: `2px solid ${subject.color || "#63e1e8"}`,
+              borderRadius: 20,
+              padding: "18px 20px",
+              boxShadow: `0 10px 28px ${(subject.color || "#63e1e8")}28`,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <motion.img
+                src={stellaMascotImage}
+                alt="Stella Mascot"
+                animate={{ y: [-4, 4, -4], rotate: [-3, 3, -3] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  color: "#ffffff",
-                  fontSize: 16.5,
-                  lineHeight: 1.65,
-                  fontWeight: 600,
-                  marginBottom: 16,
+                  width: 52,
+                  height: 52,
+                  objectFit: "contain",
+                  filter: "drop-shadow(0 0 10px rgba(99, 225, 232, 0.65))",
                 }}
-              >
-                {currentTopic.story}
-              </p>
-
-              <div
-                style={{
-                  background: "rgba(21, 32, 68, 0.9)",
-                  border: "1px solid #283b75",
-                  borderRadius: 14,
-                  padding: 15,
-                  marginBottom: 14,
-                }}
-              >
+              />
+              <div style={{ flex: 1 }}>
                 <div
                   style={{
-                    color: "#8be7ff",
-                    fontSize: 13,
-                    fontWeight: 900,
-                    marginBottom: 6,
-                  }}
-                >
-                  Core Pedagogical Guide
-                </div>
-                <div
-                  style={{
-                    color: "#e2eafc",
-                    fontSize: 14.5,
-                    lineHeight: 1.6,
-                    fontWeight: 500,
-                  }}
-                >
-                  {currentTopic.howItWorks}
-                </div>
-              </div>
-
-              <motion.div
-                whileHover={{ scale: 1.015 }}
-                style={{
-                  background: "rgba(20, 51, 54, 0.92)",
-                  border: "1.5px solid #22c55e",
-                  borderRadius: 14,
-                  padding: 15,
-                  marginBottom: 14,
-                }}
-              >
-                <div
-                  style={{
-                    color: "#4ade80",
+                    color: "#a5b8e8",
                     fontSize: 12.5,
-                    fontWeight: 900,
-                    marginBottom: 4,
+                    fontWeight: 800,
+                    marginBottom: 2,
                   }}
                 >
-                  👀 Visual Classroom Demonstration
+                  {subject.icon} {subject.title} (Grade {gradeLevel})
                 </div>
-                <div
+                <h2
                   style={{
                     color: "#ffffff",
-                    fontSize: 15.5,
-                    lineHeight: 1.55,
-                    fontWeight: 700,
+                    fontSize: 22,
+                    fontWeight: 900,
+                    margin: 0,
                   }}
                 >
-                  {currentTopic.visualIllustration}
-                </div>
-              </motion.div>
+                  {lesson.title}
+                </h2>
+              </div>
+            </div>
 
-              {/* MATATAG Picture Examples Gallery */}
-              {currentTopic.pictureExamples?.length > 0 && (
+            <div
+              style={{
+                color: "#ffd05a",
+                fontSize: 13.5,
+                fontWeight: 800,
+                marginTop: 12,
+              }}
+            >
+              {stage === "summary"
+                ? "Mission Accomplished!"
+                : stage === "recap_quiz"
+                ? `Final Mastery Quiz (${recapQuestionIndex + 1} of ${recapQuestions.length})`
+                : `Topic ${topicIndex + 1} of ${topics.length}: ${currentTopic.title}`}
+            </div>
+
+            <div
+              style={{
+                marginTop: 12,
+                paddingTop: 12,
+                borderTop: "1px solid rgba(165, 184, 232, 0.2)",
+                color: "#cbd5e1",
+                fontSize: 13.5,
+                lineHeight: 1.55,
+              }}
+            >
+              {lesson.meaning}
+            </div>
+          </motion.div>
+
+          <AnimatePresence mode="wait">
+            {stage === "topic_learn" && (
+              <motion.div
+                key={`learn-${selectedLessonIdx}-${topicIndex}`}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.28 }}
+                style={{
+                  background: "rgba(31, 46, 96, 0.88)",
+                  backdropFilter: "blur(10px)",
+                  border: "1.5px solid #3d4fa6",
+                  borderRadius: 20,
+                  padding: 22,
+                }}
+              >
+                <p
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 16.5,
+                    lineHeight: 1.65,
+                    fontWeight: 600,
+                    marginBottom: 16,
+                  }}
+                >
+                  {currentTopic.story}
+                </p>
+
                 <div
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(195px, 1fr))",
-                    gap: 10,
+                    background: "rgba(21, 32, 68, 0.9)",
+                    border: "1px solid #283b75",
+                    borderRadius: 14,
+                    padding: 15,
                     marginBottom: 14,
                   }}
                 >
-                  {currentTopic.pictureExamples.map((picEx, idx) => (
-                    <motion.div
-                      key={idx}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      style={{
-                        background: "rgba(17, 30, 62, 0.94)",
-                        border: "1px solid rgba(99, 225, 232, 0.35)",
-                        borderRadius: 14,
-                        padding: 12,
-                        textAlign: "center",
-                      }}
-                    >
-                      <motion.div
-                        animate={{ scale: [1, 1.04, 1] }}
-                        transition={{
-                          duration: 2.8,
-                          repeat: Infinity,
-                          delay: idx * 0.35,
-                        }}
-                        style={{
-                          fontSize: 20,
-                          lineHeight: 1.45,
-                          whiteSpace: "pre-line",
-                          marginBottom: 6,
-                        }}
-                      >
-                        {picEx.pics}
-                      </motion.div>
-                      <div
-                        style={{
-                          color: "#ffffff",
-                          fontSize: 12.5,
-                          fontWeight: 800,
-                          marginBottom: 2,
-                        }}
-                      >
-                        {picEx.caption}
-                      </div>
-                      <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 600 }}>
-                        {picEx.note}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-
-              <div
-                style={{
-                  background: "rgba(23, 43, 92, 0.92)",
-                  border: "1px solid #395296",
-                  borderRadius: 14,
-                  padding: 15,
-                  marginBottom: 20,
-                }}
-              >
-                <div
-                  style={{
-                    color: "#ffd05a",
-                    fontSize: 12.5,
-                    fontWeight: 900,
-                    marginBottom: 4,
-                  }}
-                >
-                  Key Worked Example
-                </div>
-                <div
-                  style={{
-                    color: "#ffffff",
-                    fontSize: 15.5,
-                    lineHeight: 1.55,
-                    fontWeight: 700,
-                  }}
-                >
-                  {currentTopic.demonstration}
-                </div>
-              </div>
-
-              <motion.button
-                type="button"
-                whileHover={{
-                  scale: 1.025,
-                  boxShadow: "0 0 22px rgba(88, 85, 234, 0.65)",
-                }}
-                whileTap={{ scale: 0.96 }}
-                onClick={handleNextAction}
-                style={{
-                  width: "100%",
-                  background: "linear-gradient(90deg, #5855ea, #818cf8)",
-                  border: "none",
-                  borderRadius: 14,
-                  padding: "14px 18px",
-                  color: "#ffffff",
-                  fontSize: 16,
-                  fontWeight: 900,
-                  cursor: "pointer",
-                }}
-              >
-                Take Topic Checkpoint 🎯
-              </motion.button>
-            </motion.div>
-          )}
-
-          {(stage === "topic_quiz" || stage === "recap_quiz") && activeQuiz && (
-            <motion.div
-              key={`quiz-${stage}-${topicIndex}-${topicQuestionIndex}-${recapQuestionIndex}`}
-              initial={{ opacity: 0, x: 24 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -24 }}
-              transition={{ duration: 0.25 }}
-              style={{
-                background: "rgba(31, 46, 96, 0.88)",
-                backdropFilter: "blur(10px)",
-                border: "1.5px solid #3d4fa6",
-                borderRadius: 20,
-                padding: 22,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 14,
-                }}
-              >
-                <span
-                  style={{
-                    color: "#8be7ff",
-                    fontSize: 11.5,
-                    fontWeight: 900,
-                    letterSpacing: 0.5,
-                  }}
-                >
-                  {stage === "recap_quiz"
-                    ? `RECAP QUESTION ${recapQuestionIndex + 1} / ${recapQuestions.length}`
-                    : `CHECKPOINT ${topicQuestionIndex + 1} / ${currentTopic.questions.length}`}
-                </span>
-                <span
-                  style={{
-                    background: "#172957",
-                    color: "#ffd05a",
-                    fontSize: 11.5,
-                    fontWeight: 900,
-                    padding: "4px 10px",
-                    borderRadius: 8,
-                  }}
-                >
-                  +{stage === "recap_quiz" ? 10 : 15} XP
-                </span>
-              </div>
-
-              <div
-                style={{
-                  color: "#ffffff",
-                  fontSize: 18,
-                  lineHeight: 1.5,
-                  fontWeight: 800,
-                  marginBottom: 18,
-                }}
-              >
-                {activeQuiz.question}
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                  marginBottom: 16,
-                }}
-              >
-                {activeQuiz.options.map((option, idx) => {
-                  const isThisSelected = selectedOption === idx;
-                  const isRightOption = idx === activeQuiz.correctIndex;
-
-                  let bg = "rgba(41, 60, 120, 0.9)";
-                  let border = "1.5px solid #4a5ebd";
-
-                  if (isAnswered) {
-                    if (isRightOption) {
-                      bg = "rgba(34, 197, 94, 0.28)";
-                      border = "2px solid #4ade80";
-                    } else if (isThisSelected) {
-                      bg = "rgba(248, 113, 113, 0.28)";
-                      border = "2px solid #f87171";
-                    }
-                  }
-
-                  return (
-                    <motion.button
-                      key={idx}
-                      type="button"
-                      disabled={isAnswered}
-                      whileHover={isAnswered ? {} : { scale: 1.015, x: 4 }}
-                      whileTap={isAnswered ? {} : { scale: 0.97 }}
-                      animate={
-                        isAnswered && isThisSelected && !isRightOption
-                          ? { x: [-5, 5, -5, 5, 0] }
-                          : isAnswered && isThisSelected && isRightOption
-                          ? { scale: [1, 1.03, 1] }
-                          : {}
-                      }
-                      onClick={(e) => handleSelectOption(idx, e)}
-                      style={{
-                        background: bg,
-                        border,
-                        borderRadius: 14,
-                        padding: 14,
-                        display: "flex",
-                        alignItems: "center",
-                        textAlign: "left",
-                        cursor: isAnswered ? "default" : "pointer",
-                      }}
-                    >
-                      <span
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          background: "rgba(255,255,255,0.2)",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginRight: 12,
-                          color: "#ffffff",
-                          fontSize: 13,
-                          fontWeight: 900,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {idx + 1}
-                      </span>
-                      <span
-                        style={{
-                          color: "#ffffff",
-                          fontSize: 15,
-                          lineHeight: 1.45,
-                          fontWeight: 700,
-                          flex: 1,
-                        }}
-                      >
-                        {option}
-                      </span>
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              <AnimatePresence>
-                {isAnswered && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    style={{
-                      background: "rgba(23, 37, 74, 0.95)",
-                      border: `1.5px solid ${isCorrect ? "#4ade80" : "#8be7ff"}`,
-                      borderRadius: 16,
-                      padding: 16,
-                      marginTop: 8,
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: isCorrect ? "#4ade80" : "#8be7ff",
-                        fontSize: 16,
-                        fontWeight: 900,
-                        marginBottom: 4,
-                      }}
-                    >
-                      {isCorrect ? "🌟 Awesome Job!" : "📌 Good Try! Here's Why:"}
-                    </div>
-                    <div
-                      style={{
-                        color: "#e2eafc",
-                        fontSize: 13.5,
-                        lineHeight: 1.5,
-                        marginBottom: 14,
-                      }}
-                    >
-                      {activeQuiz.explanation}
-                    </div>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={handleNextAction}
-                      style={{
-                        width: "100%",
-                        background: "linear-gradient(90deg, #5855ea, #818cf8)",
-                        border: "none",
-                        borderRadius: 12,
-                        padding: "12px 16px",
-                        color: "#ffffff",
-                        fontSize: 15,
-                        fontWeight: 900,
-                        cursor: "pointer",
-                      }}
-                    >
-                      Next Question ➔
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          )}
-
-          {stage === "summary" && (
-            <motion.div
-              key="summary"
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              style={{
-                background: "rgba(31, 46, 96, 0.9)",
-                backdropFilter: "blur(10px)",
-                border: "2px solid #4ade80",
-                borderRadius: 22,
-                padding: 24,
-                textAlign: "center",
-              }}
-            >
-              <motion.div
-                animate={{ rotate: [-5, 5, -5], scale: [1, 1.08, 1] }}
-                transition={{ duration: 2.5, repeat: Infinity }}
-                style={{ fontSize: 44, marginBottom: 6 }}
-              >
-                🎉
-              </motion.div>
-              <h2
-                style={{
-                  color: "#ffffff",
-                  fontSize: 24,
-                  fontWeight: 900,
-                  margin: "0 0 6px",
-                }}
-              >
-                Mission Complete!
-              </h2>
-              <p
-                style={{
-                  color: "#b0c1e4",
-                  fontSize: 13.5,
-                  lineHeight: 1.55,
-                  marginBottom: 18,
-                }}
-              >
-                You explored all topics and conquered the final recap quiz for{" "}
-                <strong>{lesson.title}</strong>!
-              </p>
-
-              <div
-                style={{
-                  background: "rgba(22, 37, 74, 0.9)",
-                  borderRadius: 14,
-                  padding: 16,
-                  marginBottom: 16,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span style={{ color: "#a5b8e8", fontSize: 13.5, fontWeight: 700 }}>
-                    Total XP Earned:
-                  </span>
-                  <span style={{ color: "#ffda61", fontSize: 16, fontWeight: 900 }}>
-                    ⚡ {totalXpEarned} XP
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                  }}
-                >
-                  <span style={{ color: "#a5b8e8", fontSize: 13.5, fontWeight: 700 }}>
-                    Mistakes Made:
-                  </span>
-                  <span style={{ color: "#ffffff", fontSize: 16, fontWeight: 900 }}>
-                    {mistakesCount}
-                  </span>
-                </div>
-              </div>
-
-              {mistakesCount === 0 ? (
-                <div
-                  style={{
-                    background: "rgba(46, 37, 9, 0.92)",
-                    border: "1.5px solid #eab308",
-                    borderRadius: 14,
-                    padding: 14,
-                    marginBottom: 18,
-                  }}
-                >
-                  <div style={{ fontSize: 28, marginBottom: 4 }}>👑</div>
                   <div
                     style={{
-                      color: "#fde047",
-                      fontSize: 14,
+                      color: "#8be7ff",
+                      fontSize: 13,
+                      fontWeight: 900,
+                      marginBottom: 6,
+                    }}
+                  >
+                    Core Pedagogical Guide
+                  </div>
+                  <div
+                    style={{
+                      color: "#e2eafc",
+                      fontSize: 14.5,
+                      lineHeight: 1.6,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {currentTopic.howItWorks}
+                  </div>
+                </div>
+
+                <motion.div
+                  whileHover={{ scale: 1.015 }}
+                  style={{
+                    background: "rgba(20, 51, 54, 0.92)",
+                    border: "1.5px solid #22c55e",
+                    borderRadius: 14,
+                    padding: 15,
+                    marginBottom: 14,
+                  }}
+                >
+                  <div
+                    style={{
+                      color: "#4ade80",
+                      fontSize: 12.5,
                       fontWeight: 900,
                       marginBottom: 4,
                     }}
                   >
-                    FLAWLESS EXPLORER BONUS!
+                    👀 Visual Classroom Demonstration
                   </div>
-                  <div style={{ color: "#fef08a", fontSize: 12.5, lineHeight: 1.45 }}>
-                    You solved every question and recap without making a single
-                    mistake! (+50 XP Bonus awarded!)
+                  <div
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 15.5,
+                      lineHeight: 1.55,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {currentTopic.visualIllustration}
                   </div>
-                </div>
-              ) : (
+                </motion.div>
+
+                {currentTopic.pictureExamples?.length > 0 && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(175px, 1fr))",
+                      gap: 10,
+                      marginBottom: 14,
+                    }}
+                  >
+                    {currentTopic.pictureExamples.map((picEx, idx) => (
+                      <motion.div
+                        key={idx}
+                        whileHover={{ y: -4, scale: 1.02 }}
+                        style={{
+                          background: "rgba(17, 30, 62, 0.94)",
+                          border: "1px solid rgba(99, 225, 232, 0.35)",
+                          borderRadius: 14,
+                          padding: 12,
+                          textAlign: "center",
+                        }}
+                      >
+                        <motion.div
+                          animate={{ scale: [1, 1.04, 1] }}
+                          transition={{
+                            duration: 2.8,
+                            repeat: Infinity,
+                            delay: idx * 0.35,
+                          }}
+                          style={{
+                            fontSize: 20,
+                            lineHeight: 1.45,
+                            whiteSpace: "pre-line",
+                            marginBottom: 6,
+                          }}
+                        >
+                          {picEx.pics}
+                        </motion.div>
+                        <div
+                          style={{
+                            color: "#ffffff",
+                            fontSize: 12.5,
+                            fontWeight: 800,
+                            marginBottom: 2,
+                          }}
+                        >
+                          {picEx.caption}
+                        </div>
+                        <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 600 }}>
+                          {picEx.note}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+
                 <div
                   style={{
-                    background: "rgba(23, 38, 74, 0.9)",
-                    borderRadius: 12,
-                    padding: 12,
-                    marginBottom: 18,
-                    color: "#a4b7dd",
-                    fontSize: 13,
-                    lineHeight: 1.5,
+                    background: "rgba(23, 43, 92, 0.92)",
+                    border: "1px solid #395296",
+                    borderRadius: 14,
+                    padding: 15,
+                    marginBottom: 20,
                   }}
                 >
-                  Great perseverance! You worked through all the challenges and
-                  mastered this lesson.
+                  <div
+                    style={{
+                      color: "#ffd05a",
+                      fontSize: 12.5,
+                      fontWeight: 900,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Key Worked Example
+                  </div>
+                  <div
+                    style={{
+                      color: "#ffffff",
+                      fontSize: 15.5,
+                      lineHeight: 1.55,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {currentTopic.demonstration}
+                  </div>
                 </div>
-              )}
 
-              <motion.button
-                type="button"
-                whileHover={{
-                  scale: 1.03,
-                  boxShadow: "0 0 22px rgba(34, 197, 94, 0.6)",
-                }}
-                whileTap={{ scale: 0.96 }}
-                onClick={(e) => {
-                  triggerButtonBurst(e, ["⭐", "✨", "🎉", "🚀"]);
-                  playSfx?.("correct");
-                  const isPerfect = mistakesCount === 0;
-                  const isScience =
-                    subject.title.toLowerCase().includes("science") ||
-                    subject.title.toLowerCase().includes("ocean") ||
-                    ["matter", "living", "force", "earth"].some((s) =>
-                      subject.title.toLowerCase().includes(s)
-                    );
-                  const quizTimeSecs = quizStartTimeRef.current
-                    ? (Date.now() - quizStartTimeRef.current) / 1000
-                    : 999;
-                  const isSpeedy = quizTimeSecs < 45;
+                <motion.button
+                  type="button"
+                  whileHover={{
+                    scale: 1.025,
+                    boxShadow: "0 0 22px rgba(88, 85, 234, 0.65)",
+                  }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={handleNextAction}
+                  style={{
+                    width: "100%",
+                    background: "linear-gradient(90deg, #5855ea, #818cf8)",
+                    border: "none",
+                    borderRadius: 14,
+                    padding: "14px 18px",
+                    color: "#ffffff",
+                    fontSize: 16,
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Take Topic Checkpoint 🎯
+                </motion.button>
+              </motion.div>
+            )}
 
-                  onComplete?.(
-                    totalXpEarned,
-                    isPerfect,
-                    isSpeedy && !isScience,
-                    isSpeedy && isScience
-                  );
-                }}
+            {(stage === "topic_quiz" || stage === "recap_quiz") && activeQuiz && (
+              <motion.div
+                key={`quiz-${selectedLessonIdx}-${stage}-${topicIndex}-${topicQuestionIndex}-${recapQuestionIndex}`}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -24 }}
+                transition={{ duration: 0.25 }}
                 style={{
-                  width: "100%",
-                  background: "linear-gradient(90deg, #22c55e, #4ade80)",
-                  border: "none",
-                  borderRadius: 14,
-                  padding: "14px 18px",
-                  color: "#052e16",
-                  fontSize: 15.5,
-                  fontWeight: 900,
-                  cursor: "pointer",
+                  background: "rgba(31, 46, 96, 0.88)",
+                  backdropFilter: "blur(10px)",
+                  border: "1.5px solid #3d4fa6",
+                  borderRadius: 20,
+                  padding: 22,
                 }}
               >
-                Complete Mission & Return 🚀
-              </motion.button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 14,
+                  }}
+                >
+                  <span
+                    style={{
+                      color: "#8be7ff",
+                      fontSize: 11.5,
+                      fontWeight: 900,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    {stage === "recap_quiz"
+                      ? `RECAP QUESTION ${recapQuestionIndex + 1} / ${recapQuestions.length}`
+                      : `CHECKPOINT ${topicQuestionIndex + 1} / ${currentTopic.questions.length}`}
+                  </span>
+                  <span
+                    style={{
+                      background: "#172957",
+                      color: "#ffd05a",
+                      fontSize: 11.5,
+                      fontWeight: 900,
+                      padding: "4px 10px",
+                      borderRadius: 8,
+                    }}
+                  >
+                    +{stage === "recap_quiz" ? 10 : 15} XP
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 18,
+                    lineHeight: 1.5,
+                    fontWeight: 800,
+                    marginBottom: 18,
+                  }}
+                >
+                  {activeQuiz.question}
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                    marginBottom: 16,
+                  }}
+                >
+                  {activeQuiz.options.map((option, idx) => {
+                    const isThisSelected = selectedOption === idx;
+                    const isRightOption = idx === activeQuiz.correctIndex;
+
+                    let bg = "rgba(41, 60, 120, 0.9)";
+                    let border = "1.5px solid #4a5ebd";
+
+                    if (isAnswered) {
+                      if (isRightOption) {
+                        bg = "rgba(34, 197, 94, 0.28)";
+                        border = "2px solid #4ade80";
+                      } else if (isThisSelected) {
+                        bg = "rgba(248, 113, 113, 0.28)";
+                        border = "2px solid #f87171";
+                      }
+                    }
+
+                    return (
+                      <motion.button
+                        key={idx}
+                        type="button"
+                        disabled={isAnswered}
+                        whileHover={isAnswered ? {} : { scale: 1.015, x: 4 }}
+                        whileTap={isAnswered ? {} : { scale: 0.97 }}
+                        animate={
+                          isAnswered && isThisSelected && !isRightOption
+                            ? { x: [-5, 5, -5, 5, 0] }
+                            : isAnswered && isThisSelected && isRightOption
+                            ? { scale: [1, 1.03, 1] }
+                            : {}
+                        }
+                        onClick={(e) => handleSelectOption(idx, e)}
+                        style={{
+                          background: bg,
+                          border,
+                          borderRadius: 14,
+                          padding: 14,
+                          display: "flex",
+                          alignItems: "center",
+                          textAlign: "left",
+                          cursor: isAnswered ? "default" : "pointer",
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: "50%",
+                            background: "rgba(255,255,255,0.2)",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            marginRight: 12,
+                            color: "#ffffff",
+                            fontSize: 13,
+                            fontWeight: 900,
+                            flexShrink: 0,
+                          }}
+                        >
+                          {idx + 1}
+                        </span>
+                        <span
+                          style={{
+                            color: "#ffffff",
+                            fontSize: 15,
+                            lineHeight: 1.45,
+                            fontWeight: 700,
+                            flex: 1,
+                          }}
+                        >
+                          {option}
+                        </span>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                <AnimatePresence>
+                  {isAnswered && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      style={{
+                        background: "rgba(23, 37, 74, 0.95)",
+                        border: `1.5px solid ${isCorrect ? "#4ade80" : "#8be7ff"}`,
+                        borderRadius: 16,
+                        padding: 16,
+                        marginTop: 8,
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: isCorrect ? "#4ade80" : "#8be7ff",
+                          fontSize: 16,
+                          fontWeight: 900,
+                          marginBottom: 4,
+                        }}
+                      >
+                        {isCorrect ? "🌟 Awesome Job!" : "📌 Good Try! Here's Why:"}
+                      </div>
+                      <div
+                        style={{
+                          color: "#e2eafc",
+                          fontSize: 13.5,
+                          lineHeight: 1.5,
+                          marginBottom: 14,
+                        }}
+                      >
+                        {activeQuiz.explanation}
+                      </div>
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={handleNextAction}
+                        style={{
+                          width: "100%",
+                          background: "linear-gradient(90deg, #5855ea, #818cf8)",
+                          border: "none",
+                          borderRadius: 12,
+                          padding: "12px 16px",
+                          color: "#ffffff",
+                          fontSize: 15,
+                          fontWeight: 900,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Next Question ➔
+                      </motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            )}
+
+            {stage === "summary" && (
+              <motion.div
+                key="summary"
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                style={{
+                  background: "rgba(31, 46, 96, 0.9)",
+                  backdropFilter: "blur(10px)",
+                  border: "2px solid #4ade80",
+                  borderRadius: 22,
+                  padding: 24,
+                  textAlign: "center",
+                }}
+              >
+                <motion.div
+                  animate={{ rotate: [-5, 5, -5], scale: [1, 1.08, 1] }}
+                  transition={{ duration: 2.5, repeat: Infinity }}
+                  style={{ fontSize: 44, marginBottom: 6 }}
+                >
+                  🎉
+                </motion.div>
+                <h2
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 24,
+                    fontWeight: 900,
+                    margin: "0 0 6px",
+                  }}
+                >
+                  Mission Complete!
+                </h2>
+                <p
+                  style={{
+                    color: "#b0c1e4",
+                    fontSize: 13.5,
+                    lineHeight: 1.55,
+                    marginBottom: 18,
+                  }}
+                >
+                  You explored all topics and conquered the final recap quiz for{" "}
+                  <strong>{lesson.title}</strong>!
+                </p>
+
+                <div
+                  style={{
+                    background: "rgba(22, 37, 74, 0.9)",
+                    borderRadius: 14,
+                    padding: 16,
+                    marginBottom: 16,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 10,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ color: "#a5b8e8", fontSize: 13.5, fontWeight: 700 }}>
+                      Total XP Earned:
+                    </span>
+                    <span style={{ color: "#ffda61", fontSize: 16, fontWeight: 900 }}>
+                      ⚡ {totalXpEarned} XP
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ color: "#a5b8e8", fontSize: 13.5, fontWeight: 700 }}>
+                      Mistakes Made:
+                    </span>
+                    <span style={{ color: "#ffffff", fontSize: 16, fontWeight: 900 }}>
+                      {mistakesCount}
+                    </span>
+                  </div>
+                </div>
+
+                {mistakesCount === 0 ? (
+                  <div
+                    style={{
+                      background: "rgba(46, 37, 9, 0.92)",
+                      border: "1.5px solid #eab308",
+                      borderRadius: 14,
+                      padding: 14,
+                      marginBottom: 18,
+                    }}
+                  >
+                    <div style={{ fontSize: 28, marginBottom: 4 }}>👑</div>
+                    <div
+                      style={{
+                        color: "#fde047",
+                        fontSize: 14,
+                        fontWeight: 900,
+                        marginBottom: 4,
+                      }}
+                    >
+                      FLAWLESS EXPLORER BONUS!
+                    </div>
+                    <div style={{ color: "#fef08a", fontSize: 12.5, lineHeight: 1.45 }}>
+                      You solved every question and recap without making a single
+                      mistake! (+50 XP Bonus awarded!)
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    style={{
+                      background: "rgba(23, 38, 74, 0.9)",
+                      borderRadius: 12,
+                      padding: 12,
+                      marginBottom: 18,
+                      color: "#a4b7dd",
+                      fontSize: 13,
+                      lineHeight: 1.5,
+                    }}
+                  >
+                    Great perseverance! You worked through all the challenges and
+                    mastered this lesson.
+                  </div>
+                )}
+
+                <motion.button
+                  type="button"
+                  whileHover={{
+                    scale: 1.03,
+                    boxShadow: "0 0 22px rgba(34, 197, 94, 0.6)",
+                  }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={(e) => {
+                    triggerButtonBurst(e, ["⭐", "✨", "🎉", "🚀"]);
+                    playSfx?.("correct");
+                    const isPerfect = mistakesCount === 0;
+                    const isScience =
+                      subject.title.toLowerCase().includes("science") ||
+                      subject.title.toLowerCase().includes("ocean") ||
+                      ["matter", "living", "force", "earth"].some((s) =>
+                        subject.title.toLowerCase().includes(s)
+                      );
+                    const quizTimeSecs = quizStartTimeRef.current
+                      ? (Date.now() - quizStartTimeRef.current) / 1000
+                      : 999;
+                    const isSpeedy = quizTimeSecs < 45;
+
+                    onComplete?.(
+                      totalXpEarned,
+                      isPerfect,
+                      isSpeedy && !isScience,
+                      isSpeedy && isScience
+                    );
+                  }}
+                  style={{
+                    width: "100%",
+                    background: "linear-gradient(90deg, #22c55e, #4ade80)",
+                    border: "none",
+                    borderRadius: 14,
+                    padding: "14px 18px",
+                    color: "#052e16",
+                    fontSize: 15.5,
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Complete Mission & Return 🚀
+                </motion.button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </div>
 
       {/* Exit / Pause Confirmation Modal */}
