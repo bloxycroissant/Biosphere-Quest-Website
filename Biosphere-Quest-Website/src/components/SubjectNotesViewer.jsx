@@ -930,7 +930,7 @@ export default function SubjectNotesViewer({
   );
 
   const renderParagraphs = useCallback(
-    (text, prefix) => {
+    (text, prefix, pageIdx = currentPage) => {
       return text.split("\n\n").map((paragraph, pIdx) => {
         const words = paragraph.split(" ");
         return (
@@ -945,7 +945,7 @@ export default function SubjectNotesViewer({
             }}
           >
             {words.map((word, wIdx) => {
-              const wordKey = `${currentPage}-${prefix}-${pIdx}-${wIdx}`;
+              const wordKey = `${pageIdx}-${prefix}-${pIdx}-${wIdx}`;
               const highlightColor = wordHighlights[wordKey];
 
               return (
@@ -1040,7 +1040,8 @@ export default function SubjectNotesViewer({
         </h3>
         {renderParagraphs(
           `Welcome to the master field notebook for ${subject.title}! This study guide is meticulously designed to provide complete conceptual clarity across 7 full chapters: rigorous scientific and mathematical definitions, picture-rich visual guides, step-by-step worked examples, and interactive activity exercises.`,
-          "intro-1"
+          "intro-1",
+          0
         )}
         <h3
           style={{
@@ -1054,7 +1055,8 @@ export default function SubjectNotesViewer({
         </h3>
         {renderParagraphs(
           "• Chapters 1–4 (Theoretical Foundations): Focus purely on extensive explanations, formal definitions, visual picture guides, and deep descriptions of core principles.\n\n• Chapters 5–7 (Practical Applications): Focus on comprehensive real-world worked examples, step-by-step computation models, and guided activity exercises.\n\n• Highlighter Tool Usage: Choose a color from the toolbar above to click or drag across important text. Select 'Off' to clear highlights. Use the sticky arrow tabs on the right margin to jump directly across chapters.",
-          "intro-2"
+          "intro-2",
+          0
         )}
       </div>
     );
@@ -1076,6 +1078,7 @@ export default function SubjectNotesViewer({
       const includeVisualMap = index < 2;
 
       if (isExplanationChapter) {
+        const p1Index = generatedPages.length;
         generatedPages.push(
           <div key={`chap-${index}-p1`}>
             <div
@@ -1118,7 +1121,7 @@ export default function SubjectNotesViewer({
             >
               📖 Core Axiom & Definition
             </h3>
-            {renderParagraphs(expansion.definition, `c${index}-p1`)}
+            {renderParagraphs(expansion.definition, `c${index}-p1`, p1Index)}
 
             {/* Picture Snapshot Strip */}
             <div
@@ -1161,7 +1164,7 @@ export default function SubjectNotesViewer({
             >
               ⭐ Worked Example Snapshot
             </h3>
-            {renderParagraphs(expansion.example, `c${index}-p1-ex`)}
+            {renderParagraphs(expansion.example, `c${index}-p1-ex`, p1Index)}
 
             <h3
               style={{
@@ -1173,10 +1176,11 @@ export default function SubjectNotesViewer({
             >
               🧠 Comprehensive Theoretical Breakdown
             </h3>
-            {renderParagraphs(expansion.explanation, `c${index}-p2`)}
+            {renderParagraphs(expansion.explanation, `c${index}-p2`, p1Index)}
           </div>
         );
 
+        const p2Index = generatedPages.length;
         generatedPages.push(
           <div key={`chap-${index}-p2`}>
             <div
@@ -1219,7 +1223,8 @@ export default function SubjectNotesViewer({
                   gradeLevel <= 3
                     ? `Examine the visual guide below to understand how ${chap.title.toLowerCase()} is explored using objects and pictures.`
                     : `Examine the flow diagram below to understand the key sequential steps of ${chap.title.toLowerCase()}.`,
-                  `c${index}-map-desc`
+                  `c${index}-map-desc`,
+                  p2Index
                 )}
                 <LessonVisual data={visualData} />
               </>
@@ -1237,7 +1242,8 @@ export default function SubjectNotesViewer({
                 </h3>
                 {renderParagraphs(
                   `Mastering ${chap.title.toLowerCase()} requires analyzing how each rule fits into the overarching academic system.\n\n• Axiom 1 (Fundamental Definition): Always start by anchoring your analysis in the primary definition. Identify all core properties and governing rules before attempting complex problems.\n\n• Axiom 2 (System Interactions): Observe how internal variables interact with external influences. Changing one element shifts the equilibrium of the entire framework.\n\n• Axiom 3 (Verification Protocols): Always cross-examine your observational or computational data against established rules. Consistency across multiple test conditions ensures true mastery!`,
-                  `c${index}-deep-desc`
+                  `c${index}-deep-desc`,
+                  p2Index
                 )}
                 <LessonVisual data={visualData} />
               </>
@@ -1245,6 +1251,7 @@ export default function SubjectNotesViewer({
           </div>
         );
       } else {
+        const p3Index = generatedPages.length;
         generatedPages.push(
           <div key={`chap-${index}-p3`}>
             <div
@@ -1287,7 +1294,7 @@ export default function SubjectNotesViewer({
             >
               ⭐ Worked Real-World Example
             </h3>
-            {renderParagraphs(expansion.example, `c${index}-ex`)}
+            {renderParagraphs(expansion.example, `c${index}-ex`, p3Index)}
             <LessonVisual data={visualData} />
             <h3
               style={{
@@ -1303,10 +1310,11 @@ export default function SubjectNotesViewer({
                 ? "🔢 Step-by-Step Classroom Activity"
                 : "🧮 Step-by-Step Computation Model"}
             </h3>
-            {renderParagraphs(expansion.computation, `c${index}-comp`)}
+            {renderParagraphs(expansion.computation, `c${index}-comp`, p3Index)}
           </div>
         );
 
+        const p4Index = generatedPages.length;
         generatedPages.push(
           <div key={`chap-${index}-p4`}>
             <div
@@ -1349,7 +1357,7 @@ export default function SubjectNotesViewer({
             >
               🎯 Guided Activity Exercise
             </h3>
-            {renderParagraphs(expansion.practice, `c${index}-prac`)}
+            {renderParagraphs(expansion.practice, `c${index}-prac`, p4Index)}
             <h3
               style={{
                 color: "#334155",
@@ -1360,7 +1368,7 @@ export default function SubjectNotesViewer({
             >
               💡 Analytical Breakdown & Solution Notes
             </h3>
-            {renderParagraphs(expansion.exampleExplanation, `c${index}-why`)}
+            {renderParagraphs(expansion.exampleExplanation, `c${index}-why`, p4Index)}
             <h3
               style={{
                 color: "#334155",
@@ -1373,7 +1381,8 @@ export default function SubjectNotesViewer({
             </h3>
             {renderParagraphs(
               "Apply the foundational rules and theoretical descriptions from Chapters 1–4 to complete this activity exercise. Always check your steps against the definition to verify complete correctness!",
-              `c${index}-tip`
+              `c${index}-tip`,
+              p4Index
             )}
           </div>
         );
@@ -1384,14 +1393,16 @@ export default function SubjectNotesViewer({
   }, [subject.title, gradeLevel, chapterList, isChildTheme, theme, renderParagraphs]);
 
   const totalPages = pages.length;
+  const rightPage = currentPage + 1 < totalPages ? currentPage + 1 : null;
 
   const jumpToPage = useCallback(
     (newPage, e) => {
-      if (newPage < 0 || newPage >= totalPages || newPage === currentPage) return;
+      const clamped = Math.max(0, Math.min(totalPages - 1, newPage));
+      if (clamped === currentPage) return;
       triggerButtonBurst(e, ["✨", "📖"]);
       playPageTurn();
-      setFlipDirection(newPage > currentPage ? 1 : -1);
-      setCurrentPage(newPage);
+      setFlipDirection(clamped > currentPage ? 1 : -1);
+      setCurrentPage(clamped);
     },
     [totalPages, currentPage, playPageTurn]
   );
@@ -1416,11 +1427,14 @@ export default function SubjectNotesViewer({
     <div
       onClick={(e) => spawnBurstAt(e.clientX, e.clientY)}
       style={{
-        position: "relative",
-        minHeight: "100vh",
-        width: "100%",
+        position: "fixed",
+        inset: 0,
+        width: "100vw",
+        height: "100vh",
+        overflowY: "auto",
         paddingBottom: 42,
         cursor: "crosshair",
+        zIndex: 95,
       }}
     >
       {/* Full-Viewport Cosmic & Bioluminescent Ocean Background (Matches Splash & Welcome Screens) */}
@@ -1616,7 +1630,7 @@ export default function SubjectNotesViewer({
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            maxWidth: 920,
+            maxWidth: 1400,
             margin: "0 auto",
             padding: "14px 18px 10px",
           }}
@@ -1664,7 +1678,7 @@ export default function SubjectNotesViewer({
         >
           <div
             style={{
-              maxWidth: 920,
+              maxWidth: 1400,
               margin: "0 auto",
               display: "flex",
               flexWrap: "wrap",
@@ -1772,7 +1786,7 @@ export default function SubjectNotesViewer({
           </div>
         </div>
 
-        {/* Spiral-Bound Explorer Notebook Container */}
+        {/* Spiral-Bound Explorer Notebook Container (2-Page Full-Screen Spread) */}
         <motion.div
           animate={
             isClosing
@@ -1781,7 +1795,8 @@ export default function SubjectNotesViewer({
           }
           transition={{ duration: 0.32, ease: "easeInOut" }}
           style={{
-            maxWidth: 860,
+            maxWidth: 1380,
+            width: "96vw",
             margin: "0 auto",
             padding: "0 64px 0 18px",
             position: "relative",
@@ -1792,7 +1807,7 @@ export default function SubjectNotesViewer({
               backgroundColor: theme.pageBg,
               borderRadius: `6px ${theme.borderRadius}px ${theme.borderRadius}px 6px`,
               padding: "26px 26px 20px 52px",
-              minHeight: 540,
+              minHeight: "76vh",
               position: "relative",
               boxShadow: "0 18px 42px rgba(0, 0, 0, 0.45)",
               display: "flex",
@@ -1882,11 +1897,11 @@ export default function SubjectNotesViewer({
               )}
             </AnimatePresence>
 
-            {/* 3D Page-Flipping Content */}
+            {/* 3D Page-Flipping 2-Page Spread Content */}
             <div style={{ perspective: 1400, flex: 1 }}>
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={`page-${currentPage}`}
+                  key={`spread-${currentPage}`}
                   initial={{
                     rotateY: flipDirection > 0 ? 18 : -18,
                     opacity: 0,
@@ -1899,9 +1914,26 @@ export default function SubjectNotesViewer({
                     x: flipDirection > 0 ? -22 : 22,
                   }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
-                  style={{ transformOrigin: "left center" }}
+                  style={{
+                    transformOrigin: "left center",
+                    display: "grid",
+                    gridTemplateColumns:
+                      rightPage !== null ? "1fr 1fr" : "1fr",
+                    gap: 28,
+                    alignItems: "start",
+                  }}
                 >
-                  {pages[currentPage]}
+                  <div>{pages[currentPage]}</div>
+                  {rightPage !== null && (
+                    <div
+                      style={{
+                        borderLeft: `2px dashed ${theme.dividerColor}`,
+                        paddingLeft: 28,
+                      }}
+                    >
+                      {pages[rightPage]}
+                    </div>
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -2011,7 +2043,7 @@ export default function SubjectNotesViewer({
                   disabled={currentPage === 0}
                   whileHover={currentPage === 0 ? {} : { scale: 1.06, x: -2 }}
                   whileTap={currentPage === 0 ? {} : { scale: 0.92 }}
-                  onClick={(e) => jumpToPage(currentPage - 1, e)}
+                  onClick={(e) => jumpToPage(currentPage - 2, e)}
                   style={{
                     backgroundColor: currentPage === 0 ? "#cbd5e1" : "#1e293b",
                     color: "#ffffff",
@@ -2023,7 +2055,7 @@ export default function SubjectNotesViewer({
                     cursor: currentPage === 0 ? "not-allowed" : "pointer",
                   }}
                 >
-                  ← Prev Page
+                  ← Prev Spread
                 </motion.button>
                 <span
                   style={{
@@ -2032,21 +2064,30 @@ export default function SubjectNotesViewer({
                     fontWeight: 800,
                   }}
                 >
-                  Page {currentPage + 1} of {totalPages}
+                  Pages {currentPage + 1}
+                  {rightPage !== null ? `–${rightPage + 1}` : ""} of {totalPages}
                 </span>
                 <motion.button
                   type="button"
-                  disabled={currentPage === totalPages - 1}
+                  disabled={
+                    rightPage === null || rightPage >= totalPages - 1
+                  }
                   whileHover={
-                    currentPage === totalPages - 1 ? {} : { scale: 1.06, x: 2 }
+                    rightPage === null || rightPage >= totalPages - 1
+                      ? {}
+                      : { scale: 1.06, x: 2 }
                   }
                   whileTap={
-                    currentPage === totalPages - 1 ? {} : { scale: 0.92 }
+                    rightPage === null || rightPage >= totalPages - 1
+                      ? {}
+                      : { scale: 0.92 }
                   }
-                  onClick={(e) => jumpToPage(currentPage + 1, e)}
+                  onClick={(e) => jumpToPage(currentPage + 2, e)}
                   style={{
                     backgroundColor:
-                      currentPage === totalPages - 1 ? "#cbd5e1" : "#1e293b",
+                      rightPage === null || rightPage >= totalPages - 1
+                        ? "#cbd5e1"
+                        : "#1e293b",
                     color: "#ffffff",
                     border: "none",
                     borderRadius: 8,
@@ -2054,10 +2095,12 @@ export default function SubjectNotesViewer({
                     fontSize: 12,
                     fontWeight: 800,
                     cursor:
-                      currentPage === totalPages - 1 ? "not-allowed" : "pointer",
+                      rightPage === null || rightPage >= totalPages - 1
+                        ? "not-allowed"
+                        : "pointer",
                   }}
                 >
-                  Next Page →
+                  Next Spread →
                 </motion.button>
               </div>
 
@@ -2101,9 +2144,8 @@ export default function SubjectNotesViewer({
             >
               {stickyTabs.map((tab, idx) => {
                 const isActive =
-                  currentPage >= tab.pageIndex &&
-                  (idx === stickyTabs.length - 1 ||
-                    currentPage < stickyTabs[idx + 1].pageIndex);
+                  (rightPage !== null && currentPage <= tab.pageIndex && tab.pageIndex <= rightPage) ||
+                  currentPage === tab.pageIndex;
 
                 return (
                   <motion.button

@@ -1,669 +1,521 @@
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import pageTurnSoundFile from "../assets/BiosphereQuestSoundEffectsandMusic/PageTurn.mp3";
 import stellaMascotImage from "../assets/BiosphereQuestAssets/Stella (Biosphere Quest Mascot).png";
+import lessonBgmFile from "../assets/BiosphereQuestSoundEffectsandMusic/Interactive Lesson Viewer Lofi (Official).mp3";
 
-const BOOKMARK_DESIGNS = [
-  { id: "ribbon", name: "Classic Ribbon", icon: "🔖", color: "#FF5252" },
-  { id: "star", name: "Golden Star", icon: "⭐", color: "#FFD700" },
-  { id: "badge", name: "Explorer Badge", icon: "🛡️", color: "#4879E7" },
-  { id: "emerald", name: "Emerald Tag", icon: "💎", color: "#2ECC71" },
-];
+const getStorageKey = (grade, subj, lesson) =>
+  `@biosphere_active_lesson_progress_${grade}_${subj}_${lesson}`;
 
-const HIGHLIGHTER_PALETTE = [
-  { id: "yellow", color: "rgba(255, 255, 186, 0.85)", name: "Butter Yellow" },
-  { id: "pink", color: "rgba(255, 209, 220, 0.85)", name: "Soft Pink" },
-  { id: "peach", color: "rgba(255, 223, 186, 0.85)", name: "Pastel Peach" },
-  { id: "green", color: "rgba(186, 255, 201, 0.85)", name: "Mint Green" },
-  { id: "blue", color: "rgba(186, 225, 255, 0.85)", name: "Sky Blue" },
-  { id: "lavender", color: "rgba(232, 170, 255, 0.85)", name: "Lavender" },
-];
+const shuffle = (array) => {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
 
-const HighlightableWord = memo(function HighlightableWord({
-  wordKey,
-  word,
-  highlightColor,
-  onPress,
-  onDragHighlight,
-}) {
-  return (
-    <span
-      data-word-key={wordKey}
-      onClick={(e) => {
-        e.stopPropagation();
-        onPress(wordKey);
-      }}
-      onMouseEnter={(e) => {
-        if (e.buttons === 1) {
-          onDragHighlight(wordKey);
-        }
-      }}
-      style={{
-        backgroundColor: highlightColor || "transparent",
-        borderRadius: highlightColor ? 3 : 0,
-        padding: highlightColor ? "0 2px" : 0,
-        cursor: "pointer",
-        transition: "background-color 0.15s ease",
-      }}
-    >
-      {word}{" "}
-    </span>
-  );
-});
+const buildQuestion = (qText, correct, wrongs, explanation) => {
+  const options = shuffle([correct, ...wrongs.slice(0, 2)]);
+  return {
+    question: qText,
+    options,
+    correctIndex: options.indexOf(correct),
+    explanation,
+  };
+};
 
-const getLessonVisualData = (lessonTitle, isScience, gradeLevel) => {
-  const title = (lessonTitle || "").toLowerCase();
-  let steps;
-  let pictureBoard;
+const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
+  const isScience =
+    subjectTitle.toLowerCase().includes("science") ||
+    ["matter", "living", "force", "earth"].some((s) =>
+      subjectTitle.toLowerCase().includes(s)
+    );
 
-  if (isScience) {
-    if (/plant|seed|flower|photosynth|reproduction|grow/.test(title)) {
-      steps = [
+  const cleanSubject = subjectTitle.toLowerCase();
+  const cleanLesson = lesson.title.toLowerCase();
+
+  let visualIllustration = "";
+  let pictureExamples = [];
+  let howItWorks = "";
+  let storyText = "";
+  let demoText = "";
+  let t1Pool = [];
+  let t2Pool = [];
+  let t3Pool = [];
+
+  if (!isScience && cleanSubject.includes("math")) {
+    if (gradeLevel === 1) {
+      if (/count|number|sense|ordinal/.test(cleanLesson)) {
+        visualIllustration =
+          "🍎 🍎 🍎 🍎 🍎  (5 Mangoes)   and   🪙 🪙 🪙  (3 Piso Coins)";
+        pictureExamples = [
+          {
+            pics: "🥭 🥭 🥭 🥭",
+            caption: "4 Carabao Mangoes on a tray",
+            note: "Tap each mango 1, 2, 3, 4",
+          },
+          {
+            pics: "🪙 🪙 🪙 🪙 🪙",
+            caption: "5 Piso Coins in a row",
+            note: "5 is 1 more than 4",
+          },
+          {
+            pics: "1️⃣st 🐢  2️⃣nd 🦀  3️⃣rd 🐠",
+            caption: "Ordinal positions in line",
+            note: "1st, 2nd, 3rd from the left",
+          },
+        ];
+        storyText =
+          "DepEd MATATAG Grade 1 Math: In our classroom, we use real physical objects like mangoes, sticks, and piso coins to count and compare quantities up to 100.";
+        howItWorks =
+          "One-to-one correspondence: Point your finger at each object one by one from left to right. The last counting word spoken gives the total amount.";
+        demoText =
+          "Classroom Activity: Grouping 5 mangoes on the desk and matching them with number symbols.";
+        t1Pool = [
+          buildQuestion(
+            "When counting physical objects on your desk, what is the proper method?",
+            "Touch and count each item one by one from left to right.",
+            [
+              "Guess the total number without pointing.",
+              "Ignore the objects entirely.",
+            ],
+            "Correct! Touching each object ensures every item is counted once."
+          ),
+          buildQuestion(
+            "What does the final number spoken when counting a set indicate?",
+            "The total quantity of items in that set.",
+            ["The size of the table.", "A random label."],
+            "Spot on! The last number names the total amount."
+          ),
+          buildQuestion(
+            "If you have 4 red counters and add 2 more counters, how do you find the new total?",
+            "Count all the counters together from the beginning.",
+            ["Throw half of them away.", "Stop counting immediately."],
+            "Correct! Combining sets means recounting all items together."
+          ),
+        ];
+        t2Pool = [
+          buildQuestion(
+            "Look at the visual set: [🍎 🍎 🍎] vs [🍎 🍎]. Which group is greater?",
+            "The group with 3 mangoes.",
+            ["The group with 2 mangoes.", "Both groups have zero."],
+            "Great observation! 3 is greater in quantity than 2."
+          ),
+          buildQuestion(
+            "Which number comes right after 7 when counting forward?",
+            "8",
+            ["6", "10"],
+            "Spot on! Counting sequence goes 7, then 8."
+          ),
+        ];
+        t3Pool = [
+          buildQuestion(
+            "Where do we apply counting skills in our daily community life?",
+            "When buying pan de sal or counting our school supplies.",
+            [
+              "Nowhere, numbers only exist in textbooks.",
+              "Only during bedtime.",
+            ],
+            "Wonderful! Math is part of our everyday routines."
+          ),
+        ];
+      } else if (/shape|pattern/.test(cleanLesson)) {
+        visualIllustration =
+          "🔴 Circle ➔ 🟦 Square ➔ 🔺 Triangle ➔ 🔴 Circle ➔ [?]";
+        pictureExamples = [
+          {
+            pics: "🔴 🟦 🔴 🟦 🔴 [🟦]",
+            caption: "ABAB Shape Pattern",
+            note: "Red circle & blue square alternate",
+          },
+          {
+            pics: "🔺 🔺 🟢 🔺 🔺 [🟢]",
+            caption: "AAB Pattern with Triangles & Circles",
+            note: "Two triangles, then one green circle",
+          },
+          {
+            pics: "⭐ 🌙 ⭐ 🌙 [⭐]",
+            caption: "Night Sky Pattern",
+            note: "Star, moon, star, moon, star",
+          },
+        ];
+        storyText =
+          "DepEd MATATAG Grade 1 Math: Exploring 2D geometric shapes and repeating pattern sequences in our environment.";
+        howItWorks =
+          "Observe the repeating order of shapes and colors (such as A-B-A-B) to determine what comes next in the row.";
+        demoText =
+          "Classroom Activity: Arranging colored paper cutouts into repeating shape trains.";
+        t1Pool = [
+          buildQuestion(
+            "What shape comes next in the repeating sequence: Circle, Square, Circle, Square, [?]",
+            "Circle",
+            ["Triangle", "Rectangle"],
+            "Correct! The pattern alternates between Circle and Square."
+          ),
+          buildQuestion(
+            "How many straight sides does a triangle have?",
+            "3 straight sides",
+            ["4 straight sides", "0 straight sides"],
+            "Correct! Triangles always have 3 straight sides."
+          ),
+        ];
+        t2Pool = [
+          buildQuestion(
+            "What attributes define a square in geometry?",
+            "4 equal straight sides and 4 square corners",
+            ["Round curved edges only", "3 unequal sides"],
+            "Spot on! Squares are bounded by four equal straight sides."
+          ),
+        ];
+        t3Pool = [
+          buildQuestion(
+            "Why do we study repeating patterns in Grade 1?",
+            "To recognize order and predict upcoming elements in a sequence.",
+            ["To make art confusing.", "Patterns have no practical use."],
+            "Exactly! Pattern recognition builds foundational logical thinking."
+          ),
+        ];
+      } else {
+        visualIllustration = "🟢 🟢 🟢  +  🟢 🟢  =  5 Counters Total";
+        pictureExamples = [
+          {
+            pics: "🍎 🍎 🍎  +  🍎 🍎  =  🍎🍎🍎🍎🍎",
+            caption: "3 Apples + 2 Apples = 5 Apples",
+            note: "Joining two sets makes a bigger set",
+          },
+          {
+            pics: "🧁 🧁 🧁 🧁  −  🧁  =  🧁 🧁 🧁",
+            caption: "4 Cupcakes − 1 Eaten = 3 Left",
+            note: "Taking away leaves fewer items",
+          },
+        ];
+        storyText = `DepEd MATATAG Grade 1 Math: Exploring ${lesson.title} using concrete counters and visual addition/subtraction.`;
+        howItWorks =
+          "Putting sets together creates addition (+); taking away items from a set represents subtraction (-).";
+        demoText = lesson.example;
+        t1Pool = [
+          buildQuestion(
+            `What is the primary objective of ${lesson.title}?`,
+            lesson.meaning,
+            ["Ignoring numbers completely.", "Guessing without looking."],
+            "Correct! Understanding the foundational meaning is essential."
+          ),
+        ];
+        t2Pool = [
+          buildQuestion(
+            `In our classroom demonstration (${lesson.example}), what was illustrated?`,
+            lesson.example,
+            ["An imaginary event.", "No action."],
+            "Spot on! Concrete examples bring math concepts to life."
+          ),
+        ];
+        t3Pool = [
+          buildQuestion(
+            "How do manipulatives help us learn addition and subtraction?",
+            "They let us physically see quantities combine or separate.",
+            ["They make numbers disappear.", "They are just toys."],
+            "Wonderful! Physical objects bridge concrete actions to math symbols."
+          ),
+        ];
+      }
+    } else if (gradeLevel === 2) {
+      visualIllustration =
+        "🟦 (100-Flat)  |  🟩 🟩 (20-Rods)  |  🟨 🟨 🟨 (3-Units)  ➔  123";
+      pictureExamples = [
         {
-          icon: "🌱",
-          label: "Plant Germination",
-          detail:
-            "Start with a healthy seed or young plant embedded in fertile soil.",
+          pics: "🟦 🟩 🟨🟨",
+          caption: "1 Hundred + 1 Ten + 2 Ones = 112",
+          note: "Read place value from left to right",
         },
         {
-          icon: "☀️",
-          label: "Resource Absorption",
-          detail:
-            "Provide plenty of sunlight, clean water, and rich organic minerals.",
+          pics: "💵 ₱100  +  🪙 ₱20  +  🪙 ₱5  =  ₱125",
+          caption: "Philippine Money Combination",
+          note: "Count bills first, then coins",
         },
         {
-          icon: "🌼",
-          label: "Full Maturity",
-          detail:
-            "Watch as it blossoms into a mature, adult organism capable of reproduction!",
+          pics: "📏 [0 cm ━━━ 15 cm Ruler]",
+          caption: "Measuring Classroom Ribbon",
+          note: "Align edge with the 0 cm mark",
         },
       ];
-      pictureBoard = [
-        { art: "🌰 ➔ 🌱", caption: "Seed Sprouts" },
-        { art: "☀️ + 💧 + 🌿", caption: "Sunlight & Water" },
-        { art: "🌸 🐝 🍓", caption: "Flower & Fruit" },
+      storyText = `DepEd MATATAG Grade 2 Math: Mastering ${lesson.title} with Base-10 blocks, standard measurement units, and Philippine currency.`;
+      howItWorks =
+        "Organize numbers by place value (Hundreds, Tens, Ones) and regroup when columns exceed 9.";
+      demoText = lesson.example;
+      t1Pool = [
+        buildQuestion(
+          `What rule governs ${lesson.title}?`,
+          lesson.meaning,
+          ["Random number assignment.", "Ignoring column alignment."],
+          "Correct! Systematic place value organization is key."
+        ),
       ];
-    } else if (/life cycle|metamorph|animal|habitat|ecosystem/.test(title)) {
-      steps = [
-        {
-          icon: "🥚",
-          label: "Initial Stage",
-          detail:
-            "Life begins inside a protective egg membrane or as a newborn juvenile.",
-        },
-        {
-          icon: "🐛",
-          label: "Developmental Phase",
-          detail:
-            "The animal feeds continuously, grows rapidly, and undergoes structural change.",
-        },
-        {
-          icon: "🦋",
-          label: "Adult Stage",
-          detail:
-            "The organism reaches full biological maturity and passes on genetic traits.",
-        },
+      t2Pool = [
+        buildQuestion(
+          `Based on our example (${lesson.example}), how do we calculate the result?`,
+          lesson.example,
+          ["By guessing blindly.", "By skipping operations."],
+          "Great job following the step-by-step procedure!"
+        ),
       ];
-      pictureBoard = [
-        { art: "🥚 ➔ 🐣", caption: "Egg to Hatchling" },
-        { art: "🐛 ➔ 🪭", caption: "Growth & Cocoon" },
-        { art: "🦋 ➔ 🌸", caption: "Adult Stage" },
+      t3Pool = [
+        buildQuestion(
+          "Why is understanding place value crucial in Grade 2?",
+          "It ensures numbers are added and subtracted across correct columns.",
+          ["It makes numbers smaller.", "It is optional."],
+          "Spot on! Place value maintains true numerical value."
+        ),
       ];
-    } else if (/matter|solid|liquid|gas|mixture|melting|evap|change/.test(title)) {
-      steps = [
+    } else if (gradeLevel === 3) {
+      visualIllustration =
+        "⭐⭐⭐⭐ / ⭐⭐⭐⭐ / ⭐⭐⭐⭐  (3 Equal Rows of 4 = 12 Array)";
+      pictureExamples = [
         {
-          icon: "🧊",
-          label: "Solid State",
-          detail:
-            "Molecules remain tightly packed together, holding a fixed shape and volume.",
+          pics: "🍪🍪🍪\n🍪🍪🍪\n🍪🍪🍪",
+          caption: "3 Rows × 3 Cookies = 9 Total",
+          note: "Equal rows form a rectangular array",
         },
         {
-          icon: "💧",
-          label: "Liquid State",
-          detail:
-            "Thermal energy loosens molecular bonds, allowing fluid movement and flow.",
+          pics: "🍕 [1/2 Shaded]   🥧 [1/4 Shaded]",
+          caption: "Unit Fractions of a Whole",
+          note: "Denominator shows equal parts",
         },
         {
-          icon: "☁️",
-          label: "Gas State",
-          detail:
-            "High temperature drives particles apart, expanding to fill any container space.",
+          pics: "⬜ 4cm + 4cm + 4cm + 4cm = 16cm",
+          caption: "Perimeter Around a Square",
+          note: "Add all outer side lengths",
         },
       ];
-      pictureBoard = [
-        { art: "🧊 [Tight]", caption: "Fixed Shape" },
-        { art: "💧 [Flows]", caption: "Takes Container" },
-        { art: "☁️ [Spreads]", caption: "Fills Space" },
+      storyText = `DepEd MATATAG Grade 3 Math: Exploring ${lesson.title} through multiplication arrays, fractions, and perimeter grids.`;
+      howItWorks =
+        "Multiplication represents equal groups and rectangular arrays. Fractions name equal parts of a whole.";
+      demoText = lesson.example;
+      t1Pool = [
+        buildQuestion(
+          `What principle underlies ${lesson.title}?`,
+          lesson.meaning,
+          ["Random guessing.", "Unequal partitioning."],
+          "Correct! Equal grouping forms the foundation of multiplication."
+        ),
       ];
-    } else if (/force|motion|push|pull|energy|light|sound|magnet|gravity/.test(title)) {
-      steps = [
-        {
-          icon: "👉",
-          label: "Apply Push or Pull",
-          detail:
-            "A force acts on an object to start motion, stop motion, or change direction.",
-        },
-        {
-          icon: "⚡",
-          label: "Energy Transfer",
-          detail:
-            "Energy moves or changes form—such as light, heat, sound, or motion energy.",
-        },
-        {
-          icon: "🎯",
-          label: "Observe Outcome",
-          detail:
-            "Measure how far, fast, or differently the object responds.",
-        },
+      t2Pool = [
+        buildQuestion(
+          `In our worked example (${lesson.example}), what is the outcome?`,
+          lesson.example,
+          ["An incorrect estimate.", "Zero."],
+          "Spot on! Accurate calculation yields the correct product or fraction."
+        ),
       ];
-      pictureBoard = [
-        { art: "👉 [Push] ➔ ⚽", caption: "Force Starts Move" },
-        { art: "🔦 ➔ 📦 ➔ 👤", caption: "Light & Shadow" },
-        { art: "🧲 🔩", caption: "Magnetic Pull" },
+      t3Pool = [
+        buildQuestion(
+          "How do multiplication arrays help solve real problems?",
+          "They allow rapid calculation of large quantities arranged in rows.",
+          ["They have no real use.", "Only for school tests."],
+          "Wonderful! Arrays make counting items efficient and structured."
+        ),
       ];
     } else {
-      steps = [
+      visualIllustration =
+        "📊 [MATATAG Curriculum Framework & Mathematical Model]";
+      pictureExamples = [
         {
-          icon: "🔎",
-          label: "Observation",
-          detail:
-            "Examine key physical phenomena and record empirical field data.",
+          pics: "📐 2x + 4 = 12  ➔  x = 4",
+          caption: "Balanced Equation Model",
+          note: "Perform inverse operations on both sides",
         },
         {
-          icon: "📝",
-          label: "Documentation",
-          detail:
-            "Log all findings carefully inside a structured research framework.",
+          pics: "📦 L=5cm, W=3cm, H=2cm  ➔  V=30cm³",
+          caption: "Volume & Spatial Grid",
+          note: "Multiply length × width × height",
         },
         {
-          icon: "💡",
-          label: "Conclusion",
-          detail:
-            "Formulate a sound scientific rule supported by verifiable evidence.",
-        },
-      ];
-      pictureBoard = [
-        { art: "🔭 👀 🌿", caption: "Observe Nature" },
-        { art: "📓 ✏️ 📊", caption: "Record Data" },
-        { art: "🌍 ♻️ 🌱", caption: "Protect Earth" },
-      ];
-    }
-  } else if (gradeLevel <= 3) {
-    if (/count|number|sense|ordinal/.test(title)) {
-      steps = [
-        {
-          icon: "🖐️",
-          label: "Finger & Object Counting",
-          detail:
-            "Count actual physical objects or fingers one by one from left to right.",
-        },
-        {
-          icon: "🔴",
-          label: "Visual Counters",
-          detail:
-            "Group counters into sets to see which group has more or fewer items.",
-        },
-        {
-          icon: "⭐",
-          label: "Total Amount",
-          detail: "State the final counted number clearly out loud!",
+          pics: "📈 [20% 🟦 | 50% 🟩 | 30% 🟨]",
+          caption: "Percentage & Data Distribution",
+          note: "Parts out of 100% total",
         },
       ];
-      pictureBoard = [
-        { art: "🍎🍎🍎 [3]", caption: "3 Red Apples" },
-        { art: "🪙🪙🪙🪙🪙 [5]", caption: "5 Piso Coins" },
-        { art: "1st 🐢 2nd 🦀 3rd 🐠", caption: "Ordinal Order" },
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Math: Advanced problem solving for ${lesson.title}.`;
+      howItWorks =
+        "Analyze given data, apply standard mathematical algorithms, and verify solutions against problem constraints.";
+      demoText = lesson.example;
+      t1Pool = [
+        buildQuestion(
+          `What rule defines ${lesson.title}?`,
+          lesson.meaning,
+          ["Random estimation.", "Ignoring equation balance."],
+          "Correct! Precise operational rules govern this topic."
+        ),
       ];
-    } else if (/shape|pattern/.test(title)) {
-      steps = [
-        {
-          icon: "🔺",
-          label: "Identify Shapes",
-          detail:
-            "Trace the straight sides and corners of circles, squares, and triangles.",
-        },
-        {
-          icon: "🔄",
-          label: "Spot the Pattern",
-          detail:
-            "Look at the repeating sequence order (A-B-A-B) to find what comes next.",
-        },
-        {
-          icon: "🎨",
-          label: "Complete the Sequence",
-          detail:
-            "Draw or place the correct missing shape to finish the pattern!",
-        },
+      t2Pool = [
+        buildQuestion(
+          `How do we solve challenges like: ${lesson.example}?`,
+          lesson.example,
+          ["Guessing without formulas.", "Discarding units."],
+          "Spot on! Systematic execution ensures mathematical accuracy."
+        ),
       ];
-      pictureBoard = [
-        { art: "🔴 🟦 🔴 🟦", caption: "ABAB Shapes" },
-        { art: "🔺 🔺 🟢", caption: "AAB Sequence" },
-        { art: "⭐ 🌙 ⭐ 🌙", caption: "Sky Pattern" },
-      ];
-    } else if (/addition|subtraction|sum|difference/.test(title)) {
-      steps = [
-        {
-          icon: "🍎",
-          label: "Gather Objects",
-          detail:
-            "Put two groups of fruits or blocks together to add (+) them up.",
-        },
-        {
-          icon: "🤲",
-          label: "Take Away",
-          detail:
-            "Remove items from the group to find what is left over (-).",
-        },
-        {
-          icon: "✅",
-          label: "Count the Total",
-          detail:
-            "Count all remaining items together to get your final answer.",
-        },
-      ];
-      pictureBoard = [
-        { art: "🍌🍌 + 🍌 = 🍌🍌🍌", caption: "2 + 1 = 3" },
-        { art: "🧁🧁🧁 − 🧁 = 🧁🧁", caption: "3 − 1 = 2" },
-        { art: "🐟🐟 + 🐟🐟 = 4🐟", caption: "2 + 2 = 4" },
-      ];
-    } else if (/place value|block|thousand|hundred/.test(title)) {
-      steps = [
-        {
-          icon: "🟦",
-          label: "Base-10 Flats & Rods",
-          detail:
-            "Use 100-flats, 10-rods, and 1-units to build numbers visually.",
-        },
-        {
-          icon: "📊",
-          label: "Group Tens and Ones",
-          detail: "Regroup 10 ones into a ten block when counting past 9.",
-        },
-        {
-          icon: "🔢",
-          label: "Read the Number",
-          detail:
-            "Combine hundreds, tens, and ones to say the full 3-digit number.",
-        },
-      ];
-      pictureBoard = [
-        { art: "🟦 = 100", caption: "Hundred Flat" },
-        { art: "🟩 = 10", caption: "Ten Rod" },
-        { art: "🟨 = 1", caption: "One Unit" },
-      ];
-    } else {
-      steps = [
-        {
-          icon: "👁️",
-          label: "Observe Objects",
-          detail:
-            "Look closely at the pictures, counters, or shapes on your desk.",
-        },
-        {
-          icon: "➕",
-          label: "Work with Items",
-          detail:
-            "Use physical items or drawings to solve the math puzzle step by step.",
-        },
-        {
-          icon: "🌟",
-          label: "Check Your Work",
-          detail:
-            "Count your objects again to make sure your answer is correct!",
-        },
-      ];
-      pictureBoard = [
-        { art: "✏️ ✏️ ✏️", caption: "3 Pencils" },
-        { art: "📚 + 📚 = 2📚", caption: "Combine Books" },
-        { art: "⭐ 100%", caption: "Double-Check" },
+      t3Pool = [
+        buildQuestion(
+          "Why is verifying your calculated result important?",
+          "It confirms that your solution satisfies all given problem conditions.",
+          ["It is never required.", "To waste time."],
+          "Exact proof! Verification guarantees correctness."
+        ),
       ];
     }
   } else {
-    if (/fraction|decimal|ratio|percent/.test(title)) {
-      steps = [
-        {
-          icon: "🍕",
-          label: "Parts of a Whole / Ratio",
-          detail:
-            "Identify equal parts, tenths/hundredths, or proportional quantities.",
-        },
-        {
-          icon: "🔄",
-          label: "Convert or Simplify",
-          detail:
-            "Match common denominators, decimal places, or equivalent ratios.",
-        },
-        {
-          icon: "✅",
-          label: "Verify Value",
-          detail:
-            "Check that the fraction, decimal, or percentage matches the total.",
-        },
-      ];
-      pictureBoard = [
-        { art: "🍕 1/2 = 0.5", caption: "Half & Decimal" },
-        { art: "🪙 3:2 Ratio", caption: "Compare Parts" },
-        { art: "💯 25% = 1/4", caption: "Quarter Percent" },
-      ];
-    } else if (/area|perimeter|volume|angle|geometry/.test(title)) {
-      steps = [
-        {
-          icon: "📏",
-          label: "Identify Dimensions",
-          detail:
-            "Read length, width, height, or side lengths with matching units.",
-        },
-        {
-          icon: "📐",
-          label: "Apply Formula",
-          detail:
-            "Add sides for perimeter, L×W for area, or L×W×H for volume.",
-        },
-        {
-          icon: "✅",
-          label: "Include Proper Unit",
-          detail:
-            "Write cm, sq cm, or cm³ clearly on your final answer.",
-        },
-      ];
-      pictureBoard = [
-        { art: "▭ 6×4 = 24", caption: "Area (sq cm)" },
-        { art: "⬜ 4×4 = 16", caption: "Perimeter (cm)" },
-        { art: "📦 5×3×2 = 30", caption: "Volume (cm³)" },
-      ];
-    } else {
-      steps = [
-        {
-          icon: "📘",
-          label: "Rule Identification",
-          detail: "Read and analyze the core mathematical rule or principle.",
-        },
-        {
-          icon: "🧩",
-          label: "Variable Alignment",
-          detail:
-            "Substitute given numerical values into the target equation correctly.",
-        },
-        {
-          icon: "✅",
-          label: "Verification",
-          detail:
-            "Execute steps systematically and double-check units and calculations.",
-        },
-      ];
-      pictureBoard = [
-        { art: "📐 2x + 4 = 12", caption: "Formula Setup" },
-        { art: "🔢 x = 4", caption: "Solve Value" },
-        { art: "✔️ Checked", caption: "Verify Result" },
-      ];
-    }
+    visualIllustration =
+      "🌱 Roots (Water Absorption) ➔ 🌿 Stem (Transport) ➔ ☀️ Leaves (Food Synthesis)";
+    pictureExamples = [
+      {
+        pics: "☀️ ➔ 🌿 ➔ 🍃 (O₂ + Glucose)",
+        caption: "Sunlight & Leaf Energy Cycle",
+        note: "Chlorophyll captures light energy",
+      },
+      {
+        pics: "🧊 ➔ 💧 ➔ ☁️",
+        caption: "Solid, Liquid & Gas States",
+        note: "Heat energy drives state changes",
+      },
+      {
+        pics: "🌊 ➔ ☁️ ➔ 🌧️ ➔ 🏞️",
+        caption: "Water Cycle in Nature",
+        note: "Evaporation, condensation & precipitation",
+      },
+    ];
+    storyText = `DepEd MATATAG Science Curriculum: Investigating ${lesson.title} in our natural environment.`;
+    howItWorks =
+      "Scientific inquiry involves observing physical phenomena, recording empirical data, and drawing evidence-based conclusions.";
+    demoText = lesson.example;
+    t1Pool = [
+      buildQuestion(
+        `What scientific principle explains ${lesson.title}?`,
+        lesson.meaning,
+        ["Unproven folklore.", "Pure guesswork."],
+        "Correct! Science relies on verifiable empirical laws."
+      ),
+    ];
+    t2Pool = [
+      buildQuestion(
+        `In our observation example (${lesson.example}), what was demonstrated?`,
+        lesson.example,
+        ["An impossible anomaly.", "Nothing."],
+        "Spot on! Empirical evidence proves scientific concepts."
+      ),
+    ];
+    t3Pool = [
+      buildQuestion(
+        "Why is studying science essential for our community?",
+        "It helps us understand nature, conserve resources, and solve local challenges.",
+        ["It has no practical application.", "Only for indoor reading."],
+        "Wonderful! Science empowers us to care for our world."
+      ),
+    ];
   }
 
-  return {
-    title: gradeLevel <= 3 ? "Visual Math Guide" : "Visual Concept Map",
-    summary:
-      gradeLevel <= 3
-        ? "Use physical objects, visual counting, and block groups to understand math concepts easily."
-        : isScience
-        ? "Observe key physical components, trace fundamental interactions, and conclude with verified empirical evidence."
-        : "Identify given variables, apply mathematical formulas step-by-step, and verify your results against core rules.",
-    steps,
-    pictureBoard,
-  };
-};
+  const topics = [
+    {
+      title: "1. Core Concept & Classroom Guide",
+      story: storyText,
+      howItWorks,
+      visualIllustration,
+      pictureExamples,
+      demonstration: demoText,
+      questions: t1Pool,
+    },
+    {
+      title: "2. Worked Classroom Demonstration",
+      story:
+        "Let's examine how this works in a real MATATAG classroom setting step by step.",
+      howItWorks: "Follow the visual illustration and picture cards below:",
+      visualIllustration,
+      pictureExamples,
+      demonstration: demoText,
+      questions: t2Pool,
+    },
+    {
+      title: "3. Real-World Explorer Mission",
+      story: `Now let's see how ${lesson.title} connects to our everyday environment.`,
+      howItWorks: "Apply what you observed to answer the checkpoint question.",
+      visualIllustration,
+      pictureExamples,
+      demonstration: demoText,
+      questions: t3Pool,
+    },
+  ];
 
-const getTopicWorkedExample = (
-  gradeLevel,
-  isScience,
-  lessonTitle,
-  lessonExample
-) => {
-  if (lessonExample) return lessonExample;
-  const title = (lessonTitle || "").toLowerCase();
+  const fullRecapPool = [
+    buildQuestion(
+      `Mastery Check 1: What is the primary definition of ${lesson.title}?`,
+      lesson.meaning,
+      ["An unproven guess.", "A temporary trick."],
+      "Accurate recall of the core rule!"
+    ),
+    buildQuestion(
+      `Mastery Check 2: When explaining ${lesson.title}, which statement is correct?`,
+      lesson.meaning,
+      ["It is completely random.", "It has no rules."],
+      "Clear communication of knowledge!"
+    ),
+    buildQuestion(
+      `Mastery Check 3: Recall our example: "${lesson.example}". What did it illustrate?`,
+      lesson.title,
+      ["An unrelated topic.", "An error in calculation."],
+      "Great recognition of worked examples!"
+    ),
+    buildQuestion(
+      "Mastery Check 4: True or False: Paying attention to details leads to accurate solutions.",
+      "True, observant learners find correct answers.",
+      ["False, rushing is better.", "False, details do not matter."],
+      "Observant thinking is key!"
+    ),
+    buildQuestion(
+      `Mastery Check 5: Which practice best helps us master ${lesson.title}?`,
+      "Reviewing classroom examples and checking our work carefully.",
+      [
+        "Guessing answers quickly without looking.",
+        "Ignoring all instructions.",
+      ],
+      "Systematic review builds mastery!"
+    ),
+    buildQuestion(
+      `Mastery Check 6: How does ${lesson.title} connect to our daily classroom activities?`,
+      "By helping us solve practical problems logically and accurately.",
+      ["It only exists inside storybooks.", "It has no use in real life."],
+      "Practical connection verified!"
+    ),
+    buildQuestion(
+      "Mastery Check 7: What should you do if your first attempt at solving a problem is incorrect?",
+      "Review the steps, correct mistakes, and try again patiently.",
+      ["Give up and throw your notebook away.", "Change the rules of math."],
+      "Perseverance leads to learning!"
+    ),
+    buildQuestion(
+      `Mastery Check 8: In the context of ${subjectTitle}, why is careful observation important?`,
+      "It ensures our findings and calculations are factual and precise.",
+      ["It wastes valuable study time.", "Observations do not matter at all."],
+      "Observation is the foundation of learning!"
+    ),
+    buildQuestion(
+      "Mastery Check 9: Which habit helps you remember what you learn in class?",
+      "Discussing concepts with classmates and practicing regularly.",
+      [
+        "Forgetting everything after the bell rings.",
+        "Never reviewing your notes.",
+      ],
+      "Active practice reinforces memory!"
+    ),
+    buildQuestion(
+      `Mastery Check 10: Final Reflection: How confident are you in applying ${lesson.title}?`,
+      "Very confident after working through the lesson guides and examples.",
+      ["Not sure at all.", "I will never use this."],
+      "Great job completing your learning mission!"
+    ),
+  ];
 
-  if (isScience) {
-    if (/plant|seed|flower|photosynth|reproduction|grow/.test(title)) {
-      return gradeLevel <= 3
-        ? "Worked Example: Place a mongo seed on wet cotton in a bright spot and keep it damp. After a few days, a root and green sprout grow."
-        : "Worked Example: Compare two potted seedlings receiving equal light; watering Plant A regularly keeps leaves turgid and green while unwatered Plant B wilts.";
-    }
-    if (/life cycle|metamorph|animal|habitat|ecosystem/.test(title)) {
-      return gradeLevel <= 3
-        ? "Worked Example: A butterfly starts as a tiny egg on a leaf, becomes a hungry caterpillar, rests in a pupa, and emerges as a butterfly."
-        : "Worked Example: In a pond food chain, algae (producer) capture sunlight, small fish (primary consumer) feed on algae, and larger fish prey on small fish.";
-    }
-    if (/matter|solid|liquid|gas|mixture|melting|evap|change/.test(title)) {
-      return gradeLevel <= 3
-        ? "Worked Example: An ice cube is a hard solid; when warmed on a plate, it melts into liquid water."
-        : "Worked Example: Heating liquid water in a kettle adds heat energy and turns part of it into water vapor (gas); stirring salt into water forms a solution.";
-    }
-    return gradeLevel <= 3
-      ? "Worked Example: Push a toy car gently for a short roll, then push it a bit firmer so it rolls farther across the floor."
-      : "Worked Example: A flashlight beam shines onto a solid book to form a shadow behind it, or a battery powers a bulb through a closed circuit.";
-  }
-
-  if (/count|number|sense|ordinal/.test(title)) {
-    return gradeLevel <= 3
-      ? "Worked Example: Count 6 mangoes one by one (1, 2, 3, 4, 5, 6); 6 is 1 more than 5, and the 3rd mango is in the middle of a row of 5."
-      : "Worked Example: In 4,825, the digit 4 is in the thousands place (4,000), 8 is in the hundreds place (800), 2 is in the tens place (20), and 5 is in the ones place (5).";
-  }
-  if (/shape|pattern/.test(title)) {
-    return gradeLevel <= 3
-      ? "Worked Example: In 🔴, 🟦, 🔴, 🟦, 🔴, the pattern repeats every two shapes, so the next shape is 🟦."
-      : "Worked Example: A rectangle 8 cm long and 5 cm wide has perimeter 2 × (8 + 5) = 26 cm and area 8 × 5 = 40 sq cm.";
-  }
-  if (/fraction|decimal|ratio|percent/.test(title)) {
-    return "Worked Example: 3/4 of a 12-slice pizza is 9 slices, which equals 0.75 or 75% of the whole pizza.";
-  }
-  if (/addition|subtraction|sum|difference/.test(title)) {
-    return gradeLevel <= 3
-      ? "Worked Example: Start with 7 stickers and add 4 more: 7 + 4 = 11 stickers. Take away 3: 11 − 3 = 8 stickers left."
-      : "Worked Example: A school library has 245 books and receives 138 more (245 + 138 = 383 books), then lends out 64 (383 − 64 = 319 books).";
-  }
-  return gradeLevel <= 3
-    ? "Worked Example: Put 8 counters into 2 equal groups: 8 ÷ 2 = 4 counters in each group."
-    : "Worked Example: Solve 3x + 6 = 21 by subtracting 6 from both sides (3x = 15) and dividing by 3 (x = 5).";
-};
-
-function LessonVisual({ data }) {
-  return (
-    <div
-      style={{
-        marginTop: 18,
-        padding: 16,
-        borderRadius: 14,
-        border: "1.5px solid #b4d3c2",
-        backgroundColor: "#f0f8f2",
-      }}
-    >
-      <div
-        style={{
-          marginBottom: 6,
-          color: "#245642",
-          fontSize: 13.5,
-          fontWeight: 900,
-          textAlign: "center",
-        }}
-      >
-        {data.title}
-      </div>
-      <div
-        style={{
-          marginBottom: 12,
-          color: "#475569",
-          fontSize: 12.5,
-          lineHeight: 1.5,
-          fontWeight: 600,
-          textAlign: "center",
-        }}
-      >
-        {data.summary}
-      </div>
-
-      {/* Picture Examples Row */}
-      {data.pictureBoard?.length > 0 && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-            gap: 8,
-            marginBottom: 14,
-          }}
-        >
-          {data.pictureBoard.map((card, idx) => (
-            <motion.div
-              key={idx}
-              whileHover={{ y: -3, scale: 1.03 }}
-              style={{
-                backgroundColor: "#ffffff",
-                border: "1px solid #cce3d6",
-                borderRadius: 10,
-                padding: "10px 8px",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>
-                {card.art}
-              </div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#245642" }}>
-                {card.caption}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      <div style={{ display: "flex", flexDirection: "column" }}>
-        {data.steps.map((step, index) => (
-          <div key={`${step.label}-${index}`}>
-            <motion.div
-              whileHover={{ x: 4 }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                backgroundColor: "#ffffff",
-                padding: 12,
-                borderRadius: 10,
-                border: "1px solid #cce3d6",
-              }}
-            >
-              <motion.span
-                animate={{ scale: [1, 1.12, 1] }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  delay: index * 0.3,
-                }}
-                style={{ fontSize: 24 }}
-              >
-                {step.icon}
-              </motion.span>
-              <div style={{ flex: 1 }}>
-                <div style={{ color: "#334155", fontSize: 14, fontWeight: 800 }}>
-                  {step.label}
-                </div>
-                <div
-                  style={{
-                    color: "#64748b",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    marginTop: 2,
-                  }}
-                >
-                  {step.detail}
-                </div>
-              </div>
-            </motion.div>
-            {index < data.steps.length - 1 && (
-              <div
-                style={{
-                  textAlign: "center",
-                  color: "#16806b",
-                  fontSize: 18,
-                  fontWeight: 900,
-                  margin: "5px 0",
-                }}
-              >
-                ↓
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-const getGradeStudyGuidance = (gradeLevel, isScience) => {
-  if (gradeLevel <= 2) {
-    return isScience
-      ? "Look closely at familiar objects or living things in your environment. Describe what you can observe with your five senses, compare what is alike or different, and draw a simple scientific picture when it helps clarify your thoughts."
-      : "Use physical counters, visual drawings, real objects, or a simple number line. Always state what each number or shape stands for out loud before selecting your final answer.";
-  }
-  if (gradeLevel <= 4) {
-    return isScience
-      ? "Record your observations carefully in an organized notebook. Compare experimental results across multiple trials, and explain clearly how physical evidence directly supports your scientific conclusions."
-      : "Select an appropriate mathematical model or strategy. Carefully write down every calculation step, label your units, and check that your final solution makes logical sense.";
-  }
-  return isScience
-    ? "Connect observational evidence directly to broader scientific theories. Distinguish carefully between direct physical observation and logical inference, justifying every conclusion with empirical data."
-    : "Connect symbolic equations, geometric models, and numerical relationships. Provide complete step-by-step proofs, and justify why your computed result fits the constraints of the original problem statement.";
-};
-
-const buildLessonExpansion = (
-  gradeLevel,
-  subjectTitle,
-  lessonTitle,
-  lessonMeaning,
-  lessonExample
-) => {
-  const cleanSubject = subjectTitle.toLowerCase();
-  const isScience =
-    cleanSubject.includes("science") ||
-    [
-      "matter",
-      "living",
-      "force",
-      "earth",
-      "environment",
-      "energy",
-      "space",
-    ].some((s) => cleanSubject.includes(s));
-  const keyword = lessonTitle.toLowerCase();
-  const gradeHint = getGradeStudyGuidance(gradeLevel, isScience);
-
-  const meaningText =
-    lessonMeaning ||
-    `Study the foundational laws and structural mechanics governing ${keyword}.`;
-  const exampleText = getTopicWorkedExample(
-    gradeLevel,
-    isScience,
-    lessonTitle,
-    lessonExample
-  );
-
-  return {
-    isScience,
-    definition: meaningText,
-    explanation: isScience
-      ? `In-Depth Scientific Analysis of ${keyword}:\n\n1. Structural Properties & Observations: When examining ${keyword}, scientists begin by documenting physical attributes, thermal changes, and environmental interactions. Every physical system operates according to fixed scientific laws that govern energy conservation, molecular behavior, and system equilibrium.\n\n2. Key Mechanisms & Relationships: Observing ${keyword} requires analyzing cause-and-effect patterns. For instance, changes in temperature, pressure, forces, or biological resources directly alter how the system behaves. Identifying these variables allows us to predict future outcomes accurately.\n\n3. Empirical Rules to Remember: Always distinguish between directly observable traits (such as color, mass, or velocity) and inferred properties (such as chemical composition or potential energy). Verifiable scientific conclusions are built on reproducible, empirical evidence.\n\nAcademic Guidance Note:\n${gradeHint}`
-      : gradeLevel <= 3
-      ? `Primary Classroom Approach for ${keyword}:\n\n1. Visual & Hands-On Learning: In Grade ${gradeLevel}, math is taught using tangible objects, finger counting, visual counters, and block groups rather than abstract formulas. Touching and seeing quantities helps young explorers build strong number sense.\n\n2. Step-by-Step Problem Solving:\nStep A: Read the problem and look at the visual counters, shapes, or items.\nStep B: Use physical items or drawings to group, add, or take away items.\nStep C: Count aloud to find your final answer and verify with your classmates or teacher!\n\n3. Real-World Connection: Math is all around us—whether sharing snacks, counting toys, or measuring lengths with a ruler.\n\nExplorer Tip:\n${gradeHint}`
-      : `Comprehensive Mathematical Explanation of ${keyword}:\n\n1. Foundational Rules & Principles: The mathematical framework of ${keyword} relies on fundamental axioms, formulas, and operational definitions.\n\n2. Systematic Problem Approach: When solving problems involving ${keyword}, always follow a clear three-step process:\nStep A: Carefully identify all given information and denote unknown target variables.\nStep B: Select the appropriate formula or operational rule.\nStep C: Perform arithmetic calculations systematically.\n\n3. Proof and Validation Protocols: Substitute your calculated value back into the original expression to verify equality.\n\nAcademic Guidance Note:\n${gradeHint}`,
-    example: exampleText,
-    exampleExplanation: isScience
-      ? `Detailed Breakdown of the Example:\n\nAnalyze the scenario provided above regarding ${keyword}. Observe how each physical component operates in harmony with scientific principles.`
-      : gradeLevel <= 3
-      ? `Detailed Breakdown of the Example:\n\nLook at how ${keyword} is shown in the example above using everyday objects and pictures. Counting items together or organizing shapes helps make math fun and easy to understand!`
-      : `Detailed Breakdown of the Example:\n\nExamine the mathematical context established in the example above. By decomposing the example into discrete operational steps, we can easily see how the abstract rule translates into a practical solution.`,
-    computation: isScience
-      ? `Step-by-Step Practical Demonstration:\n\n1. Observation Phase: Examine the example details carefully: "${exampleText}".\n\n2. Evidence Identification: Locate key details that demonstrate scientific principles in action.\n\n3. Analytical Explanation: Connect the empirical evidence directly back to the scientific laws governing ${keyword}.`
-      : gradeLevel <= 3
-      ? `Step-by-Step Classroom Activity:\n\n1. Look at the Pictures: Examine the visual counters, fruit items, or shapes shown in "${exampleText}".\n\n2. Count Aloud: Use your fingers or touch each item one by one to count them out loud.\n\n3. Find the Answer: Put groups together (add) or take items away (subtract) to find your final count!`
-      : `Step-by-Step Computational Procedure:\n\n1. Read & Deconstruct: Review the problem statement: "${exampleText}". Extract all given quantities.\n\n2. Operational Setup: Arrange numbers in logical order according to the standard formula.\n\n3. Execute Calculation: Perform arithmetic operations step-by-step.`,
-    practice: `Comprehensive Activity Exercise:\n\nIn your own words, explain the core meaning of ${keyword}. Next, construct a complete original example that illustrates this concept in action.\n\nExercise Tasks:\n1. Write out the primary definition using clear, formal academic language.\n2. Detail a practical scenario where this concept applies.\n3. Write a short explanation demonstrating step-by-step how your scenario proves the rule!`,
-  };
+  const recapQuestions = shuffle(fullRecapPool).slice(0, 10);
+  return { topics, recapQuestions };
 };
 
 const SWIMMING_CREATURES = [
@@ -673,61 +525,95 @@ const SWIMMING_CREATURES = [
   { icon: "🦑", top: "73%", duration: 16, delay: 6, size: 28, reverse: true },
 ];
 
-export default function SubjectNotesViewer({
-  subject = { title: "Math", icon: "📐", color: "#9c63e8", lessons: [] },
+export default function InteractiveLessonViewer({
   gradeLevel = 1,
-  onClose,
+  initialSubject,
+  initialLesson,
   onBack,
+  onComplete,
   playSfx,
 }) {
-  const [currentPage, setCurrentPage] = useState(0);
-  const [flipDirection, setFlipDirection] = useState(1);
-  const [isClosing, setIsClosing] = useState(false);
-  const [selectedHighlighter, setSelectedHighlighter] = useState(null);
-  const [wordHighlights, setWordHighlights] = useState({});
-  const [bookmarkedPages, setBookmarkedPages] = useState({});
-  const [currentBookmarkDesign, setCurrentBookmarkDesign] = useState(
-    BOOKMARK_DESIGNS[0]
-  );
-  const [clickBursts, setClickBursts] = useState([]);
+  const fallbackSubject = {
+    title: "Math",
+    icon: "📐",
+    color: "#9c63e8",
+    lessons: [],
+  };
+  const fallbackLesson = {
+    title: "Counting",
+    meaning: "Numbers tell us amounts.",
+    example: "1, 2, 3",
+    difficulty: "Easy",
+  };
 
-  const pageTurnAudioRef = useRef(null);
+  const subject = initialSubject || fallbackSubject;
+  const lesson = initialLesson || fallbackLesson;
+  const storageKey = getStorageKey(gradeLevel, subject.title, lesson.title);
+
+  // Ambient Lofi BGM (auto-plays gently with mute toggle)
+  const bgmRef = useRef(null);
+  const [bgmMuted, setBgmMuted] = useState(false);
 
   useEffect(() => {
-    const audio = new Audio(pageTurnSoundFile);
+    const audio = new Audio(lessonBgmFile);
+    audio.loop = true;
     audio.volume = 0.2;
-    pageTurnAudioRef.current = audio;
+    bgmRef.current = audio;
+    audio.play().catch(() => {});
+
     return () => {
       audio.pause();
       audio.src = "";
     };
   }, []);
 
-  const playPageTurn = useCallback(() => {
-    if (!pageTurnAudioRef.current) return;
-    try {
-      pageTurnAudioRef.current.currentTime = 0;
-      pageTurnAudioRef.current.play().catch(() => {});
-    } catch {
-      // Ignore autoplay restriction errors
+  const toggleBgm = (e) => {
+    e?.stopPropagation();
+    playSfx?.("click");
+    if (!bgmRef.current) return;
+    if (bgmMuted) {
+      bgmRef.current.muted = false;
+      bgmRef.current.play().catch(() => {});
+      setBgmMuted(false);
+    } else {
+      bgmRef.current.muted = true;
+      setBgmMuted(true);
     }
-  }, []);
+  };
 
-  const isChildTheme = gradeLevel <= 3;
-
-  const theme = useMemo(
-    () => ({
-      pageBg: isChildTheme ? "#fffdf0" : "#f8f9fa",
-      dividerColor: isChildTheme ? "#ffd166" : "#cbd5e1",
-      ringColor: isChildTheme ? "#ff7043" : "#cbd5e1",
-      holeBorder: isChildTheme ? "#f4a261" : "#94a3b8",
-      borderRadius: isChildTheme ? 20 : 10,
-      titleSize: isChildTheme ? 25 : 22,
-      bodySize: isChildTheme ? 15.5 : 14,
-      bodyLineHeight: isChildTheme ? 1.65 : 1.55,
-    }),
-    [isChildTheme]
+  const { topics, recapQuestions } = useMemo(
+    () => buildLessonContent(lesson, subject.title, gradeLevel),
+    [lesson, subject.title, gradeLevel]
   );
+
+  const [stage, setStage] = useState("topic_learn"); // "topic_learn" | "topic_quiz" | "recap_quiz" | "summary"
+  const [topicIndex, setTopicIndex] = useState(0);
+  const [topicQuestionIndex, setTopicQuestionIndex] = useState(0);
+  const [recapQuestionIndex, setRecapQuestionIndex] = useState(0);
+
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+
+  const [totalXpEarned, setTotalXpEarned] = useState(0);
+  const [mistakesCount, setMistakesCount] = useState(0);
+
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [savedProgressData, setSavedProgressData] = useState(null);
+  const [clickBursts, setClickBursts] = useState([]);
+
+  const currentTopic = topics[topicIndex] || topics[0];
+  const activeQuiz =
+    stage === "topic_quiz"
+      ? currentTopic.questions[topicQuestionIndex]
+      : stage === "recap_quiz"
+      ? recapQuestions[recapQuestionIndex]
+      : null;
+
+  const [startTime] = useState(() => Date.now());
+  const timeSavedRef = useRef(false);
+  const quizStartTimeRef = useRef(null);
 
   // Full-Viewport Cosmic & Ocean Background Particles (Matches Splash & Welcome Screens)
   const stars = useMemo(
@@ -790,629 +676,252 @@ export default function SubjectNotesViewer({
     spawnBurstAt(rect.left + rect.width / 2, rect.top + rect.height / 2, icons);
   };
 
-  const CARTOON_CHARACTERS = [
-    {
-      avatar: "🦉",
-      name: "Ollie the Owl",
-      tip: "Great reading! Flip pages or tap the chapter tabs!",
-      isStella: false,
-    },
-    {
-      avatar: "🦊",
-      name: "Felix the Fox",
-      tip: "You're doing super awesome!",
-      isStella: false,
-    },
-    {
-      avatar: "🐼",
-      name: "Pippin Panda",
-      tip: "Spot any fun ideas on this page?",
-      isStella: false,
-    },
-    {
-      avatar: "",
-      name: "Stella (Biosphere Quest Mascot)",
-      tip: "Keep exploring, cosmic learner!",
-      isStella: true,
-    },
-  ];
-
-  const LAB_STAMPS = [
-    {
-      icon: "🔬",
-      title: "LAB PRO-TIP",
-      tip: "Analyze the core evidence before forming your hypothesis.",
-    },
-    {
-      icon: "💡",
-      title: "KEY INSIGHT",
-      tip: "Notice how this principle connects to real-world models.",
-    },
-    {
-      icon: "📊",
-      title: "FIELD NOTE",
-      tip: "Verify all units and check your steps for consistency.",
-    },
-  ];
-
-  const activeCharacter =
-    CARTOON_CHARACTERS[currentPage % CARTOON_CHARACTERS.length];
-  const activeLabStamp = LAB_STAMPS[currentPage % LAB_STAMPS.length];
-
-  const handleCloseViewer = useCallback(
-    (e) => {
-      triggerButtonBurst(e, ["✨", "🚀"]);
-      playPageTurn();
-      setIsClosing(true);
-      const returnToCourses = onBack || onClose;
-      setTimeout(() => {
-        returnToCourses?.();
-      }, 320);
-    },
-    [playPageTurn, onBack, onClose]
-  );
-
-  const chapterList = useMemo(() => {
-    const list = [];
-    const lessons = subject.lessons || [];
-
-    for (let i = 0; i < 7; i++) {
-      if (i < lessons.length) {
-        list.push({
-          title: lessons[i].title,
-          meaning: lessons[i].meaning,
-          example: lessons[i].example,
-        });
-      } else {
-        const fallbackTitles = [
-          "Practical Synthesis & Real-World Application",
-          "Advanced System Analysis & Guided Practice",
-          "Comprehensive Field Exercise & Mastery Challenge",
-        ];
-        const titleIndex = i - lessons.length;
-        list.push({
-          title: fallbackTitles[titleIndex % fallbackTitles.length],
-          meaning: `Apply core subject rules from earlier chapters to solve complex problems in ${subject.title}.`,
-          example: `Observe real-world scenarios in ${subject.title} and apply step-by-step reasoning to establish verifiable solutions.`,
-        });
-      }
+  const clearCurrentProgress = useCallback(() => {
+    try {
+      localStorage.removeItem(storageKey);
+    } catch (e) {
+      console.error("Failed to clear progress", e);
     }
-    return list;
-  }, [subject]);
+  }, [storageKey]);
 
-  const stickyTabs = useMemo(() => {
-    const colors = [
-      "#FF5252",
-      "#FF7043",
-      "#FFA726",
-      "#66BB6A",
-      "#26A69A",
-      "#42A5F5",
-      "#AB47BC",
-    ];
+  const handleRestart = useCallback(() => {
+    clearCurrentProgress();
+    setStage("topic_learn");
+    setTopicIndex(0);
+    setTopicQuestionIndex(0);
+    setRecapQuestionIndex(0);
+    setTotalXpEarned(0);
+    setMistakesCount(0);
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setIsCorrect(false);
+    setShowResumeModal(false);
+  }, [clearCurrentProgress]);
 
-    return chapterList.map((_, index) => ({
-      pageIndex: 1 + index * 2,
-      label: `Ch ${index + 1}`,
-      color: colors[index % colors.length],
-    }));
-  }, [chapterList]);
+  useEffect(() => {
+    if (
+      (stage === "topic_quiz" || stage === "recap_quiz") &&
+      !quizStartTimeRef.current
+    ) {
+      quizStartTimeRef.current = Date.now();
+    }
+  }, [stage]);
 
-  const applyHighlightKey = useCallback(
-    (wordKey) => {
-      setWordHighlights((prev) => {
-        if (!selectedHighlighter) {
-          if (!prev[wordKey]) return prev;
-          const copy = { ...prev };
-          delete copy[wordKey];
-          return copy;
+  useEffect(() => {
+    return () => {
+      if (timeSavedRef.current) return;
+      timeSavedRef.current = true;
+      const elapsedMs = Date.now() - startTime;
+      const elapsedMinutes = Math.max(1, Math.round(elapsedMs / 60000));
+      try {
+        const profileRaw = localStorage.getItem("@biosphere_profile_data_v1");
+        if (profileRaw) {
+          const profile = JSON.parse(profileRaw);
+          profile.studyMinutes = (profile.studyMinutes || 0) + elapsedMinutes;
+          localStorage.setItem(
+            "@biosphere_profile_data_v1",
+            JSON.stringify(profile)
+          );
         }
-        if (prev[wordKey] === selectedHighlighter) return prev;
-        return { ...prev, [wordKey]: selectedHighlighter };
-      });
-    },
-    [selectedHighlighter]
-  );
+      } catch (e) {
+        console.error("Failed to save study time", e);
+      }
+    };
+  }, [startTime]);
 
-  const toggleWordHighlight = useCallback(
-    (wordKey) => {
-      setWordHighlights((prev) => {
-        const copy = { ...prev };
-        if (!selectedHighlighter) {
-          delete copy[wordKey];
-        } else if (copy[wordKey] === selectedHighlighter) {
-          delete copy[wordKey];
-        } else {
-          copy[wordKey] = selectedHighlighter;
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(storageKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (
+          parsed.topicIndex > 0 ||
+          parsed.stage !== "topic_learn" ||
+          parsed.totalXpEarned > 0
+        ) {
+          setSavedProgressData(parsed);
+          setShowResumeModal(true);
         }
-        return copy;
-      });
-    },
-    [selectedHighlighter]
-  );
-
-  const renderParagraphs = useCallback(
-    (text, prefix) => {
-      return text.split("\n\n").map((paragraph, pIdx) => {
-        const words = paragraph.split(" ");
-        return (
-          <p
-            key={pIdx}
-            style={{
-              color: "#475569",
-              fontWeight: 600,
-              fontSize: theme.bodySize,
-              lineHeight: theme.bodyLineHeight,
-              margin: pIdx > 0 ? "12px 0 0" : 0,
-            }}
-          >
-            {words.map((word, wIdx) => {
-              const wordKey = `${currentPage}-${prefix}-${pIdx}-${wIdx}`;
-              const highlightColor = wordHighlights[wordKey];
-
-              return (
-                <HighlightableWord
-                  key={wIdx}
-                  wordKey={wordKey}
-                  word={word}
-                  highlightColor={highlightColor}
-                  onPress={toggleWordHighlight}
-                  onDragHighlight={applyHighlightKey}
-                />
-              );
-            })}
-          </p>
-        );
-      });
-    },
-    [
-      currentPage,
-      wordHighlights,
-      theme.bodySize,
-      theme.bodyLineHeight,
-      toggleWordHighlight,
-      applyHighlightKey,
-    ]
-  );
-
-  const pages = useMemo(() => {
-    const generatedPages = [];
-
-    generatedPages.push(
-      <div key="intro">
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            marginBottom: 6,
-          }}
-        >
-          <motion.img
-            src={stellaMascotImage}
-            alt="Stella Mascot"
-            animate={{ y: [-3, 3, -3] }}
-            transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-            style={{ width: 42, height: 42, objectFit: "contain" }}
-          />
-          <div style={{ flex: 1 }}>
-            <h2
-              style={{
-                color: "#1e293b",
-                fontWeight: 900,
-                fontSize: theme.titleSize,
-                margin: 0,
-              }}
-            >
-              {isChildTheme
-                ? `🌈 ${subject.title} Field Guide`
-                : `📑 ${subject.title} Comprehensive Journal`}
-            </h2>
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 12.5,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 0.5,
-                marginTop: 2,
-              }}
-            >
-              Grade {gradeLevel} Explorer&apos;s Master Notebook • DepEd MATATAG
-            </div>
-          </div>
-        </div>
-        <div
-          style={{
-            height: 2,
-            backgroundColor: theme.dividerColor,
-            margin: "14px 0 16px",
-            borderRadius: 2,
-          }}
-        />
-        <h3
-          style={{
-            color: "#334155",
-            fontSize: 16,
-            fontWeight: 900,
-            margin: "0 0 8px",
-          }}
-        >
-          {isChildTheme ? "🎈 Welcome Explorer!" : "🔬 Academic Research Notebook"}
-        </h3>
-        {renderParagraphs(
-          `Welcome to the master field notebook for ${subject.title}! This study guide is meticulously designed to provide complete conceptual clarity across 7 full chapters: rigorous scientific and mathematical definitions, picture-rich visual guides, step-by-step worked examples, and interactive activity exercises.`,
-          "intro-1"
-        )}
-        <h3
-          style={{
-            color: "#334155",
-            fontSize: 16,
-            fontWeight: 900,
-            margin: "18px 0 8px",
-          }}
-        >
-          📖 Notebook Structural Organization
-        </h3>
-        {renderParagraphs(
-          "• Chapters 1–4 (Theoretical Foundations): Focus purely on extensive explanations, formal definitions, visual picture guides, and deep descriptions of core principles.\n\n• Chapters 5–7 (Practical Applications): Focus on comprehensive real-world worked examples, step-by-step computation models, and guided activity exercises.\n\n• Highlighter Tool Usage: Choose a color from the toolbar above to click or drag across important text. Select 'Off' to clear highlights. Use the sticky arrow tabs on the right margin to jump directly across chapters.",
-          "intro-2"
-        )}
-      </div>
-    );
-
-    chapterList.forEach((chap, index) => {
-      const expansion = buildLessonExpansion(
-        gradeLevel,
-        subject.title,
-        chap.title,
-        chap.meaning,
-        chap.example
-      );
-      const visualData = getLessonVisualData(
-        chap.title,
-        expansion.isScience,
-        gradeLevel
-      );
-      const isExplanationChapter = index < 4;
-      const includeVisualMap = index < 2;
-
-      if (isExplanationChapter) {
-        generatedPages.push(
-          <div key={`chap-${index}-p1`}>
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 12,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 0.5,
-                marginBottom: 4,
-              }}
-            >
-              Chapter {index + 1} of 7 • Theoretical Foundations (Part 1)
-            </div>
-            <h2
-              style={{
-                color: "#1e293b",
-                fontWeight: 900,
-                fontSize: theme.titleSize,
-                margin: 0,
-              }}
-            >
-              {chap.title}
-            </h2>
-            <div
-              style={{
-                height: 2,
-                backgroundColor: theme.dividerColor,
-                margin: "14px 0 16px",
-                borderRadius: 2,
-              }}
-            />
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "0 0 8px",
-              }}
-            >
-              📖 Core Axiom & Definition
-            </h3>
-            {renderParagraphs(expansion.definition, `c${index}-p1`)}
-
-            {/* Picture Snapshot Strip */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
-                gap: 8,
-                margin: "14px 0",
-              }}
-            >
-              {visualData.pictureBoard.map((item, bIdx) => (
-                <motion.div
-                  key={bIdx}
-                  whileHover={{ y: -3, scale: 1.03 }}
-                  style={{
-                    backgroundColor: "#ffffff",
-                    border: `1.5px solid ${theme.dividerColor}`,
-                    borderRadius: 10,
-                    padding: "9px 8px",
-                    textAlign: "center",
-                  }}
-                >
-                  <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 3 }}>
-                    {item.art}
-                  </div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
-                    {item.caption}
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "14px 0 8px",
-              }}
-            >
-              ⭐ Worked Example Snapshot
-            </h3>
-            {renderParagraphs(expansion.example, `c${index}-p1-ex`)}
-
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "18px 0 8px",
-              }}
-            >
-              🧠 Comprehensive Theoretical Breakdown
-            </h3>
-            {renderParagraphs(expansion.explanation, `c${index}-p2`)}
-          </div>
-        );
-
-        generatedPages.push(
-          <div key={`chap-${index}-p2`}>
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 12,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 0.5,
-                marginBottom: 4,
-              }}
-            >
-              Chapter {index + 1} of 7 • Theoretical Foundations (Part 2)
-            </div>
-            <h2
-              style={{
-                color: "#1e293b",
-                fontWeight: 900,
-                fontSize: theme.titleSize,
-                margin: 0,
-              }}
-            >
-              {includeVisualMap
-                ? gradeLevel <= 3
-                  ? "Visual Math Guide"
-                  : "Visual Concept Map"
-                : "Structural Rules & Analysis"}
-            </h2>
-            <div
-              style={{
-                height: 2,
-                backgroundColor: theme.dividerColor,
-                margin: "14px 0 16px",
-                borderRadius: 2,
-              }}
-            />
-            {includeVisualMap ? (
-              <>
-                {renderParagraphs(
-                  gradeLevel <= 3
-                    ? `Examine the visual guide below to understand how ${chap.title.toLowerCase()} is explored using objects and pictures.`
-                    : `Examine the flow diagram below to understand the key sequential steps of ${chap.title.toLowerCase()}.`,
-                  `c${index}-map-desc`
-                )}
-                <LessonVisual data={visualData} />
-              </>
-            ) : (
-              <>
-                <h3
-                  style={{
-                    color: "#334155",
-                    fontSize: 16,
-                    fontWeight: 900,
-                    margin: "0 0 8px",
-                  }}
-                >
-                  🔬 Deep Structural Rules & Mechanics
-                </h3>
-                {renderParagraphs(
-                  `Mastering ${chap.title.toLowerCase()} requires analyzing how each rule fits into the overarching academic system.\n\n• Axiom 1 (Fundamental Definition): Always start by anchoring your analysis in the primary definition. Identify all core properties and governing rules before attempting complex problems.\n\n• Axiom 2 (System Interactions): Observe how internal variables interact with external influences. Changing one element shifts the equilibrium of the entire framework.\n\n• Axiom 3 (Verification Protocols): Always cross-examine your observational or computational data against established rules. Consistency across multiple test conditions ensures true mastery!`,
-                  `c${index}-deep-desc`
-                )}
-                <LessonVisual data={visualData} />
-              </>
-            )}
-          </div>
-        );
-      } else {
-        generatedPages.push(
-          <div key={`chap-${index}-p3`}>
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 12,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 0.5,
-                marginBottom: 4,
-              }}
-            >
-              Chapter {index + 1} of 7 • Practical Application (Part 1)
-            </div>
-            <h2
-              style={{
-                color: "#1e293b",
-                fontWeight: 900,
-                fontSize: theme.titleSize,
-                margin: 0,
-              }}
-            >
-              {chap.title}
-            </h2>
-            <div
-              style={{
-                height: 2,
-                backgroundColor: theme.dividerColor,
-                margin: "14px 0 16px",
-                borderRadius: 2,
-              }}
-            />
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "0 0 8px",
-              }}
-            >
-              ⭐ Worked Real-World Example
-            </h3>
-            {renderParagraphs(expansion.example, `c${index}-ex`)}
-            <LessonVisual data={visualData} />
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "18px 0 8px",
-              }}
-            >
-              {expansion.isScience
-                ? "🔬 Step-by-Step Empirical Solution"
-                : gradeLevel <= 3
-                ? "🔢 Step-by-Step Classroom Activity"
-                : "🧮 Step-by-Step Computation Model"}
-            </h3>
-            {renderParagraphs(expansion.computation, `c${index}-comp`)}
-          </div>
-        );
-
-        generatedPages.push(
-          <div key={`chap-${index}-p4`}>
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 12,
-                fontWeight: 800,
-                textTransform: "uppercase",
-                letterSpacing: 0.5,
-                marginBottom: 4,
-              }}
-            >
-              Chapter {index + 1} of 7 • Practical Application (Part 2)
-            </div>
-            <h2
-              style={{
-                color: "#1e293b",
-                fontWeight: 900,
-                fontSize: theme.titleSize,
-                margin: 0,
-              }}
-            >
-              Activity Practice Exercise
-            </h2>
-            <div
-              style={{
-                height: 2,
-                backgroundColor: theme.dividerColor,
-                margin: "14px 0 16px",
-                borderRadius: 2,
-              }}
-            />
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "0 0 8px",
-              }}
-            >
-              🎯 Guided Activity Exercise
-            </h3>
-            {renderParagraphs(expansion.practice, `c${index}-prac`)}
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "18px 0 8px",
-              }}
-            >
-              💡 Analytical Breakdown & Solution Notes
-            </h3>
-            {renderParagraphs(expansion.exampleExplanation, `c${index}-why`)}
-            <h3
-              style={{
-                color: "#334155",
-                fontSize: 16,
-                fontWeight: 900,
-                margin: "18px 0 8px",
-              }}
-            >
-              🚀 Explorer&apos;s Mission Strategy
-            </h3>
-            {renderParagraphs(
-              "Apply the foundational rules and theoretical descriptions from Chapters 1–4 to complete this activity exercise. Always check your steps against the definition to verify complete correctness!",
-              `c${index}-tip`
-            )}
-          </div>
-        );
       }
-    });
+    } catch (e) {
+      console.error("Failed to load saved lesson progress", e);
+    }
+  }, [storageKey]);
 
-    return generatedPages;
-  }, [subject.title, gradeLevel, chapterList, isChildTheme, theme, renderParagraphs]);
-
-  const totalPages = pages.length;
-
-  const jumpToPage = useCallback(
-    (newPage, e) => {
-      if (newPage < 0 || newPage >= totalPages || newPage === currentPage) return;
-      triggerButtonBurst(e, ["✨", "📖"]);
-      playPageTurn();
-      setFlipDirection(newPage > currentPage ? 1 : -1);
-      setCurrentPage(newPage);
-    },
-    [totalPages, currentPage, playPageTurn]
-  );
-
-  const toggleBookmark = (e) => {
-    triggerButtonBurst(e, [currentBookmarkDesign.icon, "✨", "⭐"]);
-    playSfx?.("click");
-    setBookmarkedPages((prev) => {
-      const next = { ...prev };
-      if (next[currentPage]) {
-        delete next[currentPage];
-      } else {
-        next[currentPage] = currentBookmarkDesign;
-      }
-      return next;
-    });
+  const saveCurrentState = (
+    newStage,
+    newTopicIdx,
+    newTopicQIdx,
+    newRecapQIdx,
+    xp,
+    mistakes
+  ) => {
+    try {
+      const data = {
+        stage: newStage,
+        topicIndex: newTopicIdx,
+        topicQuestionIndex: newTopicQIdx,
+        recapQuestionIndex: newRecapQIdx,
+        totalXpEarned: xp,
+        mistakesCount: mistakes,
+      };
+      localStorage.setItem(storageKey, JSON.stringify(data));
+    } catch (e) {
+      console.error("Failed to save progress", e);
+    }
   };
 
-  const activeBookmark = bookmarkedPages[currentPage];
+  const handleResume = () => {
+    playSfx?.("click");
+    if (savedProgressData) {
+      setStage(savedProgressData.stage || "topic_learn");
+      setTopicIndex(savedProgressData.topicIndex || 0);
+      setTopicQuestionIndex(savedProgressData.topicQuestionIndex || 0);
+      setRecapQuestionIndex(savedProgressData.recapQuestionIndex || 0);
+      setTotalXpEarned(savedProgressData.totalXpEarned || 0);
+      setMistakesCount(savedProgressData.mistakesCount || 0);
+    }
+    setShowResumeModal(false);
+  };
+
+  const progressPercent = useMemo(() => {
+    let percent = 0;
+    if (stage === "topic_learn") {
+      percent = (topicIndex / (topics.length + 1)) * 100;
+    } else if (stage === "topic_quiz") {
+      const topicChunk = 1 / (topics.length + 1);
+      const qFraction =
+        (topicQuestionIndex + (isCorrect ? 1 : 0)) /
+        currentTopic.questions.length;
+      percent =
+        ((topicIndex + qFraction * topicChunk) / (topics.length + 1)) * 100;
+    } else if (stage === "recap_quiz") {
+      const recapProgress =
+        (recapQuestionIndex + (isCorrect ? 1 : 0)) / recapQuestions.length;
+      percent = 75 + recapProgress * 25;
+    } else if (stage === "summary") {
+      percent = 100;
+    }
+    return Math.min(Math.max(percent, 6), 100);
+  }, [
+    stage,
+    topicIndex,
+    topicQuestionIndex,
+    recapQuestionIndex,
+    isCorrect,
+    topics.length,
+    recapQuestions.length,
+    currentTopic.questions.length,
+  ]);
+
+  const handleSelectOption = (idx, e) => {
+    if (isAnswered || !activeQuiz) return;
+
+    setSelectedOption(idx);
+    setIsAnswered(true);
+
+    const correct = idx === activeQuiz.correctIndex;
+    setIsCorrect(correct);
+
+    const updatedMistakes = correct ? mistakesCount : mistakesCount + 1;
+    if (!correct) {
+      setMistakesCount(updatedMistakes);
+      playSfx?.("wrong");
+      triggerButtonBurst(e, ["🫧", "💫"]);
+    } else {
+      playSfx?.("correct");
+      triggerButtonBurst(e, ["✨", "⭐", "🎉"]);
+    }
+
+    const reward = stage === "recap_quiz" ? 10 : 15;
+    const updatedXp = totalXpEarned + reward;
+    setTotalXpEarned(updatedXp);
+
+    saveCurrentState(
+      stage,
+      topicIndex,
+      topicQuestionIndex,
+      recapQuestionIndex,
+      updatedXp,
+      updatedMistakes
+    );
+  };
+
+  const handleNextAction = (e) => {
+    triggerButtonBurst(e, ["🚀", "✨"]);
+    playSfx?.("click");
+    setSelectedOption(null);
+    setIsAnswered(false);
+    setIsCorrect(false);
+
+    if (stage === "topic_learn") {
+      setStage("topic_quiz");
+      setTopicQuestionIndex(0);
+      saveCurrentState(
+        "topic_quiz",
+        topicIndex,
+        0,
+        recapQuestionIndex,
+        totalXpEarned,
+        mistakesCount
+      );
+    } else if (stage === "topic_quiz") {
+      if (topicQuestionIndex < currentTopic.questions.length - 1) {
+        const nextQ = topicQuestionIndex + 1;
+        setTopicQuestionIndex(nextQ);
+        saveCurrentState(
+          "topic_quiz",
+          topicIndex,
+          nextQ,
+          recapQuestionIndex,
+          totalXpEarned,
+          mistakesCount
+        );
+      } else if (topicIndex < topics.length - 1) {
+        const nextT = topicIndex + 1;
+        setTopicIndex(nextT);
+        setStage("topic_learn");
+        saveCurrentState(
+          "topic_learn",
+          nextT,
+          0,
+          recapQuestionIndex,
+          totalXpEarned,
+          mistakesCount
+        );
+      } else {
+        setStage("recap_quiz");
+        setRecapQuestionIndex(0);
+        saveCurrentState(
+          "recap_quiz",
+          topicIndex,
+          0,
+          0,
+          totalXpEarned,
+          mistakesCount
+        );
+      }
+    } else if (stage === "recap_quiz") {
+      if (recapQuestionIndex < recapQuestions.length - 1) {
+        const nextRQ = recapQuestionIndex + 1;
+        setRecapQuestionIndex(nextRQ);
+        saveCurrentState(
+          "recap_quiz",
+          topicIndex,
+          0,
+          nextRQ,
+          totalXpEarned,
+          mistakesCount
+        );
+      } else {
+        const bonus = mistakesCount === 0 ? 50 : 0;
+        const finalXp = totalXpEarned + bonus;
+        setTotalXpEarned(finalXp);
+        setStage("summary");
+        clearCurrentProgress();
+      }
+    }
+  };
 
   return (
     <div
@@ -1421,7 +930,7 @@ export default function SubjectNotesViewer({
         position: "relative",
         minHeight: "100vh",
         width: "100%",
-        paddingBottom: 42,
+        padding: "18px 18px 48px",
         cursor: "crosshair",
       }}
     >
@@ -1605,542 +1114,982 @@ export default function SubjectNotesViewer({
         />
       ))}
 
-      {/* Foreground Content */}
+      {/* Foreground Content Container */}
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ position: "relative", zIndex: 2 }}
+        style={{
+          position: "relative",
+          zIndex: 2,
+          maxWidth: 780,
+          margin: "0 auto",
+        }}
       >
-        {/* Top Header */}
+        {/* Top Header Bar */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "space-between",
-            maxWidth: 920,
-            margin: "0 auto",
-            padding: "14px 18px 10px",
+            alignItems: "center",
+            marginBottom: 14,
           }}
         >
           <motion.button
             type="button"
             whileHover={{ scale: 1.06, x: -3 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={handleCloseViewer}
+            whileTap={{ scale: 0.92 }}
+            onClick={() => {
+              playSfx?.("click");
+              if (stage === "summary") {
+                onBack?.();
+              } else {
+                setShowExitModal(true);
+              }
+            }}
             style={{
-              background: "rgba(15, 23, 42, 0.85)",
-              border: "1px solid rgba(229, 130, 255, 0.45)",
+              background: "rgba(22, 37, 74, 0.85)",
+              border: "1px solid rgba(223, 145, 244, 0.45)",
               borderRadius: 12,
               padding: "7px 14px",
-              color: "#e582ff",
-              fontWeight: 900,
+              color: "#df91f4",
               fontSize: 14,
+              fontWeight: 900,
               cursor: "pointer",
             }}
           >
-            ← Exit to Courses
+            ← Exit
           </motion.button>
 
-          <div
-            style={{
-              color: subject.color || "#63e1e8",
-              fontSize: 17,
-              fontWeight: 900,
-            }}
-          >
-            {subject.icon} {subject.title} • Grade {gradeLevel}
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleBgm}
+              title="Toggle Lesson Lofi Music"
+              style={{
+                background: "rgba(32, 44, 107, 0.85)",
+                border: "1px solid #4d58cc",
+                borderRadius: 12,
+                padding: "6px 11px",
+                color: "#8be7ff",
+                fontSize: 12.5,
+                fontWeight: 900,
+                cursor: "pointer",
+              }}
+            >
+              {bgmMuted ? "🔇 Lofi Off" : "🎵 Lofi On"}
+            </motion.button>
+
+            <motion.div
+              key={totalXpEarned}
+              initial={{ scale: 1.22 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 320, damping: 16 }}
+              style={{
+                background: "rgba(32, 44, 107, 0.9)",
+                border: "1.5px solid #4d58cc",
+                padding: "6px 14px",
+                borderRadius: 16,
+                color: "#ffda61",
+                fontSize: 13.5,
+                fontWeight: 900,
+                boxShadow: "0 0 14px rgba(255, 218, 97, 0.3)",
+              }}
+            >
+              ⚡ +{totalXpEarned} XP
+            </motion.div>
           </div>
         </motion.div>
 
-        {/* Highlighter & Ribbon Design Toolbar */}
+        {/* Animated Rocket-to-Moon Progress Track */}
         <div
           style={{
-            background: "rgba(15, 23, 42, 0.85)",
-            backdropFilter: "blur(8px)",
-            borderTop: "1px solid #1e293b",
-            borderBottom: "1px solid #1e293b",
-            padding: "8px 16px",
-            marginBottom: 18,
+            marginBottom: 20,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
           }}
         >
           <div
             style={{
-              maxWidth: 920,
-              margin: "0 auto",
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
+              flex: 1,
+              position: "relative",
+              padding: "10px 0",
             }}
           >
-            <span style={{ color: "#94a3b8", fontSize: 11.5, fontWeight: 800 }}>
-              Highlighter:
-            </span>
-            <motion.button
-              type="button"
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                playSfx?.("click");
-                setSelectedHighlighter(null);
-              }}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                border: !selectedHighlighter
-                  ? "2px solid #ffffff"
-                  : "1.5px solid #475569",
-                background: "#1e293b",
-                color: "#fff",
-                fontSize: 9.5,
-                fontWeight: 800,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              Off
-            </motion.button>
-            {HIGHLIGHTER_PALETTE.map((item) => (
-              <motion.button
-                key={item.id}
-                type="button"
-                title={item.name}
-                whileHover={{ scale: 1.18 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  playSfx?.("click");
-                  setSelectedHighlighter(item.color);
-                }}
-                style={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "50%",
-                  backgroundColor: item.color,
-                  border:
-                    selectedHighlighter === item.color
-                      ? "2.5px solid #ffffff"
-                      : "1.5px solid #475569",
-                  cursor: "pointer",
-                }}
-              />
-            ))}
-
             <div
               style={{
-                width: 1,
-                height: 18,
-                backgroundColor: "#334155",
-                margin: "0 6px",
+                height: 14,
+                background: "rgba(22, 34, 68, 0.88)",
+                borderRadius: 999,
+                border: "1.5px solid #293e75",
+                overflow: "hidden",
+                position: "relative",
               }}
-            />
-
-            <span style={{ color: "#94a3b8", fontSize: 11.5, fontWeight: 800 }}>
-              Ribbon Design:
-            </span>
-            {BOOKMARK_DESIGNS.map((design) => (
-              <motion.button
-                key={design.id}
-                type="button"
-                title={design.name}
-                whileHover={{ scale: 1.12 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  playSfx?.("click");
-                  setCurrentBookmarkDesign(design);
-                }}
+            >
+              <motion.div
+                animate={{ width: `${progressPercent}%` }}
+                transition={{ type: "spring", stiffness: 65, damping: 14 }}
                 style={{
-                  padding: "3px 8px",
-                  borderRadius: 8,
-                  backgroundColor:
-                    currentBookmarkDesign.id === design.id
-                      ? "#334155"
-                      : "#1e293b",
-                  border:
-                    currentBookmarkDesign.id === design.id
-                      ? "1.5px solid #e2e8f0"
-                      : "1px solid transparent",
-                  fontSize: 14,
-                  cursor: "pointer",
+                  height: "100%",
+                  background: "linear-gradient(90deg, #10b981, #22c55e, #6ee7b7)",
+                  borderRadius: 999,
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
-                {design.icon}
-              </motion.button>
-            ))}
-          </div>
-        </div>
-
-        {/* Spiral-Bound Explorer Notebook Container */}
-        <motion.div
-          animate={
-            isClosing
-              ? { scale: 0.25, rotate: -8, y: 120, opacity: 0 }
-              : { scale: 1, rotate: 0, y: 0, opacity: 1 }
-          }
-          transition={{ duration: 0.32, ease: "easeInOut" }}
-          style={{
-            maxWidth: 860,
-            margin: "0 auto",
-            padding: "0 64px 0 18px",
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              backgroundColor: theme.pageBg,
-              borderRadius: `6px ${theme.borderRadius}px ${theme.borderRadius}px 6px`,
-              padding: "26px 26px 20px 52px",
-              minHeight: 540,
-              position: "relative",
-              boxShadow: "0 18px 42px rgba(0, 0, 0, 0.45)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
-          >
-            {/* Left Spiral Binding Rings & Punched Holes */}
-            <div
-              style={{
-                position: "absolute",
-                left: 10,
-                top: 22,
-                bottom: 22,
-                width: 24,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                pointerEvents: "none",
-                zIndex: 5,
-              }}
-            >
-              {Array.from({ length: 16 }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    height: 16,
-                    display: "flex",
-                    alignItems: "center",
-                    position: "relative",
-                  }}
-                >
-                  <div
-                    style={{
-                      position: "absolute",
-                      left: -14,
-                      width: 26,
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: theme.ringColor,
-                      zIndex: 2,
-                    }}
-                  />
-                  <div
-                    style={{
-                      width: 11,
-                      height: 11,
-                      borderRadius: "50%",
-                      backgroundColor: "#091426",
-                      border: `1.5px solid ${theme.holeBorder}`,
-                      marginLeft: 10,
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            {/* Animated Drop-Down Bookmark Ribbon */}
-            <AnimatePresence>
-              {activeBookmark && (
                 <motion.div
-                  key={`ribbon-${currentPage}-${activeBookmark.id}`}
-                  initial={{ y: -60, scale: 0.3, opacity: 0 }}
-                  animate={{ y: 0, scale: 1, opacity: 1 }}
-                  exit={{ y: -60, scale: 0.2, opacity: 0 }}
-                  transition={{ type: "spring", stiffness: 260, damping: 16 }}
+                  animate={{ x: ["-100%", "400%"] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                   style={{
                     position: "absolute",
-                    top: -6,
-                    right: 32,
-                    width: 40,
-                    height: 64,
-                    backgroundColor: activeBookmark.color,
-                    borderBottomLeftRadius: 10,
-                    borderBottomRightRadius: 10,
-                    display: "flex",
-                    alignItems: "flex-end",
-                    justifyContent: "center",
-                    paddingBottom: 8,
-                    fontSize: 20,
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
-                    zIndex: 20,
+                    top: 0,
+                    bottom: 0,
+                    width: 60,
+                    background: "rgba(255, 255, 255, 0.45)",
+                    transform: "skewX(-20deg)",
                   }}
-                >
-                  {activeBookmark.icon}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* 3D Page-Flipping Content */}
-            <div style={{ perspective: 1400, flex: 1 }}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`page-${currentPage}`}
-                  initial={{
-                    rotateY: flipDirection > 0 ? 18 : -18,
-                    opacity: 0,
-                    x: flipDirection > 0 ? 22 : -22,
-                  }}
-                  animate={{ rotateY: 0, opacity: 1, x: 0 }}
-                  exit={{
-                    rotateY: flipDirection > 0 ? -24 : 24,
-                    opacity: 0,
-                    x: flipDirection > 0 ? -22 : 22,
-                  }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
-                  style={{ transformOrigin: "left center" }}
-                >
-                  {pages[currentPage]}
-                </motion.div>
-              </AnimatePresence>
+                />
+              </motion.div>
             </div>
 
-            {/* Grade-Specific Floating Helper Card (Grades 1-3) or Lab Pro-Tip Stamp (Grades 4-6) */}
-            {isChildTheme ? (
-              <motion.div
-                animate={{ y: [-3, 3, -3] }}
-                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "#ffffff",
-                  border: "1.5px solid #ffd166",
-                  borderRadius: 12,
-                  padding: "6px 12px",
-                  marginTop: 16,
-                  gap: 10,
-                }}
-              >
-                {activeCharacter.isStella ? (
-                  <img
-                    src={stellaMascotImage}
-                    alt="Stella"
-                    style={{ width: 28, height: 28, objectFit: "contain" }}
-                  />
-                ) : (
-                  <span style={{ fontSize: 22 }}>{activeCharacter.avatar}</span>
-                )}
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: 900,
-                      color: "#ff7043",
-                    }}
-                  >
-                    {activeCharacter.name}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      color: "#475569",
-                    }}
-                  >
-                    {activeCharacter.tip}
-                  </div>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div
-                animate={{ y: [-2, 2, -2] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "#f1f5f9",
-                  border: "1px solid #cbd5e1",
-                  borderRadius: 8,
-                  padding: "6px 12px",
-                  marginTop: 16,
-                  gap: 10,
-                }}
-              >
-                <span style={{ fontSize: 18 }}>{activeLabStamp.icon}</span>
-                <div style={{ flex: 1 }}>
-                  <div
-                    style={{
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      color: "#334155",
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    {activeLabStamp.title}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      color: "#64748b",
-                    }}
-                  >
-                    {activeLabStamp.tip}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {/* Pagination & Bookmark Footer */}
-            <div
+            {/* Flying Rocket Indicator */}
+            <motion.div
+              animate={{
+                left: `calc(${progressPercent}% - 14px)`,
+                y: [-2, 2, -2],
+              }}
+              transition={{
+                left: { type: "spring", stiffness: 65, damping: 14 },
+                y: { duration: 1.5, repeat: Infinity, ease: "easeInOut" },
+              }}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                flexWrap: "wrap",
-                gap: 10,
-                marginTop: 14,
-                paddingTop: 12,
-                borderTop: `2px solid ${theme.dividerColor}`,
+                position: "absolute",
+                top: 2,
+                fontSize: 22,
+                filter: "drop-shadow(0 0 8px rgba(99, 225, 232, 0.8))",
+                pointerEvents: "none",
+                zIndex: 10,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <motion.button
-                  type="button"
-                  disabled={currentPage === 0}
-                  whileHover={currentPage === 0 ? {} : { scale: 1.06, x: -2 }}
-                  whileTap={currentPage === 0 ? {} : { scale: 0.92 }}
-                  onClick={(e) => jumpToPage(currentPage - 1, e)}
+              🚀
+            </motion.div>
+          </div>
+
+          <motion.div
+            animate={{ rotate: [0, 8, -8, 0], scale: [1, 1.08, 1] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            style={{ fontSize: 26 }}
+          >
+            🌕
+          </motion.div>
+        </div>
+
+        {/* Hero Lesson Header Card with Floating Stella Mascot */}
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            background: "rgba(22, 37, 74, 0.88)",
+            backdropFilter: "blur(10px)",
+            border: `2px solid ${subject.color || "#63e1e8"}`,
+            borderRadius: 20,
+            padding: "16px 20px",
+            marginBottom: 16,
+            boxShadow: `0 10px 28px ${(subject.color || "#63e1e8")}28`,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <motion.img
+              src={stellaMascotImage}
+              alt="Stella Mascot"
+              animate={{ y: [-4, 4, -4], rotate: [-3, 3, -3] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              style={{
+                width: 52,
+                height: 52,
+                objectFit: "contain",
+                filter: "drop-shadow(0 0 10px rgba(99, 225, 232, 0.65))",
+              }}
+            />
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  color: "#a5b8e8",
+                  fontSize: 12.5,
+                  fontWeight: 800,
+                  marginBottom: 2,
+                }}
+              >
+                {subject.icon} {subject.title} (Grade {gradeLevel})
+              </div>
+              <h2
+                style={{
+                  color: "#ffffff",
+                  fontSize: 22,
+                  fontWeight: 900,
+                  margin: 0,
+                }}
+              >
+                {lesson.title}
+              </h2>
+            </div>
+          </div>
+
+          <div
+            style={{
+              color: "#ffd05a",
+              fontSize: 13.5,
+              fontWeight: 800,
+              marginTop: 10,
+            }}
+          >
+            {stage === "summary"
+              ? "Mission Accomplished!"
+              : stage === "recap_quiz"
+              ? `Final Mastery Quiz (${recapQuestionIndex + 1} of ${recapQuestions.length})`
+              : `Topic ${topicIndex + 1} of ${topics.length}: ${currentTopic.title}`}
+          </div>
+        </motion.div>
+
+        {/* Stage Content Panels */}
+        <AnimatePresence mode="wait">
+          {stage === "topic_learn" && (
+            <motion.div
+              key={`learn-${topicIndex}`}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.28 }}
+              style={{
+                background: "rgba(31, 46, 96, 0.88)",
+                backdropFilter: "blur(10px)",
+                border: "1.5px solid #3d4fa6",
+                borderRadius: 20,
+                padding: 22,
+              }}
+            >
+              <p
+                style={{
+                  color: "#ffffff",
+                  fontSize: 16.5,
+                  lineHeight: 1.65,
+                  fontWeight: 600,
+                  marginBottom: 16,
+                }}
+              >
+                {currentTopic.story}
+              </p>
+
+              <div
+                style={{
+                  background: "rgba(21, 32, 68, 0.9)",
+                  border: "1px solid #283b75",
+                  borderRadius: 14,
+                  padding: 15,
+                  marginBottom: 14,
+                }}
+              >
+                <div
                   style={{
-                    backgroundColor: currentPage === 0 ? "#cbd5e1" : "#1e293b",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: 8,
-                    padding: "6px 12px",
-                    fontSize: 12,
-                    fontWeight: 800,
-                    cursor: currentPage === 0 ? "not-allowed" : "pointer",
-                  }}
-                >
-                  ← Prev Page
-                </motion.button>
-                <span
-                  style={{
-                    color: "#64748b",
+                    color: "#8be7ff",
                     fontSize: 13,
-                    fontWeight: 800,
+                    fontWeight: 900,
+                    marginBottom: 6,
                   }}
                 >
-                  Page {currentPage + 1} of {totalPages}
-                </span>
-                <motion.button
-                  type="button"
-                  disabled={currentPage === totalPages - 1}
-                  whileHover={
-                    currentPage === totalPages - 1 ? {} : { scale: 1.06, x: 2 }
-                  }
-                  whileTap={
-                    currentPage === totalPages - 1 ? {} : { scale: 0.92 }
-                  }
-                  onClick={(e) => jumpToPage(currentPage + 1, e)}
+                  Core Pedagogical Guide
+                </div>
+                <div
                   style={{
-                    backgroundColor:
-                      currentPage === totalPages - 1 ? "#cbd5e1" : "#1e293b",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: 8,
-                    padding: "6px 12px",
-                    fontSize: 12,
-                    fontWeight: 800,
-                    cursor:
-                      currentPage === totalPages - 1 ? "not-allowed" : "pointer",
+                    color: "#e2eafc",
+                    fontSize: 14.5,
+                    lineHeight: 1.6,
+                    fontWeight: 500,
                   }}
                 >
-                  Next Page →
-                </motion.button>
+                  {currentTopic.howItWorks}
+                </div>
+              </div>
+
+              <motion.div
+                whileHover={{ scale: 1.015 }}
+                style={{
+                  background: "rgba(20, 51, 54, 0.92)",
+                  border: "1.5px solid #22c55e",
+                  borderRadius: 14,
+                  padding: 15,
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    color: "#4ade80",
+                    fontSize: 12.5,
+                    fontWeight: 900,
+                    marginBottom: 4,
+                  }}
+                >
+                  👀 Visual Classroom Demonstration
+                </div>
+                <div
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 15.5,
+                    lineHeight: 1.55,
+                    fontWeight: 700,
+                  }}
+                >
+                  {currentTopic.visualIllustration}
+                </div>
+              </motion.div>
+
+              {/* MATATAG Picture Examples Gallery */}
+              {currentTopic.pictureExamples?.length > 0 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(195px, 1fr))",
+                    gap: 10,
+                    marginBottom: 14,
+                  }}
+                >
+                  {currentTopic.pictureExamples.map((picEx, idx) => (
+                    <motion.div
+                      key={idx}
+                      whileHover={{ y: -4, scale: 1.02 }}
+                      style={{
+                        background: "rgba(17, 30, 62, 0.94)",
+                        border: "1px solid rgba(99, 225, 232, 0.35)",
+                        borderRadius: 14,
+                        padding: 12,
+                        textAlign: "center",
+                      }}
+                    >
+                      <motion.div
+                        animate={{ scale: [1, 1.04, 1] }}
+                        transition={{
+                          duration: 2.8,
+                          repeat: Infinity,
+                          delay: idx * 0.35,
+                        }}
+                        style={{
+                          fontSize: 20,
+                          lineHeight: 1.45,
+                          whiteSpace: "pre-line",
+                          marginBottom: 6,
+                        }}
+                      >
+                        {picEx.pics}
+                      </motion.div>
+                      <div
+                        style={{
+                          color: "#ffffff",
+                          fontSize: 12.5,
+                          fontWeight: 800,
+                          marginBottom: 2,
+                        }}
+                      >
+                        {picEx.caption}
+                      </div>
+                      <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 600 }}>
+                        {picEx.note}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              <div
+                style={{
+                  background: "rgba(23, 43, 92, 0.92)",
+                  border: "1px solid #395296",
+                  borderRadius: 14,
+                  padding: 15,
+                  marginBottom: 20,
+                }}
+              >
+                <div
+                  style={{
+                    color: "#ffd05a",
+                    fontSize: 12.5,
+                    fontWeight: 900,
+                    marginBottom: 4,
+                  }}
+                >
+                  Key Worked Example
+                </div>
+                <div
+                  style={{
+                    color: "#ffffff",
+                    fontSize: 15.5,
+                    lineHeight: 1.55,
+                    fontWeight: 700,
+                  }}
+                >
+                  {currentTopic.demonstration}
+                </div>
               </div>
 
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.06 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={toggleBookmark}
+                whileHover={{
+                  scale: 1.025,
+                  boxShadow: "0 0 22px rgba(88, 85, 234, 0.65)",
+                }}
+                whileTap={{ scale: 0.96 }}
+                onClick={handleNextAction}
                 style={{
-                  padding: "7px 14px",
-                  borderRadius: 12,
-                  backgroundColor: activeBookmark ? "#ff4757" : "#1e293b",
-                  border: activeBookmark
-                    ? "1.5px solid #ff6b81"
-                    : "1.5px solid #475569",
+                  width: "100%",
+                  background: "linear-gradient(90deg, #5855ea, #818cf8)",
+                  border: "none",
+                  borderRadius: 14,
+                  padding: "14px 18px",
                   color: "#ffffff",
-                  fontSize: 12.5,
+                  fontSize: 16,
                   fontWeight: 900,
                   cursor: "pointer",
                 }}
               >
-                {activeBookmark
-                  ? `${activeBookmark.icon} Unbookmark`
-                  : "🔖 Bookmark"}
+                Take Topic Checkpoint 🎯
               </motion.button>
-            </div>
+            </motion.div>
+          )}
 
-            {/* Sticky Arrow Chapter Tabs on Right Margin */}
-            <div
+          {(stage === "topic_quiz" || stage === "recap_quiz") && activeQuiz && (
+            <motion.div
+              key={`quiz-${stage}-${topicIndex}-${topicQuestionIndex}-${recapQuestionIndex}`}
+              initial={{ opacity: 0, x: 24 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -24 }}
+              transition={{ duration: 0.25 }}
               style={{
-                position: "absolute",
-                right: -54,
-                top: 24,
-                bottom: 24,
-                width: 58,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-around",
-                zIndex: 25,
+                background: "rgba(31, 46, 96, 0.88)",
+                backdropFilter: "blur(10px)",
+                border: "1.5px solid #3d4fa6",
+                borderRadius: 20,
+                padding: 22,
               }}
             >
-              {stickyTabs.map((tab, idx) => {
-                const isActive =
-                  currentPage >= tab.pageIndex &&
-                  (idx === stickyTabs.length - 1 ||
-                    currentPage < stickyTabs[idx + 1].pageIndex);
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: 14,
+                }}
+              >
+                <span
+                  style={{
+                    color: "#8be7ff",
+                    fontSize: 11.5,
+                    fontWeight: 900,
+                    letterSpacing: 0.5,
+                  }}
+                >
+                  {stage === "recap_quiz"
+                    ? `RECAP QUESTION ${recapQuestionIndex + 1} / ${recapQuestions.length}`
+                    : `CHECKPOINT ${topicQuestionIndex + 1} / ${currentTopic.questions.length}`}
+                </span>
+                <span
+                  style={{
+                    background: "#172957",
+                    color: "#ffd05a",
+                    fontSize: 11.5,
+                    fontWeight: 900,
+                    padding: "4px 10px",
+                    borderRadius: 8,
+                  }}
+                >
+                  +{stage === "recap_quiz" ? 10 : 15} XP
+                </span>
+              </div>
 
-                return (
-                  <motion.button
-                    key={`sticky-${idx}`}
-                    type="button"
-                    whileHover={{ x: 6, scale: 1.06 }}
-                    whileTap={{ x: -6, scale: 0.94 }}
-                    onClick={(e) => jumpToPage(tab.pageIndex, e)}
+              <div
+                style={{
+                  color: "#ffffff",
+                  fontSize: 18,
+                  lineHeight: 1.5,
+                  fontWeight: 800,
+                  marginBottom: 18,
+                }}
+              >
+                {activeQuiz.question}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  marginBottom: 16,
+                }}
+              >
+                {activeQuiz.options.map((option, idx) => {
+                  const isThisSelected = selectedOption === idx;
+                  const isRightOption = idx === activeQuiz.correctIndex;
+
+                  let bg = "rgba(41, 60, 120, 0.9)";
+                  let border = "1.5px solid #4a5ebd";
+
+                  if (isAnswered) {
+                    if (isRightOption) {
+                      bg = "rgba(34, 197, 94, 0.28)";
+                      border = "2px solid #4ade80";
+                    } else if (isThisSelected) {
+                      bg = "rgba(248, 113, 113, 0.28)";
+                      border = "2px solid #f87171";
+                    }
+                  }
+
+                  return (
+                    <motion.button
+                      key={idx}
+                      type="button"
+                      disabled={isAnswered}
+                      whileHover={isAnswered ? {} : { scale: 1.015, x: 4 }}
+                      whileTap={isAnswered ? {} : { scale: 0.97 }}
+                      animate={
+                        isAnswered && isThisSelected && !isRightOption
+                          ? { x: [-5, 5, -5, 5, 0] }
+                          : isAnswered && isThisSelected && isRightOption
+                          ? { scale: [1, 1.03, 1] }
+                          : {}
+                      }
+                      onClick={(e) => handleSelectOption(idx, e)}
+                      style={{
+                        background: bg,
+                        border,
+                        borderRadius: 14,
+                        padding: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        textAlign: "left",
+                        cursor: isAnswered ? "default" : "pointer",
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          background: "rgba(255,255,255,0.2)",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginRight: 12,
+                          color: "#ffffff",
+                          fontSize: 13,
+                          fontWeight: 900,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {idx + 1}
+                      </span>
+                      <span
+                        style={{
+                          color: "#ffffff",
+                          fontSize: 15,
+                          lineHeight: 1.45,
+                          fontWeight: 700,
+                          flex: 1,
+                        }}
+                      >
+                        {option}
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+
+              <AnimatePresence>
+                {isAnswered && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
                     style={{
-                      width: isActive ? 66 : 56,
-                      height: 30,
-                      backgroundColor: tab.color,
-                      opacity: isActive ? 1 : 0.88,
-                      border: "none",
-                      borderRadius: "0 6px 6px 0",
-                      color: "#ffffff",
-                      fontSize: 10.5,
-                      fontWeight: 900,
-                      cursor: "pointer",
-                      boxShadow: isActive
-                        ? "0 4px 12px rgba(0, 0, 0, 0.35)"
-                        : "none",
-                      clipPath:
-                        "polygon(0% 0%, 82% 0%, 100% 50%, 82% 100%, 0% 100%)",
-                      paddingRight: 8,
+                      background: "rgba(23, 37, 74, 0.95)",
+                      border: `1.5px solid ${isCorrect ? "#4ade80" : "#8be7ff"}`,
+                      borderRadius: 16,
+                      padding: 16,
+                      marginTop: 8,
                     }}
                   >
-                    {tab.label}
-                  </motion.button>
-                );
-              })}
-            </div>
-          </div>
-        </motion.div>
+                    <div
+                      style={{
+                        color: isCorrect ? "#4ade80" : "#8be7ff",
+                        fontSize: 16,
+                        fontWeight: 900,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {isCorrect ? "🌟 Awesome Job!" : "📌 Good Try! Here's Why:"}
+                    </div>
+                    <div
+                      style={{
+                        color: "#e2eafc",
+                        fontSize: 13.5,
+                        lineHeight: 1.5,
+                        marginBottom: 14,
+                      }}
+                    >
+                      {activeQuiz.explanation}
+                    </div>
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={handleNextAction}
+                      style={{
+                        width: "100%",
+                        background: "linear-gradient(90deg, #5855ea, #818cf8)",
+                        border: "none",
+                        borderRadius: 12,
+                        padding: "12px 16px",
+                        color: "#ffffff",
+                        fontSize: 15,
+                        fontWeight: 900,
+                        cursor: "pointer",
+                      }}
+                    >
+                      Next Question ➔
+                    </motion.button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+
+          {stage === "summary" && (
+            <motion.div
+              key="summary"
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{
+                background: "rgba(31, 46, 96, 0.9)",
+                backdropFilter: "blur(10px)",
+                border: "2px solid #4ade80",
+                borderRadius: 22,
+                padding: 24,
+                textAlign: "center",
+              }}
+            >
+              <motion.div
+                animate={{ rotate: [-5, 5, -5], scale: [1, 1.08, 1] }}
+                transition={{ duration: 2.5, repeat: Infinity }}
+                style={{ fontSize: 44, marginBottom: 6 }}
+              >
+                🎉
+              </motion.div>
+              <h2
+                style={{
+                  color: "#ffffff",
+                  fontSize: 24,
+                  fontWeight: 900,
+                  margin: "0 0 6px",
+                }}
+              >
+                Mission Complete!
+              </h2>
+              <p
+                style={{
+                  color: "#b0c1e4",
+                  fontSize: 13.5,
+                  lineHeight: 1.55,
+                  marginBottom: 18,
+                }}
+              >
+                You explored all topics and conquered the final recap quiz for{" "}
+                <strong>{lesson.title}</strong>!
+              </p>
+
+              <div
+                style={{
+                  background: "rgba(22, 37, 74, 0.9)",
+                  borderRadius: 14,
+                  padding: 16,
+                  marginBottom: 16,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ color: "#a5b8e8", fontSize: 13.5, fontWeight: 700 }}>
+                    Total XP Earned:
+                  </span>
+                  <span style={{ color: "#ffda61", fontSize: 16, fontWeight: 900 }}>
+                    ⚡ {totalXpEarned} XP
+                  </span>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <span style={{ color: "#a5b8e8", fontSize: 13.5, fontWeight: 700 }}>
+                    Mistakes Made:
+                  </span>
+                  <span style={{ color: "#ffffff", fontSize: 16, fontWeight: 900 }}>
+                    {mistakesCount}
+                  </span>
+                </div>
+              </div>
+
+              {mistakesCount === 0 ? (
+                <div
+                  style={{
+                    background: "rgba(46, 37, 9, 0.92)",
+                    border: "1.5px solid #eab308",
+                    borderRadius: 14,
+                    padding: 14,
+                    marginBottom: 18,
+                  }}
+                >
+                  <div style={{ fontSize: 28, marginBottom: 4 }}>👑</div>
+                  <div
+                    style={{
+                      color: "#fde047",
+                      fontSize: 14,
+                      fontWeight: 900,
+                      marginBottom: 4,
+                    }}
+                  >
+                    FLAWLESS EXPLORER BONUS!
+                  </div>
+                  <div style={{ color: "#fef08a", fontSize: 12.5, lineHeight: 1.45 }}>
+                    You solved every question and recap without making a single
+                    mistake! (+50 XP Bonus awarded!)
+                  </div>
+                </div>
+              ) : (
+                <div
+                  style={{
+                    background: "rgba(23, 38, 74, 0.9)",
+                    borderRadius: 12,
+                    padding: 12,
+                    marginBottom: 18,
+                    color: "#a4b7dd",
+                    fontSize: 13,
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Great perseverance! You worked through all the challenges and
+                  mastered this lesson.
+                </div>
+              )}
+
+              <motion.button
+                type="button"
+                whileHover={{
+                  scale: 1.03,
+                  boxShadow: "0 0 22px rgba(34, 197, 94, 0.6)",
+                }}
+                whileTap={{ scale: 0.96 }}
+                onClick={(e) => {
+                  triggerButtonBurst(e, ["⭐", "✨", "🎉", "🚀"]);
+                  playSfx?.("correct");
+                  const isPerfect = mistakesCount === 0;
+                  const isScience =
+                    subject.title.toLowerCase().includes("science") ||
+                    ["matter", "living", "force", "earth"].some((s) =>
+                      subject.title.toLowerCase().includes(s)
+                    );
+                  const quizTimeSecs = quizStartTimeRef.current
+                    ? (Date.now() - quizStartTimeRef.current) / 1000
+                    : 999;
+                  const isSpeedy = quizTimeSecs < 45;
+
+                  onComplete?.(
+                    totalXpEarned,
+                    isPerfect,
+                    isSpeedy && !isScience,
+                    isSpeedy && isScience
+                  );
+                }}
+                style={{
+                  width: "100%",
+                  background: "linear-gradient(90deg, #22c55e, #4ade80)",
+                  border: "none",
+                  borderRadius: 14,
+                  padding: "14px 18px",
+                  color: "#052e16",
+                  fontSize: 15.5,
+                  fontWeight: 900,
+                  cursor: "pointer",
+                }}
+              >
+                Complete Mission & Return 🚀
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Exit / Pause Confirmation Modal */}
+      <AnimatePresence>
+        {showExitModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-backdrop"
+            onClick={() => setShowExitModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="modal-box"
+              style={{ maxWidth: 380, textAlign: "center" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ fontSize: 38, marginBottom: 8 }}>⏸️</div>
+              <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>
+                Pause this mission?
+              </h3>
+              <p
+                style={{
+                  color: "#b0c1e4",
+                  fontSize: 13.5,
+                  lineHeight: 1.5,
+                  marginBottom: 18,
+                }}
+              >
+                Your progress and earned XP will be saved. You can jump right back
+                in where you left off!
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => setShowExitModal(false)}
+                  style={{
+                    background: "#5855ea",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "12px",
+                    color: "#ffffff",
+                    fontSize: 14,
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Keep Learning
+                </motion.button>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => {
+                    setShowExitModal(false);
+                    onBack?.();
+                  }}
+                  style={{
+                    background: "#223561",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "12px",
+                    color: "#b9ccf2",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  Save & Exit to Courses
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Resume Mission Modal */}
+      <AnimatePresence>
+        {showResumeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="modal-backdrop"
+            onClick={handleRestart}
+          >
+            <motion.div
+              initial={{ scale: 0.88, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="modal-box"
+              style={{ maxWidth: 380, textAlign: "center" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ fontSize: 38, marginBottom: 8 }}>🚀</div>
+              <h3 style={{ fontSize: 20, fontWeight: 900, marginBottom: 8 }}>
+                Welcome Back, Explorer!
+              </h3>
+              <p
+                style={{
+                  color: "#b0c1e4",
+                  fontSize: 13.5,
+                  lineHeight: 1.5,
+                  marginBottom: 18,
+                }}
+              >
+                You have saved progress on this mission. Would you like to resume
+                or start fresh?
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={handleResume}
+                  style={{
+                    background: "#5855ea",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "12px",
+                    color: "#ffffff",
+                    fontSize: 14,
+                    fontWeight: 900,
+                    cursor: "pointer",
+                  }}
+                >
+                  Continue Mission 🎯
+                </motion.button>
+                <motion.button
+                  type="button"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={handleRestart}
+                  style={{
+                    background: "#223561",
+                    border: "none",
+                    borderRadius: 12,
+                    padding: "12px",
+                    color: "#b9ccf2",
+                    fontSize: 14,
+                    fontWeight: 800,
+                    cursor: "pointer",
+                  }}
+                >
+                  Restart from Beginning ↺
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

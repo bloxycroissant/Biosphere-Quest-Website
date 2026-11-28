@@ -792,8 +792,6 @@ const SWIMMING_CREATURES = [
 ];
 
 export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
-  // Saved / chosen grade level from explorer (defaults to Grade 1).
-  // Any grade other than your chosen grade (or unlocked sequential grades) stays strictly locked!
   const chosenGrade = Number(explorer?.grade) || 1;
   const [selectedGrade, setSelectedGrade] = useState(chosenGrade);
   const [selectedSubject, setSelectedSubject] = useState("All");
@@ -820,9 +818,6 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
     }, 2800);
   };
 
-  // Sequential Grade Unlocking:
-  // Your chosen grade (e.g., Grade 1) is unlocked; higher grades unlock sequentially
-  // once all courses in the preceding grade are completed!
   const unlockedGrades = useMemo(() => {
     const unlocked = new Set([chosenGrade]);
     for (let g = chosenGrade; g < 6; g += 1) {
@@ -1004,6 +999,8 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
           isLessonUnlocked={(idx) => isLessonUnlocked(activeCourse, idx)}
           onMarkLessonRead={(idx, e, xp) => markLessonAsRead(activeCourse, idx, e, xp)}
           onCompleteModule={(xp) => handleCompleteCourseModule(activeCourse, xp)}
+          onComplete={(xp) => handleCompleteCourseModule(activeCourse, xp)}
+          onBack={closeFullScreenViewer}
           onClose={closeFullScreenViewer}
           onEarnXp={onEarnXp}
           playSfx={playSfx}
@@ -1028,6 +1025,7 @@ export default function ExploreCourses({ explorer, onEarnXp, playSfx }) {
           explorer={explorer}
           readLessons={readLessonsByCourse[activeCourse.id] || []}
           onOpenLessonViewer={() => setViewerMode("lesson")}
+          onBack={closeFullScreenViewer}
           onClose={closeFullScreenViewer}
           onEarnXp={onEarnXp}
           playSfx={playSfx}
