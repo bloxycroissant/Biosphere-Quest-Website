@@ -1786,7 +1786,7 @@ export default function SubjectNotesViewer({
           </div>
         </div>
 
-        {/* Spiral-Bound Explorer Notebook Container (2-Page Full-Screen Spread) */}
+        {/* Spiral-Bound Explorer Notebook Container (2-Page Full-Screen Spread with Center Binder Rings) */}
         <motion.div
           animate={
             isClosing
@@ -1805,8 +1805,8 @@ export default function SubjectNotesViewer({
           <div
             style={{
               backgroundColor: theme.pageBg,
-              borderRadius: `6px ${theme.borderRadius}px ${theme.borderRadius}px 6px`,
-              padding: "26px 26px 20px 52px",
+              borderRadius: theme.borderRadius,
+              padding: "26px 26px 20px 26px",
               minHeight: "76vh",
               position: "relative",
               boxShadow: "0 18px 42px rgba(0, 0, 0, 0.45)",
@@ -1815,55 +1815,69 @@ export default function SubjectNotesViewer({
               justifyContent: "space-between",
             }}
           >
-            {/* Left Spiral Binding Rings & Punched Holes */}
-            <div
-              style={{
-                position: "absolute",
-                left: 10,
-                top: 22,
-                bottom: 22,
-                width: 24,
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "space-between",
-                pointerEvents: "none",
-                zIndex: 5,
-              }}
-            >
-              {Array.from({ length: 16 }).map((_, i) => (
-                <div
-                  key={i}
-                  style={{
-                    height: 16,
-                    display: "flex",
-                    alignItems: "center",
-                    position: "relative",
-                  }}
-                >
+            {/* Center Spine Binder Rings & Punched Holes */}
+            {rightPage !== null && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  top: 22,
+                  bottom: 22,
+                  width: 32,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  pointerEvents: "none",
+                  zIndex: 8,
+                }}
+              >
+                {Array.from({ length: 16 }).map((_, i) => (
                   <div
+                    key={i}
                     style={{
-                      position: "absolute",
-                      left: -14,
-                      width: 26,
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: theme.ringColor,
-                      zIndex: 2,
+                      height: 16,
+                      width: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
                     }}
-                  />
-                  <div
-                    style={{
-                      width: 11,
-                      height: 11,
-                      borderRadius: "50%",
-                      backgroundColor: "#091426",
-                      border: `1.5px solid ${theme.holeBorder}`,
-                      marginLeft: 10,
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+                  >
+                    <div
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        backgroundColor: "#091426",
+                        border: `1.5px solid ${theme.holeBorder}`,
+                        marginRight: 4,
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 22,
+                        height: 4,
+                        borderRadius: 2,
+                        backgroundColor: theme.ringColor,
+                        boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 9,
+                        height: 9,
+                        borderRadius: "50%",
+                        backgroundColor: "#091426",
+                        border: `1.5px solid ${theme.holeBorder}`,
+                        marginLeft: 4,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Animated Drop-Down Bookmark Ribbon */}
             <AnimatePresence>
@@ -1915,25 +1929,16 @@ export default function SubjectNotesViewer({
                   }}
                   transition={{ duration: 0.28, ease: "easeOut" }}
                   style={{
-                    transformOrigin: "left center",
+                    transformOrigin: "center",
                     display: "grid",
                     gridTemplateColumns:
                       rightPage !== null ? "1fr 1fr" : "1fr",
-                    gap: 28,
+                    gap: 44,
                     alignItems: "start",
                   }}
                 >
                   <div>{pages[currentPage]}</div>
-                  {rightPage !== null && (
-                    <div
-                      style={{
-                        borderLeft: `2px dashed ${theme.dividerColor}`,
-                        paddingLeft: 28,
-                      }}
-                    >
-                      {pages[rightPage]}
-                    </div>
-                  )}
+                  {rightPage !== null && <div>{pages[rightPage]}</div>}
                 </motion.div>
               </AnimatePresence>
             </div>
@@ -2144,7 +2149,9 @@ export default function SubjectNotesViewer({
             >
               {stickyTabs.map((tab, idx) => {
                 const isActive =
-                  (rightPage !== null && currentPage <= tab.pageIndex && tab.pageIndex <= rightPage) ||
+                  (rightPage !== null &&
+                    currentPage <= tab.pageIndex &&
+                    tab.pageIndex <= rightPage) ||
                   currentPage === tab.pageIndex;
 
                 return (
