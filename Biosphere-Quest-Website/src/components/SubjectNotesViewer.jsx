@@ -27,8 +27,10 @@ const HighlightableWord = memo(function HighlightableWord({
   onDragHighlight,
 }) {
   return (
-    <span
+    <motion.span
       data-word-key={wordKey}
+      animate={highlightColor ? { scale: [1, 1.04, 1] } : { scale: 1 }}
+      transition={{ duration: 0.2 }}
       onClick={(e) => {
         e.stopPropagation();
         onPress(wordKey);
@@ -39,6 +41,7 @@ const HighlightableWord = memo(function HighlightableWord({
         }
       }}
       style={{
+        display: "inline-block",
         backgroundColor: highlightColor || "transparent",
         borderRadius: highlightColor ? 3 : 0,
         padding: highlightColor ? "0 2px" : 0,
@@ -47,7 +50,7 @@ const HighlightableWord = memo(function HighlightableWord({
       }}
     >
       {word}{" "}
-    </span>
+    </motion.span>
   );
 });
 
@@ -467,7 +470,10 @@ const getTopicWorkedExample = (
 
 function LessonVisual({ data }) {
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35 }}
       style={{
         marginTop: 18,
         padding: 16,
@@ -513,6 +519,9 @@ function LessonVisual({ data }) {
           {data.pictureBoard.map((card, idx) => (
             <motion.div
               key={idx}
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.08 }}
               whileHover={{ y: -3, scale: 1.03 }}
               style={{
                 backgroundColor: "#ffffff",
@@ -522,9 +531,13 @@ function LessonVisual({ data }) {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}>
+              <motion.div
+                animate={{ y: [-1.5, 1.5, -1.5] }}
+                transition={{ duration: 2.8, repeat: Infinity, delay: idx * 0.25 }}
+                style={{ fontSize: 16, fontWeight: 800, marginBottom: 4 }}
+              >
                 {card.art}
-              </div>
+              </motion.div>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#245642" }}>
                 {card.caption}
               </div>
@@ -537,7 +550,10 @@ function LessonVisual({ data }) {
         {data.steps.map((step, index) => (
           <div key={`${step.label}-${index}`}>
             <motion.div
-              whileHover={{ x: 4 }}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + index * 0.08 }}
+              whileHover={{ x: 4, scale: 1.01 }}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -549,7 +565,7 @@ function LessonVisual({ data }) {
               }}
             >
               <motion.span
-                animate={{ scale: [1, 1.12, 1] }}
+                animate={{ scale: [1, 1.12, 1], rotate: [-2, 2, -2] }}
                 transition={{
                   duration: 2.5,
                   repeat: Infinity,
@@ -576,7 +592,9 @@ function LessonVisual({ data }) {
               </div>
             </motion.div>
             {index < data.steps.length - 1 && (
-              <div
+              <motion.div
+                animate={{ y: [0, 3, 0] }}
+                transition={{ duration: 1.6, repeat: Infinity, delay: index * 0.2 }}
                 style={{
                   textAlign: "center",
                   color: "#16806b",
@@ -586,12 +604,12 @@ function LessonVisual({ data }) {
                 }}
               >
                 ↓
-              </div>
+              </motion.div>
             )}
           </div>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -645,24 +663,24 @@ const buildLessonExpansion = (
 
   return {
     isScience,
-    definition: meaningText,
+    definition: `${meaningText}\n\nCourses Page Connection: In your ${subjectTitle} course track (Grade ${gradeLevel}), mastering "${lessonTitle}" prepares you for deeper lessons and interactive checkpoints by linking core vocabulary to real classroom examples.`,
     explanation: isScience
-      ? `In-Depth Scientific Analysis of ${keyword}:\n\n1. Structural Properties & Observations: When examining ${keyword}, scientists begin by documenting physical attributes, thermal changes, and environmental interactions. Every physical system operates according to fixed scientific laws that govern energy conservation, molecular behavior, and system equilibrium.\n\n2. Key Mechanisms & Relationships: Observing ${keyword} requires analyzing cause-and-effect patterns. For instance, changes in temperature, pressure, forces, or biological resources directly alter how the system behaves. Identifying these variables allows us to predict future outcomes accurately.\n\n3. Empirical Rules to Remember: Always distinguish between directly observable traits (such as color, mass, or velocity) and inferred properties (such as chemical composition or potential energy). Verifiable scientific conclusions are built on reproducible, empirical evidence.\n\nAcademic Guidance Note:\n${gradeHint}`
+      ? `In-Depth Scientific & Courses Page Analysis of ${keyword}:\n\n1. Structural Properties & Observations: When examining ${keyword} inside your ${subjectTitle} course module, scientists begin by documenting physical attributes, thermal changes, and environmental interactions. Every physical system operates according to fixed scientific laws that govern energy conservation, molecular behavior, and system equilibrium.\n\n2. Key Mechanisms & Relationships: Observing ${keyword} requires analyzing cause-and-effect patterns. For instance, changes in temperature, pressure, forces, or biological resources directly alter how the system behaves. Tracing these relationships across lessons in the Courses Page helps you see the bigger picture of how nature works.\n\n3. Empirical Rules to Remember: Always distinguish between directly observable traits (such as color, mass, or velocity) and inferred properties (such as chemical composition or potential energy). Verifiable scientific conclusions are built on reproducible, empirical evidence.\n\n4. Connecting Course Lessons Together: Compare what you learn in ${keyword} with related topics on the Courses Page so you can spot recurring patterns, cause-and-effect chains, and environmental conservation habits.\n\nAcademic Guidance Note:\n${gradeHint}`
       : gradeLevel <= 3
-      ? `Primary Classroom Approach for ${keyword}:\n\n1. Visual & Hands-On Learning: In Grade ${gradeLevel}, math is taught using tangible objects, finger counting, visual counters, and block groups rather than abstract formulas. Touching and seeing quantities helps young explorers build strong number sense.\n\n2. Step-by-Step Problem Solving:\nStep A: Read the problem and look at the visual counters, shapes, or items.\nStep B: Use physical items or drawings to group, add, or take away items.\nStep C: Count aloud to find your final answer and verify with your classmates or teacher!\n\n3. Real-World Connection: Math is all around us—whether sharing snacks, counting toys, or measuring lengths with a ruler.\n\nExplorer Tip:\n${gradeHint}`
-      : `Comprehensive Mathematical Explanation of ${keyword}:\n\n1. Foundational Rules & Principles: The mathematical framework of ${keyword} relies on fundamental axioms, formulas, and operational definitions.\n\n2. Systematic Problem Approach: When solving problems involving ${keyword}, always follow a clear three-step process:\nStep A: Carefully identify all given information and denote unknown target variables.\nStep B: Select the appropriate formula or operational rule.\nStep C: Perform arithmetic calculations systematically.\n\n3. Proof and Validation Protocols: Substitute your calculated value back into the original expression to verify equality.\n\nAcademic Guidance Note:\n${gradeHint}`,
+      ? `Primary Classroom & Courses Page Approach for ${keyword}:\n\n1. Visual & Hands-On Learning: In Grade ${gradeLevel} ${subjectTitle}, math is taught using tangible objects, finger counting, visual counters, and block groups rather than abstract formulas. Touching and seeing quantities helps young explorers build strong number sense across every lesson on the Courses Page.\n\n2. Step-by-Step Problem Solving:\nStep A: Read the problem and look at the visual counters, shapes, or items.\nStep B: Use physical items or drawings to group, add, or take away items.\nStep C: Count aloud to find your final answer and verify with your classmates or teacher!\n\n3. Real-World & Course Connection: Every topic on the Courses Page connects to real life—whether sharing snacks, counting toys, spotting patterns, or measuring lengths with a ruler.\n\n4. Growing Your Math Skills: Take your time on each step and use the highlighter or bookmarks in your notebook to revisit tricky ideas whenever you return to the Courses Page.\n\nExplorer Tip:\n${gradeHint}`
+      : `Comprehensive Mathematical & Courses Page Explanation of ${keyword}:\n\n1. Foundational Rules & Principles: The mathematical framework of ${keyword} within ${subjectTitle} relies on fundamental axioms, formulas, and operational definitions that build sequentially across your course modules.\n\n2. Systematic Problem Approach: When solving problems involving ${keyword}, always follow a clear three-step process:\nStep A: Carefully identify all given information and denote unknown target variables.\nStep B: Select the appropriate formula or operational rule.\nStep C: Perform arithmetic calculations systematically.\n\n3. Proof and Validation Protocols: Substitute your calculated value back into the original expression or check units and reasonableness to verify equality and accuracy.\n\n4. Course Progression & Mastery: Linking ${keyword} to earlier and later lessons on the Courses Page strengthens problem-solving speed and prepares you for multi-step assessments.\n\nAcademic Guidance Note:\n${gradeHint}`,
     example: exampleText,
     exampleExplanation: isScience
-      ? `Detailed Breakdown of the Example:\n\nAnalyze the scenario provided above regarding ${keyword}. Observe how each physical component operates in harmony with scientific principles.`
+      ? `Detailed Breakdown of the Example:\n\nAnalyze the scenario provided above regarding ${keyword}. Observe how each physical component operates in harmony with scientific principles, and notice how the same idea can appear in a slightly different form across your ${subjectTitle} course exercises.`
       : gradeLevel <= 3
-      ? `Detailed Breakdown of the Example:\n\nLook at how ${keyword} is shown in the example above using everyday objects and pictures. Counting items together or organizing shapes helps make math fun and easy to understand!`
-      : `Detailed Breakdown of the Example:\n\nExamine the mathematical context established in the example above. By decomposing the example into discrete operational steps, we can easily see how the abstract rule translates into a practical solution.`,
+      ? `Detailed Breakdown of the Example:\n\nLook at how ${keyword} is shown in the example above using everyday objects and pictures. Counting items together, grouping objects, or spotting patterns helps make math fun and easy to understand as you progress through the Courses Page!`
+      : `Detailed Breakdown of the Example:\n\nExamine the mathematical context established in the example above. By decomposing the example into discrete operational steps, we can easily see how the abstract rule translates into a practical solution and transfers to similar problems in your ${subjectTitle} course.`,
     computation: isScience
-      ? `Step-by-Step Practical Demonstration:\n\n1. Observation Phase: Examine the example details carefully: "${exampleText}".\n\n2. Evidence Identification: Locate key details that demonstrate scientific principles in action.\n\n3. Analytical Explanation: Connect the empirical evidence directly back to the scientific laws governing ${keyword}.`
+      ? `Step-by-Step Practical Demonstration:\n\n1. Observation Phase: Examine the example details carefully: "${exampleText}".\n\n2. Evidence Identification: Locate key details that demonstrate scientific principles in action.\n\n3. Analytical Explanation: Connect the empirical evidence directly back to the scientific laws governing ${keyword} and explain why the outcome happens.`
       : gradeLevel <= 3
-      ? `Step-by-Step Classroom Activity:\n\n1. Look at the Pictures: Examine the visual counters, fruit items, or shapes shown in "${exampleText}".\n\n2. Count Aloud: Use your fingers or touch each item one by one to count them out loud.\n\n3. Find the Answer: Put groups together (add) or take items away (subtract) to find your final count!`
-      : `Step-by-Step Computational Procedure:\n\n1. Read & Deconstruct: Review the problem statement: "${exampleText}". Extract all given quantities.\n\n2. Operational Setup: Arrange numbers in logical order according to the standard formula.\n\n3. Execute Calculation: Perform arithmetic operations step-by-step.`,
-    practice: `Comprehensive Activity Exercise:\n\nIn your own words, explain the core meaning of ${keyword}. Next, construct a complete original example that illustrates this concept in action.\n\nExercise Tasks:\n1. Write out the primary definition using clear, formal academic language.\n2. Detail a practical scenario where this concept applies.\n3. Write a short explanation demonstrating step-by-step how your scenario proves the rule!`,
+      ? `Step-by-Step Classroom Activity:\n\n1. Look at the Pictures: Examine the visual counters, fruit items, or shapes shown in "${exampleText}".\n\n2. Count Aloud: Use your fingers or touch each item one by one to count them out loud.\n\n3. Find the Answer: Put groups together (add) or take items away (subtract) to find your final count, then double-check it!`
+      : `Step-by-Step Computational Procedure:\n\n1. Read & Deconstruct: Review the problem statement: "${exampleText}". Extract all given quantities and target unknowns.\n\n2. Operational Setup: Arrange numbers and operations in logical order according to the standard formula or rule.\n\n3. Execute & Verify Calculation: Perform arithmetic operations step-by-step and check that the result makes sense.`,
+    practice: `Comprehensive Activity Exercise:\n\nIn your own words, explain the core meaning of ${keyword} from your ${subjectTitle} course. Next, construct a complete original example that illustrates this concept in action.\n\nExercise Tasks:\n1. Write out the primary definition using clear, accurate language.\n2. Detail a practical scenario where this concept applies in daily life or on the Courses Page.\n3. Write a short explanation demonstrating step-by-step how your scenario proves the rule!`,
   };
 };
 
@@ -793,25 +811,25 @@ export default function SubjectNotesViewer({
     {
       avatar: "🦉",
       name: "Ollie the Owl",
-      tip: "Great reading! Flip pages or tap the chapter tabs!",
+      tip: "Great reading! Flip pages or tap the chapter tabs from your Courses Page!",
       isStella: false,
     },
     {
       avatar: "🦊",
       name: "Felix the Fox",
-      tip: "You're doing super awesome!",
+      tip: "You're doing super awesome across your course chapters!",
       isStella: false,
     },
     {
       avatar: "🐼",
       name: "Pippin Panda",
-      tip: "Spot any fun ideas on this page?",
+      tip: "Spot any fun ideas or course examples on this page?",
       isStella: false,
     },
     {
       avatar: "",
       name: "Stella (Biosphere Quest Mascot)",
-      tip: "Keep exploring, cosmic learner!",
+      tip: "Keep exploring every course lesson, cosmic learner!",
       isStella: true,
     },
   ];
@@ -825,7 +843,7 @@ export default function SubjectNotesViewer({
     {
       icon: "💡",
       title: "KEY INSIGHT",
-      tip: "Notice how this principle connects to real-world models.",
+      tip: "Notice how this principle connects across your Courses Page modules.",
     },
     {
       icon: "📊",
@@ -934,8 +952,11 @@ export default function SubjectNotesViewer({
       return text.split("\n\n").map((paragraph, pIdx) => {
         const words = paragraph.split(" ");
         return (
-          <p
+          <motion.p
             key={pIdx}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: pIdx * 0.06 }}
             style={{
               color: "#475569",
               fontWeight: 600,
@@ -959,7 +980,7 @@ export default function SubjectNotesViewer({
                 />
               );
             })}
-          </p>
+          </motion.p>
         );
       });
     },
@@ -989,7 +1010,7 @@ export default function SubjectNotesViewer({
           <motion.img
             src={stellaMascotImage}
             alt="Stella Mascot"
-            animate={{ y: [-3, 3, -3] }}
+            animate={{ y: [-3, 3, -3], rotate: [-2, 2, -2] }}
             transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
             style={{ width: 42, height: 42, objectFit: "contain" }}
           />
@@ -1016,7 +1037,7 @@ export default function SubjectNotesViewer({
                 marginTop: 2,
               }}
             >
-              Grade {gradeLevel} Explorer&apos;s Master Notebook • DepEd MATATAG
+              Grade {gradeLevel} Explorer&apos;s Master Notebook • Courses Page &amp; DepEd MATATAG
             </div>
           </div>
         </div>
@@ -1039,7 +1060,7 @@ export default function SubjectNotesViewer({
           {isChildTheme ? "🎈 Welcome Explorer!" : "🔬 Academic Research Notebook"}
         </h3>
         {renderParagraphs(
-          `Welcome to the master field notebook for ${subject.title}! This study guide is meticulously designed to provide complete conceptual clarity across 7 full chapters: rigorous scientific and mathematical definitions, picture-rich visual guides, step-by-step worked examples, and interactive activity exercises.`,
+          `Welcome to the master field notebook for ${subject.title} on the Courses Page! This study guide is designed to expand every course lesson with clear definitions, picture-rich visual guides, step-by-step worked examples, and interactive activity exercises across 7 full chapters.`,
           "intro-1",
           0
         )}
@@ -1054,7 +1075,7 @@ export default function SubjectNotesViewer({
           📖 Notebook Structural Organization
         </h3>
         {renderParagraphs(
-          "• Chapters 1–4 (Theoretical Foundations): Focus purely on extensive explanations, formal definitions, visual picture guides, and deep descriptions of core principles.\n\n• Chapters 5–7 (Practical Applications): Focus on comprehensive real-world worked examples, step-by-step computation models, and guided activity exercises.\n\n• Highlighter Tool Usage: Choose a color from the toolbar above to click or drag across important text. Select 'Off' to clear highlights. Use the sticky arrow tabs on the right margin to jump directly across chapters.",
+          "• Chapters 1–4 (Theoretical Foundations): Focus on expanded explanations, formal definitions, visual picture guides, and deep descriptions of core course principles.\n\n• Chapters 5–7 (Practical Applications): Focus on comprehensive real-world worked examples, step-by-step computation models, and guided activity exercises.\n\n• Highlighter Tool Usage: Choose a color from the toolbar above to click or drag across important text. Select 'Off' to clear highlights. Use the sticky arrow tabs on the right margin to jump directly across chapters.",
           "intro-2",
           0
         )}
@@ -1091,7 +1112,7 @@ export default function SubjectNotesViewer({
                 marginBottom: 4,
               }}
             >
-              Chapter {index + 1} of 7 • Theoretical Foundations (Part 1)
+              Chapter {index + 1} of 7 • Courses Page Foundations (Part 1)
             </div>
             <h2
               style={{
@@ -1119,7 +1140,7 @@ export default function SubjectNotesViewer({
                 margin: "0 0 8px",
               }}
             >
-              📖 Core Axiom & Definition
+              📖 Core Axiom &amp; Definition
             </h3>
             {renderParagraphs(expansion.definition, `c${index}-p1`, p1Index)}
 
@@ -1135,6 +1156,9 @@ export default function SubjectNotesViewer({
               {visualData.pictureBoard.map((item, bIdx) => (
                 <motion.div
                   key={bIdx}
+                  initial={{ opacity: 0, scale: 0.94 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: bIdx * 0.07 }}
                   whileHover={{ y: -3, scale: 1.03 }}
                   style={{
                     backgroundColor: "#ffffff",
@@ -1144,9 +1168,13 @@ export default function SubjectNotesViewer({
                     textAlign: "center",
                   }}
                 >
-                  <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 3 }}>
+                  <motion.div
+                    animate={{ scale: [1, 1.06, 1] }}
+                    transition={{ duration: 2.5, repeat: Infinity, delay: bIdx * 0.3 }}
+                    style={{ fontSize: 15, fontWeight: 800, marginBottom: 3 }}
+                  >
                     {item.art}
-                  </div>
+                  </motion.div>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#475569" }}>
                     {item.caption}
                   </div>
@@ -1193,7 +1221,7 @@ export default function SubjectNotesViewer({
                 marginBottom: 4,
               }}
             >
-              Chapter {index + 1} of 7 • Theoretical Foundations (Part 2)
+              Chapter {index + 1} of 7 • Courses Page Foundations (Part 2)
             </div>
             <h2
               style={{
@@ -1221,8 +1249,8 @@ export default function SubjectNotesViewer({
               <>
                 {renderParagraphs(
                   gradeLevel <= 3
-                    ? `Examine the visual guide below to understand how ${chap.title.toLowerCase()} is explored using objects and pictures.`
-                    : `Examine the flow diagram below to understand the key sequential steps of ${chap.title.toLowerCase()}.`,
+                    ? `Examine the visual guide below to understand how ${chap.title.toLowerCase()} is explored using objects and pictures in your ${subject.title} course.`
+                    : `Examine the flow diagram below to understand the key sequential steps of ${chap.title.toLowerCase()} inside your ${subject.title} course.`,
                   `c${index}-map-desc`,
                   p2Index
                 )}
@@ -1238,10 +1266,10 @@ export default function SubjectNotesViewer({
                     margin: "0 0 8px",
                   }}
                 >
-                  🔬 Deep Structural Rules & Mechanics
+                  🔬 Deep Structural Rules &amp; Mechanics
                 </h3>
                 {renderParagraphs(
-                  `Mastering ${chap.title.toLowerCase()} requires analyzing how each rule fits into the overarching academic system.\n\n• Axiom 1 (Fundamental Definition): Always start by anchoring your analysis in the primary definition. Identify all core properties and governing rules before attempting complex problems.\n\n• Axiom 2 (System Interactions): Observe how internal variables interact with external influences. Changing one element shifts the equilibrium of the entire framework.\n\n• Axiom 3 (Verification Protocols): Always cross-examine your observational or computational data against established rules. Consistency across multiple test conditions ensures true mastery!`,
+                  `Mastering ${chap.title.toLowerCase()} on the Courses Page requires analyzing how each rule fits into the overarching ${subject.title} system.\n\n• Axiom 1 (Fundamental Definition): Always start by anchoring your analysis in the primary definition. Identify all core properties and governing rules before attempting complex problems.\n\n• Axiom 2 (System Interactions): Observe how internal variables interact with external influences. Changing one element shifts the equilibrium of the entire framework.\n\n• Axiom 3 (Verification Protocols): Always cross-examine your observational or computational data against established rules. Consistency across multiple test conditions ensures true mastery!`,
                   `c${index}-deep-desc`,
                   p2Index
                 )}
@@ -1366,7 +1394,7 @@ export default function SubjectNotesViewer({
                 margin: "18px 0 8px",
               }}
             >
-              💡 Analytical Breakdown & Solution Notes
+              💡 Analytical Breakdown &amp; Solution Notes
             </h3>
             {renderParagraphs(expansion.exampleExplanation, `c${index}-why`, p4Index)}
             <h3
@@ -1380,7 +1408,7 @@ export default function SubjectNotesViewer({
               🚀 Explorer&apos;s Mission Strategy
             </h3>
             {renderParagraphs(
-              "Apply the foundational rules and theoretical descriptions from Chapters 1–4 to complete this activity exercise. Always check your steps against the definition to verify complete correctness!",
+              `Apply the foundational rules and theoretical descriptions from Chapters 1–4 in your ${subject.title} course to complete this activity exercise. Always check your steps against the definition to verify complete correctness!`,
               `c${index}-tip`,
               p4Index
             )}
@@ -1815,7 +1843,7 @@ export default function SubjectNotesViewer({
               justifyContent: "space-between",
             }}
           >
-            {/* Center Spine Binder Rings & Punched Holes */}
+            {/* Center Spine Binder Rings & Punched Holes (Stays within page body above bottom helper/footer) */}
             {rightPage !== null && (
               <div
                 style={{
@@ -1823,7 +1851,7 @@ export default function SubjectNotesViewer({
                   left: "50%",
                   transform: "translateX(-50%)",
                   top: 22,
-                  bottom: 22,
+                  bottom: 132,
                   width: 32,
                   display: "flex",
                   flexDirection: "column",
@@ -1833,7 +1861,7 @@ export default function SubjectNotesViewer({
                   zIndex: 8,
                 }}
               >
-                {Array.from({ length: 16 }).map((_, i) => (
+                {Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={i}
                     style={{
@@ -1981,32 +2009,41 @@ export default function SubjectNotesViewer({
             {/* Grade-Specific Floating Helper Card (Grades 1-3) or Lab Pro-Tip Stamp (Grades 4-6) */}
             {isChildTheme ? (
               <motion.div
-                animate={{ y: [-3, 3, -3] }}
+                animate={{ y: [-2, 2, -2] }}
                 transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
                 style={{
+                  position: "relative",
+                  zIndex: 12,
                   display: "flex",
                   alignItems: "center",
                   backgroundColor: "#ffffff",
                   border: "1.5px solid #ffd166",
                   borderRadius: 12,
-                  padding: "6px 12px",
+                  padding: "8px 14px",
                   marginTop: 16,
-                  gap: 10,
+                  gap: 12,
                 }}
               >
                 {activeCharacter.isStella ? (
                   <img
                     src={stellaMascotImage}
                     alt="Stella"
-                    style={{ width: 28, height: 28, objectFit: "contain" }}
+                    style={{
+                      width: 30,
+                      height: 30,
+                      objectFit: "contain",
+                      flexShrink: 0,
+                    }}
                   />
                 ) : (
-                  <span style={{ fontSize: 22 }}>{activeCharacter.avatar}</span>
+                  <span style={{ fontSize: 24, flexShrink: 0 }}>
+                    {activeCharacter.avatar}
+                  </span>
                 )}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, textAlign: "left" }}>
                   <div
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 12,
                       fontWeight: 900,
                       color: "#ff7043",
                     }}
@@ -2015,9 +2052,10 @@ export default function SubjectNotesViewer({
                   </div>
                   <div
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 12,
                       fontWeight: 600,
                       color: "#475569",
+                      marginTop: 1,
                     }}
                   >
                     {activeCharacter.tip}
@@ -2029,18 +2067,22 @@ export default function SubjectNotesViewer({
                 animate={{ y: [-2, 2, -2] }}
                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                 style={{
+                  position: "relative",
+                  zIndex: 12,
                   display: "flex",
                   alignItems: "center",
                   backgroundColor: "#f1f5f9",
                   border: "1px solid #cbd5e1",
                   borderRadius: 8,
-                  padding: "6px 12px",
+                  padding: "8px 14px",
                   marginTop: 16,
-                  gap: 10,
+                  gap: 12,
                 }}
               >
-                <span style={{ fontSize: 18 }}>{activeLabStamp.icon}</span>
-                <div style={{ flex: 1 }}>
+                <span style={{ fontSize: 18, flexShrink: 0 }}>
+                  {activeLabStamp.icon}
+                </span>
+                <div style={{ flex: 1, textAlign: "left" }}>
                   <div
                     style={{
                       fontSize: 10.5,
@@ -2053,9 +2095,10 @@ export default function SubjectNotesViewer({
                   </div>
                   <div
                     style={{
-                      fontSize: 11.5,
+                      fontSize: 12,
                       fontWeight: 600,
                       color: "#64748b",
+                      marginTop: 1,
                     }}
                   >
                     {activeLabStamp.tip}
@@ -2067,6 +2110,8 @@ export default function SubjectNotesViewer({
             {/* Pagination & Bookmark Footer */}
             <div
               style={{
+                position: "relative",
+                zIndex: 12,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
