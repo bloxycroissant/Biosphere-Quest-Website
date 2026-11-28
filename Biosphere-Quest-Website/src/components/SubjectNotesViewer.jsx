@@ -1911,34 +1911,69 @@ export default function SubjectNotesViewer({
               )}
             </AnimatePresence>
 
-            {/* 3D Page-Flipping 2-Page Spread Content */}
-            <div style={{ perspective: 1400, flex: 1 }}>
+            {/* Book-Style Page-Flipping 2-Page Spread Content */}
+            <div style={{ perspective: 1800, flex: 1 }}>
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`spread-${currentPage}`}
-                  initial={{
-                    rotateY: flipDirection > 0 ? 18 : -18,
-                    opacity: 0,
-                    x: flipDirection > 0 ? 22 : -22,
-                  }}
-                  animate={{ rotateY: 0, opacity: 1, x: 0 }}
-                  exit={{
-                    rotateY: flipDirection > 0 ? -24 : 24,
-                    opacity: 0,
-                    x: flipDirection > 0 ? -22 : 22,
-                  }}
-                  transition={{ duration: 0.28, ease: "easeOut" }}
+                  initial={{ opacity: 0.9 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0.9 }}
+                  transition={{ duration: 0.32, ease: "easeInOut" }}
                   style={{
-                    transformOrigin: "center",
                     display: "grid",
                     gridTemplateColumns:
                       rightPage !== null ? "1fr 1fr" : "1fr",
                     gap: 44,
                     alignItems: "start",
+                    transformStyle: "preserve-3d",
                   }}
                 >
-                  <div>{pages[currentPage]}</div>
-                  {rightPage !== null && <div>{pages[rightPage]}</div>}
+                  {/* Left Page: flips from right spine when going to Previous Page */}
+                  <motion.div
+                    initial={
+                      flipDirection < 0
+                        ? { rotateY: -135, opacity: 0.2 }
+                        : { rotateY: 0, opacity: 1 }
+                    }
+                    animate={{ rotateY: 0, opacity: 1 }}
+                    exit={
+                      flipDirection < 0
+                        ? { rotateY: -145, opacity: 0 }
+                        : { rotateY: 0, opacity: 1 }
+                    }
+                    transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                    style={{
+                      transformOrigin: "right center",
+                      backfaceVisibility: "hidden",
+                    }}
+                  >
+                    {pages[currentPage]}
+                  </motion.div>
+
+                  {/* Right Page: flips from left spine when going to Next Page */}
+                  {rightPage !== null && (
+                    <motion.div
+                      initial={
+                        flipDirection > 0
+                          ? { rotateY: 135, opacity: 0.2 }
+                          : { rotateY: 0, opacity: 1 }
+                      }
+                      animate={{ rotateY: 0, opacity: 1 }}
+                      exit={
+                        flipDirection > 0
+                          ? { rotateY: 145, opacity: 0 }
+                          : { rotateY: 0, opacity: 1 }
+                      }
+                      transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                      style={{
+                        transformOrigin: "left center",
+                        backfaceVisibility: "hidden",
+                      }}
+                    >
+                      {pages[rightPage]}
+                    </motion.div>
+                  )}
                 </motion.div>
               </AnimatePresence>
             </div>
