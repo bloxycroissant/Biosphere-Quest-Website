@@ -40,79 +40,73 @@ const SUBJECT_GRADE_LESSONS = {
         example: "14 + 5 = 19 mangoes; 19 − 4 = 15 left.",
         difficulty: "Easy",
       },
-      {
-        title: "2D Shapes, Ordinal Numbers & Patterns",
-        meaning: "Identify shapes, positions (1st, 2nd, 3rd), and repeating patterns.",
-        example: "Circle, Square, Circle, Square, [Circle].",
-        difficulty: "Easy",
-      },
     ],
     2: [
       {
-        title: "Numbers Up to 1,000, Addition & Subtraction",
-        meaning: "Read, write, and compute with hundreds, tens, and ones up to 1,000.",
-        example: "245 + 138 = 383; 400 − 125 = 275.",
+        title: "Numbers Up to 1,000 & Place Value",
+        meaning: "Read, write, and identify hundreds, tens, and ones in numbers up to 1,000.",
+        example: "4 hundreds + 2 tens + 6 ones = 426.",
         difficulty: "Easy",
       },
       {
-        title: "Money, Length & Word Problems",
-        meaning: "Solve addition and subtraction word problems involving money and length.",
-        example: "₱100 + ₱25 = ₱125; 15 cm − 6 cm = 9 cm.",
+        title: "Multi-Digit Addition, Subtraction & Word Problems",
+        meaning: "Add and subtract up to 1,000 with regrouping and solve everyday word problems.",
+        example: "245 + 138 = 383; 400 − 125 = 275.",
         difficulty: "Medium",
       },
     ],
     3: [
       {
-        title: "Multiplication, Division & Unit Fractions",
-        meaning: "Relate equal groups to multiplication and division, and name unit fractions.",
-        example: "3 × 4 = 12; 12 ÷ 3 = 4; 1/4 of a whole.",
+        title: "Multiplication & Division Fluency",
+        meaning: "Connect equal groups and arrays to multiplication and division facts.",
+        example: "3 × 4 = 12; 12 ÷ 3 = 4.",
         difficulty: "Medium",
       },
       {
-        title: "Perimeter & Area of Rectangles",
-        meaning: "Measure around a figure for perimeter and count square units inside for area.",
-        example: "4 cm × 3 cm rectangle has perimeter 14 cm and area 12 sq cm.",
+        title: "Unit Fractions, Area & Perimeter",
+        meaning: "Identify unit fractions of a whole and measure perimeter and area of shapes.",
+        example: "1/4 of a whole; 4 cm × 3 cm rectangle has area 12 sq cm.",
         difficulty: "Medium",
       },
     ],
     4: [
       {
-        title: "Multi-Digit Operations, Fractions & Angles",
-        meaning: "Solve multi-step operations, equivalent fractions, perimeter/area, and angles.",
-        example: "2/4 = 1/2; right angle measures 90°.",
+        title: "Multi-Digit Operations & Equivalent Fractions",
+        meaning: "Solve multi-step whole-number operations and recognize equivalent fractions.",
+        example: "2/4 = 1/2; 3/6 = 1/2.",
         difficulty: "Medium",
       },
       {
-        title: "Number Patterns & Problem Solving",
-        meaning: "Analyze growing number sequences and solve multi-step word problems.",
-        example: "2, 5, 8, 11, 14 (+3 rule).",
+        title: "Angles, Perimeter, Area & Number Patterns",
+        meaning: "Measure angles, solve perimeter/area problems, and continue growing number patterns.",
+        example: "Right angle = 90°; pattern 2, 5, 8, 11 (+3).",
         difficulty: "Hard",
       },
     ],
     5: [
       {
-        title: "Decimals, Fractions & Volume",
-        meaning: "Add and subtract decimals, work with fractions, and find rectangular prism volume.",
-        example: "Volume = 5 cm × 3 cm × 2 cm = 30 cm³.",
+        title: "Decimals & Fractions Operations",
+        meaning: "Add and subtract decimals and fractions accurately in multi-step tasks.",
+        example: "0.75 + 0.25 = 1.00; 3/4 − 1/4 = 2/4.",
         difficulty: "Hard",
       },
       {
-        title: "Line Graphs & Data Interpretation",
-        meaning: "Read trends and changes over time using line graphs.",
-        example: "Comparing daily temperature or savings across a week.",
+        title: "Volume of Rectangular Prisms & Line Graphs",
+        meaning: "Compute volume of rectangular prisms and read trends on line graphs.",
+        example: "Volume = 5 cm × 3 cm × 2 cm = 30 cm³.",
         difficulty: "Hard",
       },
     ],
     6: [
       {
         title: "Ratios, Percentages & Integers",
-        meaning: "Work with ratios, rates, percentages, and positive/negative integers.",
+        meaning: "Work with ratios, rates, percentages, and positive and negative integers.",
         example: "Ratio 3:2; 50% of 80 = 40; −4 + 7 = 3.",
         difficulty: "Hard",
       },
       {
-        title: "Algebraic Patterns, Surface Area & Circles",
-        meaning: "Evaluate expressions and equations, and compute circle and surface measurements.",
+        title: "Algebraic Patterns, Equations, Surface Area & Circles",
+        meaning: "Evaluate expressions and equations, and calculate circle and surface area measurements.",
         example: "If x = 4, then 2x + 3 = 11.",
         difficulty: "Hard",
       },
@@ -127,85 +121,79 @@ const SUBJECT_GRADE_LESSONS = {
         difficulty: "Easy",
       },
       {
-        title: "Parts of Plants & Animals",
-        meaning: "Identify outer body parts of animals and main parts of plants and their uses.",
-        example: "Roots take in water; fins help fish swim.",
-        difficulty: "Easy",
-      },
-      {
-        title: "Caring for Our Surroundings",
-        meaning: "Practice safe and clean habits around home, school, and local nature.",
-        example: "Throwing trash in proper bins and avoiding unsafe objects.",
+        title: "Observing Plants, Animals & Safe Habits",
+        meaning: "Notice basic traits of plants and animals and practice safe habits around surroundings.",
+        example: "Roots take in water; keep sharp or unsafe objects away from play.",
         difficulty: "Easy",
       },
     ],
     2: [
       {
-        title: "Push, Pull, Light & Daily Weather",
-        meaning: "Explore how pushes and pulls move objects, light/heat sources, and daily weather.",
-        example: "Pushing a cart starts motion; weather shifts from sunny to rainy.",
+        title: "Push, Pull & Motion",
+        meaning: "Explore how pushes and pulls start, stop, or change how objects move.",
+        example: "Pushing a toy cart forward or pulling a wagon.",
         difficulty: "Easy",
       },
       {
-        title: "Needs of Living Things & Habitats",
-        meaning: "Observe what plants and animals need to live and where they stay.",
-        example: "Plants need sunlight, water, and air to grow.",
+        title: "Light, Heat & Daily Weather",
+        meaning: "Identify sources of light and heat and observe how weather changes across the day.",
+        example: "Sunlight warms the ground; weather shifts from sunny to cloudy or rainy.",
         difficulty: "Medium",
       },
     ],
     3: [
       {
         title: "Matter Around Us: Solids, Liquids & Gases",
-        meaning: "Investigate properties of solids, liquids, and gases and how temperature changes matter.",
-        example: "Ice (solid) melts into water (liquid) when warmed.",
+        meaning: "Investigate observable properties of solids, liquids, and gases.",
+        example: "Ice cube is solid; water is liquid; steam/air is gas.",
         difficulty: "Medium",
       },
       {
-        title: "Heating, Cooling & Material Changes",
-        meaning: "Observe how heating or cooling changes the state or texture of materials.",
-        example: "Water evaporates into vapor or freezes into ice.",
+        title: "How Temperature Changes Matter",
+        meaning: "Observe how heating and cooling change the state or behavior of matter.",
+        example: "Ice melts into water when warmed; water freezes into ice when cooled.",
         difficulty: "Medium",
       },
     ],
     4: [
       {
-        title: "Materials, Mixtures & Changes in Matter",
-        meaning: "Classify materials by properties, explore mixtures, and observe physical/chemical changes.",
-        example: "Mixing pebbles and sand forms a physical mixture.",
+        title: "Materials, Properties & Mixtures",
+        meaning: "Classify materials by properties and explore how mixtures form.",
+        example: "Combining pebbles and sand creates a mixture.",
         difficulty: "Medium",
       },
       {
-        title: "Plant & Animal Life Cycles",
-        meaning: "Trace growth stages and adaptations of living organisms.",
-        example: "Egg → larva → pupa → adult butterfly.",
-        difficulty: "Medium",
+        title: "Physical & Chemical Changes in Matter",
+        meaning: "Observe and compare physical changes and chemical changes in materials.",
+        example: "Cutting paper is a physical change; burning wood produces ash and smoke.",
+        difficulty: "Hard",
       },
     ],
     5: [
       {
-        title: "Body Systems, Reproduction & Weathering",
-        meaning: "Trace body systems, plant/animal reproduction, and how Earth surfaces weather.",
-        example: "Water, wind, and temperature break down rocks over time.",
+        title: "Body Systems & Reproduction",
+        meaning: "Trace how body systems work together and how plants and animals reproduce.",
+        example: "Lungs bring in air while the heart pumps blood; seeds grow into new plants.",
         difficulty: "Hard",
       },
       {
-        title: "Circuits, Sound & Light Interactions",
-        meaning: "Examine how energy travels and interacts with materials.",
-        example: "Complete circuit lights a bulb; light reflects or refracts.",
+        title: "Weathering & Changing Earth Surfaces",
+        meaning: "Examine how wind, water, and temperature weather rocks and shape Earth's surface.",
+        example: "Running water and temperature changes gradually wear down rocks.",
         difficulty: "Hard",
       },
     ],
     6: [
       {
-        title: "Energy, Force, Motion & Earth-Moon Systems",
-        meaning: "Explore energy forms, forces and motion, simple machines, and Earth-Moon cycles.",
-        example: "Gravity and orbital motion govern Earth and Moon movements.",
+        title: "Energy, Forces, Motion & Simple Machines",
+        meaning: "Explore forms of energy, forces and motion, and how simple machines help do work.",
+        example: "Using a ramp or lever makes lifting a load easier.",
         difficulty: "Hard",
       },
       {
-        title: "Ecosystems & Earth Processes",
-        meaning: "Analyze food webs, habitats, and how Earth processes shape environments.",
-        example: "Producers, consumers, and decomposers keep ecosystems balanced.",
+        title: "Earthquakes, Volcanoes & Earth-Moon Systems",
+        meaning: "Investigate earthquakes, volcanic activity, and motions in the Earth-Moon and solar system.",
+        example: "The Moon orbits Earth while Earth rotates and revolves around the Sun.",
         difficulty: "Hard",
       },
     ],
@@ -215,19 +203,13 @@ const SUBJECT_GRADE_LESSONS = {
       {
         title: "Hello, Shallow Reef & Tide Pools",
         meaning: "Meet gentle tide-pool creatures, feel how water moves, and spot living vs. non-living things.",
-        example: "Crabs and shells in a shallow tide pool as gentle waves roll in.",
+        example: "Crabs and shells in a shallow tide pool as gentle waves move along the shore.",
         difficulty: "Easy",
       },
       {
-        title: "Living vs. Non-Living by the Shore",
-        meaning: "Tell living coastal organisms apart from non-living sand, water, and rocks.",
-        example: "A hermit crab moves and grows; a rock stays non-living.",
-        difficulty: "Easy",
-      },
-      {
-        title: "Keeping Shores & Water Clean",
-        meaning: "Learn simple ways to keep coastal areas and water safe for marine life.",
-        example: "Picking up litter so sea creatures don't mistake it for food.",
+        title: "Living vs. Non-Living Along the Shore",
+        meaning: "Distinguish living coastal creatures from non-living sand, water, and rocks.",
+        example: "A small crab moves and grows; a stone and seawater are non-living.",
         difficulty: "Easy",
       },
     ],
@@ -235,69 +217,69 @@ const SUBJECT_GRADE_LESSONS = {
       {
         title: "Whales, Dolphins & Ocean Movement",
         meaning: "Explore how marine animals move, breathe, and shelter in open waters and coastal bays.",
-        example: "Dolphins and whales swim through currents and surface for air.",
+        example: "Dolphins and whales swim through ocean currents and surface to breathe.",
         difficulty: "Easy",
       },
       {
-        title: "Waves, Tides & Coastal Shelters",
-        meaning: "Observe how waves and tides rise and fall along beaches and reefs.",
-        example: "High tide covers tide pools; low tide reveals wet rocks.",
+        title: "Coastal Bays, Currents & Marine Shelter",
+        meaning: "Observe how water movement and coastal bays provide shelter for ocean life.",
+        example: "Sheltered coves and reefs give young fish a safe place to hide.",
         difficulty: "Medium",
       },
     ],
     3: [
       {
         title: "Coral Reefs & Marine Food Chains",
-        meaning: "See how living things in coral reefs and seas depend on one another and on water/light.",
-        example: "Sunlight and algae support reef fish and larger predators.",
+        meaning: "See how living things in coral reefs and seas depend on one another.",
+        example: "Tiny algae and plants feed small reef fish, which larger fish eat.",
         difficulty: "Medium",
       },
       {
-        title: "Protecting Reef Habitats",
-        meaning: "Understand why coral reefs need clean water and gentle human habits.",
-        example: "Avoiding touching or stepping on delicate corals.",
+        title: "Non-Living Water & Light in Reefs",
+        meaning: "Understand how marine organisms depend on non-living water and light.",
+        example: "Clear, sunlit water helps reef-building corals and algae survive.",
         difficulty: "Medium",
       },
     ],
     4: [
       {
         title: "Philippine Seas, Tides & Coastal Habitats",
-        meaning: "Explore marine biodiversity in Philippine waters, coastal landforms, and human impact.",
-        example: "Coral triangles, mangroves, and bays shelter rich marine life.",
+        meaning: "Explore marine biodiversity in Philippine waters and coastal landforms.",
+        example: "Coral reefs, bays, and mangroves support diverse fish and marine life.",
         difficulty: "Medium",
       },
       {
-        title: "Tidal Cycles & Shoreline Changes",
-        meaning: "Connect tide cycles to coastal erosion, deposition, and organism survival.",
-        example: "Intertidal organisms adapt to wet and dry tide periods.",
+        title: "Human Actions & Ocean Protection",
+        meaning: "Examine how human choices affect coastal habitats and how to protect them.",
+        example: "Proper waste disposal keeps plastics out of rivers and Philippine seas.",
         difficulty: "Hard",
       },
     ],
     5: [
       {
-        title: "Pelagic Zones, Currents & Ocean Chemistry",
-        meaning: "Dive from sunlit surface waters to deeper zones while learning salinity and currents.",
-        example: "Sunlight decreases with depth; currents move heat and nutrients.",
+        title: "Pelagic Zones & Ocean Currents",
+        meaning: "Dive from sunlit surface waters to deeper zones while learning about currents.",
+        example: "Sunlight fades in deeper pelagic zones while currents circulate water.",
         difficulty: "Hard",
       },
       {
-        title: "Salinity, Temperature & Marine Life",
-        meaning: "See how salt levels and water temperature shape where ocean organisms live.",
-        example: "Warm sunlit surface layers vs. cooler deeper ocean water.",
+        title: "Salinity & Ocean Chemistry",
+        meaning: "Explore salinity and basic chemical properties of seawater across ocean layers.",
+        example: "Seawater contains dissolved salts and minerals that affect density and marine life.",
         difficulty: "Hard",
       },
     ],
     6: [
       {
-        title: "Ocean-Atmosphere Climate & Blue Carbon",
-        meaning: "Examine how oceans drive weather and climate patterns, blue carbon habitats, and conservation.",
-        example: "Mangroves, seagrasses, and salt marshes store blue carbon.",
+        title: "Ocean-Atmosphere Climate Patterns",
+        meaning: "Examine how oceans and the atmosphere interact to drive weather and climate.",
+        example: "Warm ocean currents and evaporation influence clouds, winds, and rainfall.",
         difficulty: "Hard",
       },
       {
-        title: "Marine Conservation & Sustainable Seas",
-        meaning: "Apply ocean science to protect marine biodiversity and climate balance.",
-        example: "Restoring coastal mangroves protects shorelines and captures carbon.",
+        title: "Blue Carbon Habitats & Marine Conservation",
+        meaning: "Explore blue carbon ecosystems and marine conservation science.",
+        example: "Mangroves and seagrass beds store carbon and protect coastlines.",
         difficulty: "Hard",
       },
     ],
@@ -327,16 +309,28 @@ const detectSubjectKey = (rawSubject, rawLesson) => {
 };
 
 const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => {
+  const normalizedGrade = Math.min(6, Math.max(1, Number(gradeLevel) || 1));
+
+  const explicitSubject =
+    typeof initialSubject === "string"
+      ? initialSubject
+      : initialSubject?.subject || initialSubject?.subjectTitle || "";
+
   const rawSubjTitle =
     typeof initialSubject === "string"
       ? initialSubject
-      : initialSubject?.title || initialSubject?.subject || "";
+      : initialSubject?.title || "";
+
   const rawLessonTitle =
     typeof initialLesson === "string"
       ? initialLesson
       : initialLesson?.title || initialSubject?.lessonTitle || "";
 
-  const subjectKey = detectSubjectKey(rawSubjTitle, rawLessonTitle);
+  const subjectKey = detectSubjectKey(
+    explicitSubject || rawSubjTitle,
+    rawLessonTitle
+  );
+
   const subjectMeta = {
     Math: { title: "Math", icon: "📐", color: "#9c63e8" },
     Science: { title: "Science", icon: "🔬", color: "#4ade80" },
@@ -344,7 +338,7 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
   }[subjectKey];
 
   const gradeBank =
-    SUBJECT_GRADE_LESSONS[subjectKey]?.[gradeLevel] ||
+    SUBJECT_GRADE_LESSONS[subjectKey]?.[normalizedGrade] ||
     SUBJECT_GRADE_LESSONS[subjectKey]?.[1] ||
     SUBJECT_GRADE_LESSONS.Math[1];
 
@@ -355,8 +349,12 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
           typeof item === "string"
             ? {
                 title: item,
-                meaning: gradeBank[idx]?.meaning || `Explore ${item} in ${subjectMeta.title}.`,
-                example: gradeBank[idx]?.example || `Classroom example of ${item}.`,
+                meaning:
+                  gradeBank[idx]?.meaning ||
+                  `Explore ${item} in Grade ${normalizedGrade} ${subjectMeta.title}.`,
+                example:
+                  gradeBank[idx]?.example ||
+                  `Grade ${normalizedGrade} ${subjectMeta.title} example of ${item}.`,
                 difficulty: gradeBank[idx]?.difficulty || "Easy",
               }
             : {
@@ -365,11 +363,11 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
                   item.meaning ||
                   item.description ||
                   gradeBank[idx]?.meaning ||
-                  `Explore ${item.title} in ${subjectMeta.title}.`,
+                  `Explore ${item.title} in Grade ${normalizedGrade} ${subjectMeta.title}.`,
                 example:
                   item.example ||
                   gradeBank[idx]?.example ||
-                  `Classroom example of ${item.title}.`,
+                  `Grade ${normalizedGrade} ${subjectMeta.title} example of ${item.title}.`,
                 difficulty: item.difficulty || gradeBank[idx]?.difficulty || "Easy",
               }
         )
@@ -384,16 +382,17 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
           meaning:
             initialLesson.meaning ||
             initialLesson.description ||
-            `Explore ${initialLesson.title} in ${subjectMeta.title}.`,
+            `Explore ${initialLesson.title} in Grade ${normalizedGrade} ${subjectMeta.title}.`,
           example:
-            initialLesson.example || `Classroom example of ${initialLesson.title}.`,
+            initialLesson.example ||
+            `Grade ${normalizedGrade} ${subjectMeta.title} example of ${initialLesson.title}.`,
           difficulty: initialLesson.difficulty || "Easy",
         }
       : typeof initialLesson === "string" && initialLesson.trim()
       ? {
           title: initialLesson.trim(),
-          meaning: `Explore ${initialLesson.trim()} in ${subjectMeta.title}.`,
-          example: `Classroom example of ${initialLesson.trim()}.`,
+          meaning: `Explore ${initialLesson.trim()} in Grade ${normalizedGrade} ${subjectMeta.title}.`,
+          example: `Grade ${normalizedGrade} ${subjectMeta.title} example of ${initialLesson.trim()}.`,
           difficulty: "Easy",
         }
       : null;
@@ -416,12 +415,10 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
       initialSelectedIndex = 0;
     }
   } else if (
-    initialSubject &&
-    typeof initialSubject === "object" &&
-    initialSubject.title &&
-    !/^(math|science|ocean)$/i.test(initialSubject.title.trim())
+    rawSubjTitle &&
+    !/^(math|science|ocean)$/i.test(rawSubjTitle.trim())
   ) {
-    const cardTopicTitle = initialSubject.title.trim();
+    const cardTopicTitle = rawSubjTitle.trim();
     const foundCardIdx = lessons.findIndex(
       (l) => l.title.toLowerCase() === cardTopicTitle.toLowerCase()
     );
@@ -432,12 +429,13 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
         {
           title: cardTopicTitle,
           meaning:
-            initialSubject.description ||
-            initialSubject.meaning ||
-            `Explore ${cardTopicTitle} in ${subjectMeta.title}.`,
+            initialSubject?.description ||
+            initialSubject?.meaning ||
+            `Explore ${cardTopicTitle} in Grade ${normalizedGrade} ${subjectMeta.title}.`,
           example:
-            initialSubject.example || `Classroom example of ${cardTopicTitle}.`,
-          difficulty: initialSubject.difficulty || "Easy",
+            initialSubject?.example ||
+            `Grade ${normalizedGrade} ${subjectMeta.title} example of ${cardTopicTitle}.`,
+          difficulty: initialSubject?.difficulty || "Easy",
         },
         ...lessons,
       ];
@@ -448,8 +446,12 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
   return {
     subject: {
       title: subjectMeta.title,
-      icon: (typeof initialSubject === "object" && initialSubject?.icon) || subjectMeta.icon,
-      color: (typeof initialSubject === "object" && initialSubject?.color) || subjectMeta.color,
+      icon:
+        (typeof initialSubject === "object" && initialSubject?.icon) ||
+        subjectMeta.icon,
+      color:
+        (typeof initialSubject === "object" && initialSubject?.color) ||
+        subjectMeta.color,
       lessons,
     },
     lessons,
@@ -460,7 +462,7 @@ const resolveSubjectAndLessons = (initialSubject, initialLesson, gradeLevel) => 
 const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
   const cleanSubject = subjectTitle.toLowerCase();
   const cleanLesson = lesson.title.toLowerCase();
-  const grade = Number(gradeLevel) || 1;
+  const grade = Math.min(6, Math.max(1, Number(gradeLevel) || 1));
 
   const isOcean =
     cleanSubject.includes("ocean") ||
