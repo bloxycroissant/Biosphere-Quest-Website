@@ -26,14 +26,28 @@ const buildQuestion = (qText, correct, wrongs, explanation) => {
 };
 
 const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
-  const isScience =
-    subjectTitle.toLowerCase().includes("science") ||
-    ["matter", "living", "force", "earth"].some((s) =>
-      subjectTitle.toLowerCase().includes(s)
-    );
-
   const cleanSubject = subjectTitle.toLowerCase();
   const cleanLesson = lesson.title.toLowerCase();
+  const isOcean =
+    cleanSubject.includes("ocean") ||
+    cleanSubject.includes("marine") ||
+    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
+      cleanLesson
+    );
+  const isScience =
+    isOcean ||
+    cleanSubject.includes("science") ||
+    [
+      "matter",
+      "living",
+      "force",
+      "earth",
+      "sense",
+      "weather",
+      "body",
+      "energy",
+      "mixture",
+    ].some((s) => cleanSubject.includes(s) || cleanLesson.includes(s));
 
   let visualIllustration = "";
   let pictureExamples = [];
@@ -44,34 +58,132 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
   let t2Pool = [];
   let t3Pool = [];
 
-  if (!isScience && cleanSubject.includes("math")) {
+  if (isOcean) {
+    if (gradeLevel <= 2 || /reef|tide|whale|dolphin|movement/.test(cleanLesson)) {
+      visualIllustration =
+        "🌊 Gentle Waves (Motion)  ➔  🦀🐚 Tide Pool & Reef Life  ➔  🐋🐬 Open Ocean";
+      pictureExamples = [
+        {
+          pics: "🦀 🐚 ⭐",
+          caption: "Shallow Tide Pool & Reef",
+          note: "Crabs, shells & sea stars in coastal water",
+        },
+        {
+          pics: "🐋 🐬 🌊",
+          caption: "Whales & Dolphins Moving",
+          note: "Swimming through ocean currents & waves",
+        },
+        {
+          pics: "🪨 💧 🦀",
+          caption: "Living vs. Non-Living Shore",
+          note: "Crabs grow & move; rocks & water are non-living",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Ocean Explorer: Exploring ${lesson.title}—observing how water moves, spotting living vs. non-living things, and meeting marine animals safely.`;
+      howItWorks =
+        "Observe how water moves with tides and waves, and distinguish living ocean creatures (which grow, breathe, and respond) from non-living elements like rocks, sand, and water.";
+      demoText =
+        lesson.example ||
+        "Observing a tide pool crab moving near wet rocks as gentle waves roll in and out.";
+    } else {
+      visualIllustration =
+        "☀️ Sunlit Surface ➔ 🌊 Currents & Tides ➔ 🪸 Coral Reefs & 🌿 Blue Carbon";
+      pictureExamples = [
+        {
+          pics: "🪸 🐠 🦈",
+          caption: "Coral Reef & Marine Food Chain",
+          note: "Producers, grazers & predators stay balanced",
+        },
+        {
+          pics: "🏖️ 🌊 🪨",
+          caption: "Coastal Habitats & Tides",
+          note: "Rise and fall of sea levels shape shorelines",
+        },
+        {
+          pics: "🌿🌊 🌍",
+          caption: "Pelagic Zones & Blue Carbon",
+          note: "Mangroves, seagrasses & ocean currents regulate climate",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Ocean Science: Investigating ${lesson.title} across marine ecosystems, currents, chemistry, and climate connections.`;
+      howItWorks =
+        "Trace energy flow through marine food chains, analyze how tides, currents, and depth zones affect organisms, and see how coastal habitats like mangroves and coral reefs protect marine biodiversity.";
+      demoText =
+        lesson.example ||
+        "Tracing how sunlight and nutrients support reef organisms, coastal habitats, and ocean-atmosphere balance.";
+    }
+
+    t1Pool = [
+      buildQuestion(
+        `What is the main focus of ${lesson.title} in Grade ${gradeLevel} Ocean studies?`,
+        lesson.meaning ||
+          "Understanding ocean habitats, marine life, water movement, and coastal conservation.",
+        [
+          "Ignoring how water and living things interact.",
+          "Assuming all objects in the sea are alive.",
+        ],
+        "Correct! Ocean studies connect water movement, habitats, and marine organisms."
+      ),
+      buildQuestion(
+        "Which pair shows a living ocean organism and a non-living ocean feature?",
+        "A sea turtle (living) and ocean water or a rock (non-living).",
+        [
+          "A pebble (living) and a fish (non-living).",
+          "Sand grains (living) and sunlight (non-living).",
+        ],
+        "Spot on! Living things grow and need food/water, while rocks, sand, and water are non-living."
+      ),
+    ];
+    t2Pool = [
+      buildQuestion(
+        `In our classroom ocean demonstration (${demoText}), what should you observe carefully?`,
+        demoText,
+        [
+          "Nothing changes in marine environments.",
+          "Guessing without looking at organisms or water movement.",
+        ],
+        "Great job! Careful observation helps explain marine behavior and ocean dynamics."
+      ),
+    ];
+    t3Pool = [
+      buildQuestion(
+        "How can we help protect ocean habitats and marine creatures in daily life?",
+        "Reduce plastic waste, avoid disturbing wildlife, and support clean coastal and water habits.",
+        [
+          "Leave trash along beaches and waterways.",
+          "Harm marine animals for fun.",
+        ],
+        "Wonderful! Caring for water and habitats keeps marine ecosystems healthy."
+      ),
+    ];
+  } else if (!isScience && cleanSubject.includes("math")) {
     if (gradeLevel === 1) {
-      if (/count|number|sense|ordinal/.test(cleanLesson)) {
+      if (/count|number|sense|ordinal|100|place/.test(cleanLesson)) {
         visualIllustration =
-          "🍎 🍎 🍎 🍎 🍎  (5 Mangoes)   and   🪙 🪙 🪙  (3 Piso Coins)";
+          "🟦 (10-Rod) 🟦 (10-Rod)  +  🟨 🟨 🟨 (3-Ones)  =  23 (Up to 100)   |   1️⃣st ➔ 2️⃣nd ➔ 3️⃣rd";
         pictureExamples = [
           {
-            pics: "🥭 🥭 🥭 🥭",
-            caption: "4 Carabao Mangoes on a tray",
-            note: "Tap each mango 1, 2, 3, 4",
+            pics: "🥭 🥭 🥭 🥭\n🪙 🪙 🪙 🪙 🪙",
+            caption: "4 Mangoes & 5 Piso Coins",
+            note: "Tap each item 1 by 1 to count accurately",
           },
           {
-            pics: "🪙 🪙 🪙 🪙 🪙",
-            caption: "5 Piso Coins in a row",
-            note: "5 is 1 more than 4",
+            pics: "🟦🟦🟦  🟨🟨",
+            caption: "3 Tens + 2 Ones = 32",
+            note: "Group tens blocks and count leftover ones",
           },
           {
             pics: "1️⃣st 🐢  2️⃣nd 🦀  3️⃣rd 🐠",
-            caption: "Ordinal positions in line",
-            note: "1st, 2nd, 3rd from the left",
+            caption: "Ordinal Positions in Line",
+            note: "Compare quantities & tell positions up to 100",
           },
         ];
         storyText =
-          "DepEd MATATAG Grade 1 Math: In our classroom, we use real physical objects like mangoes, sticks, and piso coins to count and compare quantities up to 100.";
+          "DepEd MATATAG Grade 1 Math: In our classroom, we count, read, write, and compare whole numbers up to 100 using tens and ones blocks, mangoes, and piso coins.";
         howItWorks =
-          "One-to-one correspondence: Point your finger at each object one by one from left to right. The last counting word spoken gives the total amount.";
+          "One-to-one correspondence and place value: Point to each object one by one from left to right, group tens rods with ones units, and compare which set has more, fewer, or is equal.";
         demoText =
-          "Classroom Activity: Grouping 5 mangoes on the desk and matching them with number symbols.";
+          "Classroom Activity: Building 32 using 3 tens rods and 2 ones cubes, then comparing it with 25.";
         t1Pool = [
           buildQuestion(
             "When counting physical objects on your desk, what is the proper method?",
@@ -221,27 +333,27 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       }
     } else if (gradeLevel === 2) {
       visualIllustration =
-        "🟦 (100-Flat)  |  🟩 🟩 (20-Rods)  |  🟨 🟨 🟨 (3-Units)  ➔  123";
+        "🟦 (100-Flat)  |  🟩 🟩 (20-Rods)  |  🟨 🟨 🟨 (3-Units)  ➔  123 (Up to 1,000)";
       pictureExamples = [
         {
           pics: "🟦 🟩 🟨🟨",
           caption: "1 Hundred + 1 Ten + 2 Ones = 112",
-          note: "Read place value from left to right",
+          note: "Read place value up to 1,000 from left to right",
         },
         {
           pics: "💵 ₱100  +  🪙 ₱20  +  🪙 ₱5  =  ₱125",
-          caption: "Philippine Money Combination",
-          note: "Count bills first, then coins",
+          caption: "Addition & Subtraction with Money",
+          note: "Add or subtract within each place value column",
         },
         {
           pics: "📏 [0 cm ━━━ 15 cm Ruler]",
-          caption: "Measuring Classroom Ribbon",
-          note: "Align edge with the 0 cm mark",
+          caption: "Measuring & Word Problems",
+          note: "Align edge with 0 cm & solve step word problems",
         },
       ];
-      storyText = `DepEd MATATAG Grade 2 Math: Mastering ${lesson.title} with Base-10 blocks, standard measurement units, and Philippine currency.`;
+      storyText = `DepEd MATATAG Grade 2 Math: Mastering ${lesson.title} with hundreds, tens, and ones up to 1,000, multi-digit addition/subtraction word problems, and measurement.`;
       howItWorks =
-        "Organize numbers by place value (Hundreds, Tens, Ones) and regroup when columns exceed 9.";
+        "Organize numbers by place value (Hundreds, Tens, Ones up to 1,000) and regroup when adding or subtracting across columns in word problems.";
       demoText = lesson.example;
       t1Pool = [
         buildQuestion(
@@ -269,27 +381,27 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       ];
     } else if (gradeLevel === 3) {
       visualIllustration =
-        "⭐⭐⭐⭐ / ⭐⭐⭐⭐ / ⭐⭐⭐⭐  (3 Equal Rows of 4 = 12 Array)";
+        "⭐⭐⭐⭐ / ⭐⭐⭐⭐ / ⭐⭐⭐⭐  (3 × 4 = 12)   |   🍕 1/2, 1/4   |   ⬜ Area & Perimeter";
       pictureExamples = [
         {
           pics: "🍪🍪🍪\n🍪🍪🍪\n🍪🍪🍪",
-          caption: "3 Rows × 3 Cookies = 9 Total",
-          note: "Equal rows form a rectangular array",
+          caption: "Multiplication & Division (3 × 3 = 9)",
+          note: "Equal rows form arrays and relate to division",
         },
         {
           pics: "🍕 [1/2 Shaded]   🥧 [1/4 Shaded]",
           caption: "Unit Fractions of a Whole",
-          note: "Denominator shows equal parts",
+          note: "Denominator shows equal parts of one whole",
         },
         {
           pics: "⬜ 4cm + 4cm + 4cm + 4cm = 16cm",
-          caption: "Perimeter Around a Square",
-          note: "Add all outer side lengths",
+          caption: "Perimeter & Area of Rectangles",
+          note: "Add outer sides for perimeter; multiply rows × cols for area",
         },
       ];
-      storyText = `DepEd MATATAG Grade 3 Math: Exploring ${lesson.title} through multiplication arrays, fractions, and perimeter grids.`;
+      storyText = `DepEd MATATAG Grade 3 Math: Exploring ${lesson.title} through multiplication and division fluency, unit fractions, and perimeter/area measurement.`;
       howItWorks =
-        "Multiplication represents equal groups and rectangular arrays. Fractions name equal parts of a whole.";
+        "Multiplication and division connect equal groups and arrays; unit fractions represent one equal part of a whole; perimeter measures around a shape and area counts square units inside.";
       demoText = lesson.example;
       t1Pool = [
         buildQuestion(
@@ -317,27 +429,27 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       ];
     } else {
       visualIllustration =
-        "📊 [MATATAG Curriculum Framework & Mathematical Model]";
+        "📊 [MATATAG Curriculum Framework: Operations, Fractions/Decimals, Geometry & Ratios]";
       pictureExamples = [
         {
-          pics: "📐 2x + 4 = 12  ➔  x = 4",
-          caption: "Balanced Equation Model",
-          note: "Perform inverse operations on both sides",
+          pics: "📐 2x + 4 = 12  ➔  x = 4\n📐 ∠ 90° Right Angle",
+          caption: "Operations, Angles & Algebraic Patterns",
+          note: "Follow order of operations, measure angles & balance equations",
         },
         {
           pics: "📦 L=5cm, W=3cm, H=2cm  ➔  V=30cm³",
-          caption: "Volume & Spatial Grid",
-          note: "Multiply length × width × height",
+          caption: "Volume, Decimals & Line Graphs",
+          note: "Compute rectangular prism volume & read trends over time",
         },
         {
-          pics: "📈 [20% 🟦 | 50% 🟩 | 30% 🟨]",
-          caption: "Percentage & Data Distribution",
-          note: "Parts out of 100% total",
+          pics: "📈 [20% 🟦 | 50% 🟩 | 30% 🟨]\n⚖️ Ratio 3:2 = 6:4",
+          caption: "Ratios, Percentages & Integers",
+          note: "Compare quantities proportionally & work with positive/negative values",
         },
       ];
-      storyText = `DepEd MATATAG Grade ${gradeLevel} Math: Advanced problem solving for ${lesson.title}.`;
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Math: Structured problem solving for ${lesson.title}.`;
       howItWorks =
-        "Analyze given data, apply standard mathematical algorithms, and verify solutions against problem constraints.";
+        "Analyze given data, apply standard mathematical rules or formulas step-by-step, and verify solutions against problem constraints and units.";
       demoText = lesson.example;
       t1Pool = [
         buildQuestion(
@@ -365,29 +477,134 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       ];
     }
   } else {
-    visualIllustration =
-      "🌱 Roots (Water Absorption) ➔ 🌿 Stem (Transport) ➔ ☀️ Leaves (Food Synthesis)";
-    pictureExamples = [
-      {
-        pics: "☀️ ➔ 🌿 ➔ 🍃 (O₂ + Glucose)",
-        caption: "Sunlight & Leaf Energy Cycle",
-        note: "Chlorophyll captures light energy",
-      },
-      {
-        pics: "🧊 ➔ 💧 ➔ ☁️",
-        caption: "Solid, Liquid & Gas States",
-        note: "Heat energy drives state changes",
-      },
-      {
-        pics: "🌊 ➔ ☁️ ➔ 🌧️ ➔ 🏞️",
-        caption: "Water Cycle in Nature",
-        note: "Evaporation, condensation & precipitation",
-      },
-    ];
-    storyText = `DepEd MATATAG Science Curriculum: Investigating ${lesson.title} in our natural environment.`;
-    howItWorks =
-      "Scientific inquiry involves observing physical phenomena, recording empirical data, and drawing evidence-based conclusions.";
-    demoText = lesson.example;
+    if (/sense|living|earth|surround/.test(cleanLesson)) {
+      visualIllustration =
+        "👀 Eyes 👂 Ears 👃 Nose 👅 Tongue ✋ Skin  ➔  🌿 Animals, Plants & Surroundings";
+      pictureExamples = [
+        {
+          pics: "👀 👂 👃 👅 ✋",
+          caption: "Five Senses for Safe Observation",
+          note: "Never taste or touch unknown or unsafe items",
+        },
+        {
+          pics: "🐕 🌳 🪨 ☀️",
+          caption: "Living vs. Non-Living Things",
+          note: "Dogs & trees grow/need food; rocks & sunlight do not",
+        },
+        {
+          pics: "🏠 ☁️ 🌳 🛣️",
+          caption: "Daily Earth Surroundings",
+          note: "Observe weather, soil, plants & animals around school/home",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Using your senses safely to observe living and non-living things, plants, animals, and daily Earth surroundings.`;
+      howItWorks =
+        "Use sight, hearing, smell, touch, and taste safely to notice details, tell living things apart from non-living things, and describe surroundings.";
+      demoText =
+        lesson.example ||
+        "Looking at a leafy plant and a stone in the school garden to compare living and non-living traits.";
+    } else if (/push|pull|light|weather/.test(cleanLesson)) {
+      visualIllustration =
+        "👉 Push / 🤲 Pull (Motion)  |  ☀️🔦 Light & Heat  |  ☀️⛅🌧️ Daily Weather";
+      pictureExamples = [
+        {
+          pics: "👉 [Push] 🛒  /  🤲 [Pull] 🎒",
+          caption: "Pushes & Pulls Move Objects",
+          note: "Forces start, stop, or change how objects move",
+        },
+        {
+          pics: "☀️ 💡 🔦",
+          caption: "Sources of Light & Heat",
+          note: "Sunlight and lamps give light and warmth",
+        },
+        {
+          pics: "☀️ ➔ ⛅ ➔ 🌧️",
+          caption: "Daily Weather Changes",
+          note: "Sunny, cloudy, windy, or rainy conditions across the day",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Exploring pushes and pulls, sources of light and heat, and how daily weather changes.`;
+      howItWorks =
+        "Notice how pushes and pulls change motion, how light and heat come from natural and artificial sources, and how daily weather can shift from morning to afternoon.";
+      demoText =
+        lesson.example ||
+        "Pushing a toy cart across the floor, feeling sunlight warmth, and recording sunny vs. rainy weather.";
+    } else if (/matter|solid|liquid|gas|mixture|change/.test(cleanLesson)) {
+      visualIllustration =
+        "🧊 Solid (Fixed Shape)  ➔  💧 Liquid (Flows)  ➔  ☁️ Gas (Spreads)  |  🥣 Mixtures";
+      pictureExamples = [
+        {
+          pics: "🧊 🪨 📦",
+          caption: "Solids Keep Their Shape",
+          note: "Particles are closely packed together",
+        },
+        {
+          pics: "💧 🥛 🫖",
+          caption: "Liquids Flow & Take Container Shape",
+          note: "Temperature changes can melt or freeze matter",
+        },
+        {
+          pics: "☁️ 🎈 💨",
+          caption: "Gases Spread to Fill Space",
+          note: "Mixtures combine materials physically or change state",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Investigating ${lesson.title}—observable properties, mixtures, and physical/chemical changes.`;
+      howItWorks =
+        "Classify materials by properties like shape, texture, and state (solid, liquid, gas), observe mixtures, and note how heating, cooling, or mixing changes matter.";
+      demoText =
+        lesson.example ||
+        "Observing ice melting into water, mixing pebbles and sand, or heating water into steam.";
+    } else if (/body|reproduction|weathering|energy|force|motion|earth-moon/.test(cleanLesson)) {
+      visualIllustration =
+        "🫀 Body Systems & Life Cycles  |  🪨🌦️ Weathering  |  ⚡🧲🌕 Energy, Forces & Earth-Moon";
+      pictureExamples = [
+        {
+          pics: "🫀 Lungs/Heart  🌱🌸 Life Cycle",
+          caption: "Body Systems & Reproduction",
+          note: "Organs work together; plants & animals reproduce",
+        },
+        {
+          pics: "🪨 💧💨 Weathering",
+          caption: "Earth Surfaces & Weathering",
+          note: "Wind, water & temperature break down rocks over time",
+        },
+        {
+          pics: "⚡ 🧲 🌎🌕",
+          caption: "Energy, Forces & Earth-Moon System",
+          note: "Energy transfers, forces move objects & Moon orbits Earth",
+        },
+      ];
+      storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Investigating ${lesson.title} through structured evidence and real-world systems.`;
+      howItWorks =
+        "Scientific inquiry involves observing physical phenomena, identifying how parts or forces interact, recording empirical data, and drawing evidence-based conclusions.";
+      demoText = lesson.example;
+    } else {
+      visualIllustration =
+        "🌱 Roots (Water Absorption) ➔ 🌿 Stem (Transport) ➔ ☀️ Leaves (Food Synthesis)";
+      pictureExamples = [
+        {
+          pics: "☀️ ➔ 🌿 ➔ 🍃 (O₂ + Glucose)",
+          caption: "Sunlight & Leaf Energy Cycle",
+          note: "Chlorophyll captures light energy",
+        },
+        {
+          pics: "🧊 ➔ 💧 ➔ ☁️",
+          caption: "Solid, Liquid & Gas States",
+          note: "Heat energy drives state changes",
+        },
+        {
+          pics: "🌊 ➔ ☁️ ➔ 🌧️ ➔ 🏞️",
+          caption: "Water Cycle in Nature",
+          note: "Evaporation, condensation & precipitation",
+        },
+      ];
+      storyText = `DepEd MATATAG Science Curriculum: Investigating ${lesson.title} in our natural environment.`;
+      howItWorks =
+        "Scientific inquiry involves observing physical phenomena, recording empirical data, and drawing evidence-based conclusions.";
+      demoText = lesson.example;
+    }
+
     t1Pool = [
       buildQuestion(
         `What scientific principle explains ${lesson.title}?`,
@@ -398,8 +615,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
     ];
     t2Pool = [
       buildQuestion(
-        `In our observation example (${lesson.example}), what was demonstrated?`,
-        lesson.example,
+        `In our observation example (${demoText}), what was demonstrated?`,
+        demoText,
         ["An impossible anomaly.", "Nothing."],
         "Spot on! Empirical evidence proves scientific concepts."
       ),
@@ -459,7 +676,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       "Clear communication of knowledge!"
     ),
     buildQuestion(
-      `Mastery Check 3: Recall our example: "${lesson.example}". What did it illustrate?`,
+      `Mastery Check 3: Recall our example: "${demoText}". What did it illustrate?`,
       lesson.title,
       ["An unrelated topic.", "An error in calculation."],
       "Great recognition of worked examples!"
@@ -1902,6 +2119,7 @@ export default function InteractiveLessonViewer({
                   const isPerfect = mistakesCount === 0;
                   const isScience =
                     subject.title.toLowerCase().includes("science") ||
+                    subject.title.toLowerCase().includes("ocean") ||
                     ["matter", "living", "force", "earth"].some((s) =>
                       subject.title.toLowerCase().includes(s)
                     );
