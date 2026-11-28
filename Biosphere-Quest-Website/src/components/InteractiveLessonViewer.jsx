@@ -25,6 +25,110 @@ const buildQuestion = (qText, correct, wrongs, explanation) => {
   };
 };
 
+const resolveSubjectAndLesson = (initialSubject, initialLesson, gradeLevel) => {
+  const rawTitle = (initialSubject?.title || "").trim();
+  const lowerTitle = rawTitle.toLowerCase();
+
+  const isOceanCard =
+    lowerTitle.includes("ocean") ||
+    lowerTitle.includes("marine") ||
+    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
+      lowerTitle
+    );
+
+  const isScienceCard =
+    !isOceanCard &&
+    (lowerTitle.includes("science") ||
+      [
+        "sense",
+        "living",
+        "earth",
+        "matter",
+        "solid",
+        "liquid",
+        "gas",
+        "push",
+        "pull",
+        "light",
+        "weather",
+        "mixture",
+        "body",
+        "reproduction",
+        "weathering",
+        "energy",
+        "force",
+        "motion",
+        "moon",
+      ].some((kw) => lowerTitle.includes(kw)));
+
+  const resolvedSubject = initialSubject?.title
+    ? {
+        title: initialSubject.title,
+        icon:
+          initialSubject.icon ||
+          (isOceanCard ? "🌊" : isScienceCard ? "🔬" : "📐"),
+        color:
+          initialSubject.color ||
+          (isOceanCard ? "#38bdf8" : isScienceCard ? "#4ade80" : "#9c63e8"),
+        lessons: Array.isArray(initialSubject.lessons)
+          ? initialSubject.lessons
+          : [],
+      }
+    : {
+        title: "Math",
+        icon: "📐",
+        color: "#9c63e8",
+        lessons: [],
+      };
+
+  const candidateLesson =
+    initialLesson && typeof initialLesson === "object" && initialLesson.title
+      ? initialLesson
+      : typeof initialLesson === "string" && initialLesson.trim()
+      ? { title: initialLesson.trim() }
+      : Array.isArray(resolvedSubject.lessons) && resolvedSubject.lessons[0]
+      ? resolvedSubject.lessons[0]
+      : null;
+
+  const lessonTitle =
+    candidateLesson?.title ||
+    (isOceanCard
+      ? gradeLevel === 1
+        ? "Hello, Shallow Reef & Tide Pools"
+        : `${resolvedSubject.title} Exploration`
+      : isScienceCard
+      ? gradeLevel === 1
+        ? "Senses, Living Things & Earth Surroundings"
+        : `${resolvedSubject.title} Investigation`
+      : "Counting");
+
+  const lessonMeaning =
+    candidateLesson?.meaning ||
+    (isOceanCard
+      ? `Explore ${lessonTitle.toLowerCase()}, including marine life, water movement, and coastal habitats.`
+      : isScienceCard
+      ? `Observe and investigate ${lessonTitle.toLowerCase()} using evidence and safe exploration.`
+      : "Numbers tell us amounts.");
+
+  const lessonExample =
+    candidateLesson?.example ||
+    (isOceanCard
+      ? "Spotting crabs and shells in a shallow tide pool as gentle waves move along the shore."
+      : isScienceCard
+      ? "Using your senses safely to observe living plants and animals versus non-living rocks and water."
+      : "1, 2, 3");
+
+  return {
+    subject: resolvedSubject,
+    lesson: {
+      title: lessonTitle,
+      meaning: lessonMeaning,
+      example: lessonExample,
+      difficulty: candidateLesson?.difficulty || "Easy",
+    },
+  };
+};
+
 const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
   const cleanSubject = subjectTitle.toLowerCase();
   const cleanLesson = lesson.title.toLowerCase();
@@ -33,7 +137,11 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
     cleanSubject.includes("marine") ||
     /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
       cleanLesson
+    ) ||
+    /reef|tide|whale|dolphin|coral|pelagic|current|blue carbon|sea|coastal/.test(
+      cleanSubject
     );
+
   const isScience =
     isOcean ||
     cleanSubject.includes("science") ||
@@ -47,6 +155,12 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       "body",
       "energy",
       "mixture",
+      "solid",
+      "liquid",
+      "gas",
+      "push",
+      "pull",
+      "light",
     ].some((s) => cleanSubject.includes(s) || cleanLesson.includes(s));
 
   let visualIllustration = "";
@@ -82,9 +196,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       storyText = `DepEd MATATAG Grade ${gradeLevel} Ocean Explorer: Exploring ${lesson.title}—observing how water moves, spotting living vs. non-living things, and meeting marine animals safely.`;
       howItWorks =
         "Observe how water moves with tides and waves, and distinguish living ocean creatures (which grow, breathe, and respond) from non-living elements like rocks, sand, and water.";
-      demoText =
-        lesson.example ||
-        "Observing a tide pool crab moving near wet rocks as gentle waves roll in and out.";
+      demoText = lesson.example;
     } else {
       visualIllustration =
         "☀️ Sunlit Surface ➔ 🌊 Currents & Tides ➔ 🪸 Coral Reefs & 🌿 Blue Carbon";
@@ -108,16 +220,13 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       storyText = `DepEd MATATAG Grade ${gradeLevel} Ocean Science: Investigating ${lesson.title} across marine ecosystems, currents, chemistry, and climate connections.`;
       howItWorks =
         "Trace energy flow through marine food chains, analyze how tides, currents, and depth zones affect organisms, and see how coastal habitats like mangroves and coral reefs protect marine biodiversity.";
-      demoText =
-        lesson.example ||
-        "Tracing how sunlight and nutrients support reef organisms, coastal habitats, and ocean-atmosphere balance.";
+      demoText = lesson.example;
     }
 
     t1Pool = [
       buildQuestion(
         `What is the main focus of ${lesson.title} in Grade ${gradeLevel} Ocean studies?`,
-        lesson.meaning ||
-          "Understanding ocean habitats, marine life, water movement, and coastal conservation.",
+        lesson.meaning,
         [
           "Ignoring how water and living things interact.",
           "Assuming all objects in the sea are alive.",
@@ -126,7 +235,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       ),
       buildQuestion(
         "Which pair shows a living ocean organism and a non-living ocean feature?",
-        "A sea turtle (living) and ocean water or a rock (non-living).",
+        "A sea turtle or crab (living) and ocean water or a rock (non-living).",
         [
           "A pebble (living) and a fish (non-living).",
           "Sand grains (living) and sunlight (non-living).",
@@ -136,8 +245,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
     ];
     t2Pool = [
       buildQuestion(
-        `In our classroom ocean demonstration (${demoText}), what should you observe carefully?`,
-        demoText,
+        `In our classroom ocean demonstration (${lesson.example}), what should you observe carefully?`,
+        lesson.example,
         [
           "Nothing changes in marine environments.",
           "Guessing without looking at organisms or water movement.",
@@ -182,8 +291,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
           "DepEd MATATAG Grade 1 Math: In our classroom, we count, read, write, and compare whole numbers up to 100 using tens and ones blocks, mangoes, and piso coins.";
         howItWorks =
           "One-to-one correspondence and place value: Point to each object one by one from left to right, group tens rods with ones units, and compare which set has more, fewer, or is equal.";
-        demoText =
-          "Classroom Activity: Building 32 using 3 tens rods and 2 ones cubes, then comparing it with 25.";
+        demoText = lesson.example;
         t1Pool = [
           buildQuestion(
             "When counting physical objects on your desk, what is the proper method?",
@@ -256,8 +364,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
           "DepEd MATATAG Grade 1 Math: Exploring 2D geometric shapes and repeating pattern sequences in our environment.";
         howItWorks =
           "Observe the repeating order of shapes and colors (such as A-B-A-B) to determine what comes next in the row.";
-        demoText =
-          "Classroom Activity: Arranging colored paper cutouts into repeating shape trains.";
+        demoText = lesson.example;
         t1Pool = [
           buildQuestion(
             "What shape comes next in the repeating sequence: Circle, Square, Circle, Square, [?]",
@@ -477,7 +584,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       ];
     }
   } else {
-    if (/sense|living|earth|surround/.test(cleanLesson)) {
+    if (/sense|living|earth|surround/.test(cleanLesson) || /sense|living|earth|surround/.test(cleanSubject)) {
       visualIllustration =
         "👀 Eyes 👂 Ears 👃 Nose 👅 Tongue ✋ Skin  ➔  🌿 Animals, Plants & Surroundings";
       pictureExamples = [
@@ -500,10 +607,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Using your senses safely to observe living and non-living things, plants, animals, and daily Earth surroundings.`;
       howItWorks =
         "Use sight, hearing, smell, touch, and taste safely to notice details, tell living things apart from non-living things, and describe surroundings.";
-      demoText =
-        lesson.example ||
-        "Looking at a leafy plant and a stone in the school garden to compare living and non-living traits.";
-    } else if (/push|pull|light|weather/.test(cleanLesson)) {
+      demoText = lesson.example;
+    } else if (/push|pull|light|weather/.test(cleanLesson) || /push|pull|light|weather/.test(cleanSubject)) {
       visualIllustration =
         "👉 Push / 🤲 Pull (Motion)  |  ☀️🔦 Light & Heat  |  ☀️⛅🌧️ Daily Weather";
       pictureExamples = [
@@ -526,10 +631,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Exploring pushes and pulls, sources of light and heat, and how daily weather changes.`;
       howItWorks =
         "Notice how pushes and pulls change motion, how light and heat come from natural and artificial sources, and how daily weather can shift from morning to afternoon.";
-      demoText =
-        lesson.example ||
-        "Pushing a toy cart across the floor, feeling sunlight warmth, and recording sunny vs. rainy weather.";
-    } else if (/matter|solid|liquid|gas|mixture|change/.test(cleanLesson)) {
+      demoText = lesson.example;
+    } else if (/matter|solid|liquid|gas|mixture|change/.test(cleanLesson) || /matter|solid|liquid|gas|mixture|change/.test(cleanSubject)) {
       visualIllustration =
         "🧊 Solid (Fixed Shape)  ➔  💧 Liquid (Flows)  ➔  ☁️ Gas (Spreads)  |  🥣 Mixtures";
       pictureExamples = [
@@ -552,10 +655,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       storyText = `DepEd MATATAG Grade ${gradeLevel} Science: Investigating ${lesson.title}—observable properties, mixtures, and physical/chemical changes.`;
       howItWorks =
         "Classify materials by properties like shape, texture, and state (solid, liquid, gas), observe mixtures, and note how heating, cooling, or mixing changes matter.";
-      demoText =
-        lesson.example ||
-        "Observing ice melting into water, mixing pebbles and sand, or heating water into steam.";
-    } else if (/body|reproduction|weathering|energy|force|motion|earth-moon/.test(cleanLesson)) {
+      demoText = lesson.example;
+    } else if (/body|reproduction|weathering|energy|force|motion|earth-moon/.test(cleanLesson) || /body|reproduction|weathering|energy|force|motion|earth-moon/.test(cleanSubject)) {
       visualIllustration =
         "🫀 Body Systems & Life Cycles  |  🪨🌦️ Weathering  |  ⚡🧲🌕 Energy, Forces & Earth-Moon";
       pictureExamples = [
@@ -615,8 +716,8 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
     ];
     t2Pool = [
       buildQuestion(
-        `In our observation example (${demoText}), what was demonstrated?`,
-        demoText,
+        `In our observation example (${lesson.example}), what was demonstrated?`,
+        lesson.example,
         ["An impossible anomaly.", "Nothing."],
         "Spot on! Empirical evidence proves scientific concepts."
       ),
@@ -676,7 +777,7 @@ const buildLessonContent = (lesson, subjectTitle, gradeLevel) => {
       "Clear communication of knowledge!"
     ),
     buildQuestion(
-      `Mastery Check 3: Recall our example: "${demoText}". What did it illustrate?`,
+      `Mastery Check 3: Recall our example: "${lesson.example}". What did it illustrate?`,
       lesson.title,
       ["An unrelated topic.", "An error in calculation."],
       "Great recognition of worked examples!"
@@ -750,21 +851,10 @@ export default function InteractiveLessonViewer({
   onComplete,
   playSfx,
 }) {
-  const fallbackSubject = {
-    title: "Math",
-    icon: "📐",
-    color: "#9c63e8",
-    lessons: [],
-  };
-  const fallbackLesson = {
-    title: "Counting",
-    meaning: "Numbers tell us amounts.",
-    example: "1, 2, 3",
-    difficulty: "Easy",
-  };
-
-  const subject = initialSubject || fallbackSubject;
-  const lesson = initialLesson || fallbackLesson;
+  const { subject, lesson } = useMemo(
+    () => resolveSubjectAndLesson(initialSubject, initialLesson, gradeLevel),
+    [initialSubject, initialLesson, gradeLevel]
+  );
   const storageKey = getStorageKey(gradeLevel, subject.title, lesson.title);
 
   // Ambient Lofi BGM (auto-plays gently with mute toggle)
